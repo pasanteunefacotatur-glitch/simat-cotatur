@@ -3,12 +3,20 @@
  * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: app.js
  * DESCRIPCIÓN: Controlador principal del formulario web. Coordina el montaje
- *              de módulos, validaciones y envío hacia Supabase.
+ *              de módulos, detección de punto por URL (?p=), sanitización,
+ *              cola de contingencia offline y envío hacia Supabase.
  * ==============================================================================
  */
 
-import { CONFIG } from "./config.js";
-import { getOrCreateVisitorId, startSurveyTimer, getElapsedFillingSeconds, savePendingSurveyLocally } from "./storage.js";
+import { CONFIG, PUNTOS_CONTROL_QR } from "./config.js";
+import {
+    getOrCreateVisitorId,
+    startSurveyTimer,
+    getElapsedFillingSeconds,
+    sanitizeText,
+    savePendingSurveyLocally,
+    flushPendingSurveys
+} from "./storage.js";
 import { renderHeader } from "./components/Header.js";
 import { renderStepProcedencia } from "./components/StepProcedencia.js";
 import { renderStepDestinoPerfil } from "./components/StepDestinoPerfil.js";
@@ -19,12 +27,30 @@ document.addEventListener("DOMContentLoaded", () => {
     getOrCreateVisitorId();
     startSurveyTimer();
 
-    renderHeader("header-mount");
+    // 1. Detectar el Punto de Control QR mediante parámetro URL (?p=CODIGO)
+    const params = new URLSearchParams(window.location.search);
+    const codigoPunto = (params.get("p") || "PEAJE_TARIBA").toUpperCase();
+    const nombrePunto = PUNTOS_CONTROL_QR[codigoPunto] || PUNTOS_CONTROL_QR.PEAJE_TARIBA;
+
+    // 2. Renderizar los módulos de la interfaz
+    renderHeader("header-mount", nombrePunto);
     renderStepProcedencia("step-1-mount");
     renderStepDestinoPerfil("step-2-mount");
     renderStepCalificacion("step-3-mount");
     renderModalRecompensa("modal-mount");
 
+    // 3. Eventos de sincronización automática de la cola offline
+    flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
+    window.addEventListener("online", () => {
+        flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
+    });
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
+        }
+    });
+
+    // 4. Vincular evento de envío
     const form = document.getElementById("form-encuesta-turistica");
     if (form) {
         form.addEventListener("submit", handleSubmitEncuesta);
@@ -43,17 +69,18 @@ async function handleSubmitEncuesta(event) {
 
         const esNacional = !document.getElementById("wrapper-origen-nacional").classList.contains("hidden");
         const estadoOrigen = esNacional ? document.getElementById("select-estado-origen").value : null;
-        const paisOrigen = !esNacional ? document.getElementById("input-pais-origen").value.trim() : "Venezuela";
+        const rawPais = !esNacional ? document.getElementById("input-pais-origen").value : "Venezuela";
+        const paisOrigen = sanitizeText(rawPais) || "Venezuela";
 
         const municipioDestino = document.getElementById("select-municipio-destino").value;
         const motivoBtn = document.querySelector("#group-motivo-viaje button[data-selected='true']");
         const motivoViaje = motivoBtn ? motivoBtn.getAttribute("data-motivo") : "TURISMO_RECREACION";
 
-        const tipoAlojamientoEl = document.getElementById("select-tipo-alojamiento");
-        const tipoAlojamiento = tipoAlojamientoEl ? tipoAlojamientoEl.value : "POSADA";
+        const grupoTamano = Math.max(1, parseInt(document.getElementById("input-grupo-tamano").value || "1", 10));
+        const diasEstadia = Math.max(0, parseInt(document.getElementById("input-dias-estadia").value || "0", 10));
 
-        const grupoTamano = parseInt(document.getElementById("input-grupo-tamano").value || "1", 10);
-        const diasEstadia = parseInt(document.getElementById("input-dias-estadia").value || "1", 10);
+        const tipoAlojamientoEl = document.getElementById("select-tipo-alojamiento");
+        const tipoAlojamiento = diasEstadia === 0 ? "SIN_PERNOCTA" : (tipoAlojamientoEl ? tipoAlojamientoEl.value : "POSADA");
 
         const califVialidad = parseInt(document.querySelector("[data-rating-group='vialidad']").getAttribute("data-current") || "4", 10);
         const califSeguridad = parseInt(document.querySelector("[data-rating-group='seguridad']").getAttribute("data-current") || "5", 10);
@@ -67,7 +94,7 @@ async function handleSubmitEncuesta(event) {
             return;
         }
 
-        if (!esNacional && !paisOrigen) {
+        if (!esNacional && !rawPais.trim()) {
             alert("Indique el país de procedencia.");
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
@@ -82,7 +109,7 @@ async function handleSubmitEncuesta(event) {
         }
 
         const payload = {
-            id: crypto.randomUUID ? crypto.randomUUID() : undefined,
+            id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : undefined,
             punto_captura_id: null,
             visitor_client_id: getOrCreateVisitorId(),
             duracion_llenado_seg: getElapsedFillingSeconds(),
@@ -116,7 +143,7 @@ async function handleSubmitEncuesta(event) {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
-            } catch (netErr) {
+            } catch (_) {
                 savePendingSurveyLocally(payload);
             }
         } else {
