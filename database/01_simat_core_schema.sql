@@ -1,7 +1,6 @@
 -- ==============================================================================
 -- PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
--- INSTITUCIÓN: Corporación Tachirense de Turismo (COTATUR) / Gobernación del Táchira
--- DESARROLLADORA: Pasantía Institucional UNEFA - Britney
+-- ENTIDAD: Corporación Tachirense de Turismo (COTATUR)
 -- FECHA: Noviembre 2026
 -- ARCHIVO: 01_simat_core_schema.sql
 -- DESCRIPCIÓN: Esquema principal de base de datos en PostgreSQL 15+ (Supabase).
