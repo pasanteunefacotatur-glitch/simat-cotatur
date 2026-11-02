@@ -1,259 +1,56 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-900">
+<html lang="es" class="h-full bg-gray-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demostrador Ejecutivo • SIMAT-COTATUR 2026</title>
-    <!-- Tailwind CSS CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>COTATUR - Encuesta de Perfil del Visitante</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Simulador de teléfono móvil para la presentación */
-        .phone-frame {
-            width: 390px;
-            height: 780px;
-            border-radius: 44px;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 12px #1e293b, 0 0 0 14px #334155;
-        }
-        .notch {
-            width: 140px;
-            height: 24px;
-            border-bottom-left-radius: 16px;
-            border-bottom-right-radius: 16px;
-        }
-        /* Ocultar barra de desplazamiento manteniendo funcionalidad */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        input, select { font-size: 16px !important; }
-    </style>
+
+    <!-- Estilos base -->
+    <link rel="stylesheet" href="./apps/web-turista/css/styles.css">
 </head>
-<body class="min-h-full flex flex-col items-center justify-center p-2 sm:p-6 text-slate-100 font-sans">
+<body class="min-h-full flex flex-col text-gray-900 bg-gray-100 antialiased font-sans">
 
-    <!-- Barra de Control de la Presentación -->
-    <header class="w-full max-w-4xl mb-4 flex flex-wrap items-center justify-between gap-3 bg-slate-800/80 backdrop-blur p-4 rounded-2xl border border-slate-700 shadow-xl">
-        <div class="flex items-center space-x-3">
-            <span class="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center font-black text-slate-950 text-lg">C</span>
-            <div>
-                <h1 class="text-sm font-black text-white">SIMAT-COTATUR • Prototipo Ejecutivo de Fase 1</h1>
-                <p class="text-xs text-slate-400">Pasantía UNEFA Britney • Demostrador Interactivo para Directiva</p>
-            </div>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button id="btn-toggle-view" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow">
-                📱 Alternar Vista (Teléfono / Completa)
-            </button>
-            <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-lg text-xs font-semibold">
-                ● 100% Operativo
-            </span>
-        </div>
-    </header>
+    <!-- 1. Encabezado Institucional -->
+    <div id="header-mount"></div>
 
-    <!-- Contenedor del Simulador -->
-    <div id="simulator-wrapper" class="phone-frame bg-slate-100 overflow-hidden relative flex flex-col transition-all duration-300">
-        
-        <!-- Muesca / Isla dinámica simulada -->
-        <div id="phone-notch" class="absolute top-0 left-1/2 transform -translate-x-1/2 notch bg-slate-900 z-40 flex items-center justify-center">
-            <div class="w-3 h-3 bg-slate-800 rounded-full mr-2"></div>
-            <div class="w-2 h-2 bg-blue-950 rounded-full"></div>
-        </div>
-
-        <!-- Pantalla interactiva del formulario -->
-        <div class="flex-1 overflow-y-auto no-scrollbar pt-8 pb-10 text-slate-800 flex flex-col">
+    <!-- 2. Cuerpo del Formulario -->
+    <main class="flex-1 max-w-xl w-full mx-auto px-4 py-5 space-y-4 px-safe pb-safe">
+        <form id="form-encuesta-turistica" class="space-y-4">
             
-            <!-- Encabezado Institucional -->
-            <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white p-5 shadow-md">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-[10px] uppercase tracking-widest font-extrabold text-amber-400">Gobernación del Táchira</span>
-                    <span class="text-[10px] bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 px-2 py-0.5 rounded-full font-bold">FISS 2026</span>
-                </div>
-                <div class="bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/20">
-                    <span class="text-[10px] text-blue-200 uppercase font-semibold">Punto QR Escaneado:</span>
-                    <h2 class="text-sm font-extrabold text-white">Peaje Vega de Táriba (Troncal 1)</h2>
-                    <p class="text-[11px] text-blue-100/90 mt-1">Llena esta breve encuesta en 60 seg y descarga la <b>Guía Turística Oficial</b>.</p>
-                </div>
-            </div>
+            <!-- Sección I: Procedencia -->
+            <div id="step-1-mount"></div>
 
-            <!-- Formulario -->
-            <form id="demo-form" class="p-4 space-y-4 flex-1">
-                
-                <!-- 1. Procedencia -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="flex items-center space-x-2 mb-3">
-                        <span class="w-6 h-6 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center text-xs font-black">1</span>
-                        <h3 class="text-xs font-bold text-slate-800">¿De dónde nos visitas?</h3>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-3">
-                        <button type="button" id="tab-nac" class="py-1.5 text-xs font-bold rounded-lg bg-blue-900 text-white shadow-sm">🇻🇪 Venezuela</button>
-                        <button type="button" id="tab-int" class="py-1.5 text-xs font-bold rounded-lg text-slate-600">🌎 Internacional</button>
-                    </div>
-                    <div id="box-nac">
-                        <select id="demo-estado" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-700">
-                            <option value="Zulia">Zulia</option>
-                            <option value="Mérida">Mérida</option>
-                            <option value="Barinas">Barinas</option>
-                            <option value="Distrito Capital">Distrito Capital</option>
-                            <option value="Carabobo">Carabobo</option>
-                            <option value="Lara">Lara</option>
-                            <option value="Otro">Otro Estado...</option>
-                        </select>
-                    </div>
-                    <div id="box-int" class="hidden">
-                        <input type="text" id="demo-pais" placeholder="País (Ej. Colombia, España)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs">
-                    </div>
-                </div>
+            <!-- Sección II: Destino y Estadía -->
+            <div id="step-2-mount"></div>
 
-                <!-- 2. Destino y Motivo -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-6 h-6 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center text-xs font-black">2</span>
-                        <h3 class="text-xs font-bold text-slate-800">Tu Destino en Táchira</h3>
-                    </div>
-                    <div>
-                        <select id="demo-municipio" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-700">
-                            <option value="San Cristóbal">San Cristóbal (Capital)</option>
-                            <option value="Cárdenas">Cárdenas (Táriba)</option>
-                            <option value="Jáuregui">Jáuregui (La Grita)</option>
-                            <option value="Capacho Nuevo">Capacho Nuevo (Peribeca)</option>
-                            <option value="Junín">Junín (Rubio)</option>
-                            <option value="Otro">Otro Municipio...</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2" id="demo-motivos">
-                        <button type="button" class="motivo-btn p-2 border-2 border-blue-900 bg-blue-900 text-white rounded-xl text-[11px] font-bold text-left">🏕️ Turismo</button>
-                        <button type="button" class="motivo-btn p-2 border border-slate-200 bg-slate-50 text-slate-700 rounded-xl text-[11px] font-bold text-left">👨‍👩‍👧‍👦 Familiar</button>
-                        <button type="button" class="motivo-btn p-2 border border-slate-200 bg-slate-50 text-slate-700 rounded-xl text-[11px] font-bold text-left">💼 Negocios</button>
-                        <button type="button" class="motivo-btn p-2 border border-slate-200 bg-slate-50 text-slate-700 rounded-xl text-[11px] font-bold text-left">⛪ Religioso</button>
-                    </div>
-                </div>
+            <!-- Sección III: Evaluación de Servicios -->
+            <div id="step-3-mount"></div>
 
-                <!-- 3. Calificación de Servicios -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2.5">
-                    <div class="flex items-center space-x-2 mb-1">
-                        <span class="w-6 h-6 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center text-xs font-black">3</span>
-                        <h3 class="text-xs font-bold text-slate-800">Califica tu experiencia</h3>
-                    </div>
-                    <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-xl">
-                        <span class="font-bold text-slate-700">🛣️ Vialidad:</span>
-                        <span class="text-base cursor-pointer">⭐⭐⭐⭐☆</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-xl">
-                        <span class="font-bold text-slate-700">🛡️ Seguridad:</span>
-                        <span class="text-base cursor-pointer">⭐⭐⭐⭐⭐</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-xl">
-                        <span class="font-bold text-slate-700">🤝 Hospitalidad:</span>
-                        <span class="text-base cursor-pointer">⭐⭐⭐⭐⭐</span>
-                    </div>
-                </div>
-
-                <!-- Insignia Turnstile -->
-                <div class="text-center text-[10px] text-slate-600 font-semibold flex items-center justify-center space-x-1">
-                    <span class="text-emerald-500">🛡️</span>
-                    <span>Protegido silenciosamente por Cloudflare Turnstile</span>
-                </div>
-
-                <!-- Botón de Envío -->
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-900 to-indigo-900 hover:from-blue-950 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-all">
-                    <span>Enviar y Descargar Guía PDF</span>
-                    <span class="text-amber-400">🎁</span>
+            <!-- Botón de Envío -->
+            <div class="pt-2">
+                <button type="submit" id="btn-submit-encuesta"
+                    class="w-full py-3 px-5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded shadow-sm transition-colors">
+                    Registrar encuesta
                 </button>
-            </form>
-
-            <footer class="text-center text-[10px] text-slate-600 mt-2 px-4">
-                COTATUR • Táchira • Ley de Infogobierno
-            </footer>
-        </div>
-
-        <!-- Modal de Recompensa Dentro del Simulador -->
-        <div id="demo-modal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 opacity-0 pointer-events-none transition-all duration-300">
-            <div class="bg-white w-full rounded-3xl p-5 shadow-2xl space-y-4 text-center">
-                <div class="w-14 h-14 bg-amber-400 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-md">🎁</div>
-                <h3 class="text-base font-black text-slate-800">¡Gracias por visitar el Táchira!</h3>
-                <p class="text-xs text-slate-600">Aquí tienes tu material turístico oficial precargado:</p>
-                <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-left flex items-center space-x-3">
-                    <span class="text-2xl">🗺️</span>
-                    <div class="flex-1">
-                        <h4 class="text-xs font-extrabold text-slate-800">Guía y Mapa Oficial de Rutas</h4>
-                        <p class="text-[10px] text-slate-600">Ruta de la Montaña, Chorro El Indio y Peribeca</p>
-                    </div>
-                    <button type="button" onclick="alert('Descargando Guía Turística en PDF (COTATUR)');" class="px-2.5 py-1.5 bg-amber-400 text-blue-950 rounded-xl text-[10px] font-black">Descargar</button>
-                </div>
-                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-left text-[11px] text-slate-700">
-                    <p class="font-bold text-red-600">🚨 Asistencia Vial 24 Horas:</p>
-                    <p>• Protección Civil: <b>0800-8224472</b></p>
-                    <p>• Emergencias: <b>VEN 911</b></p>
-                </div>
-                <button type="button" id="btn-close-demo-modal" class="w-full py-2.5 bg-blue-900 text-white rounded-xl text-xs font-bold">Cerrar</button>
             </div>
-        </div>
 
-    </div>
+        </form>
 
-    <!-- Script de Interactividad del Demostrador -->
-    <script>
-        // Alternar entre tamaño teléfono y tamaño completo
-        const btnToggle = document.getElementById("btn-toggle-view");
-        const simWrapper = document.getElementById("simulator-wrapper");
-        const notch = document.getElementById("phone-notch");
-        let isPhone = true;
+        <!-- Pie de página sobrio -->
+        <footer class="text-center text-[11px] text-gray-500 py-4 border-t border-gray-200 mt-6">
+            <p class="font-medium text-gray-600">Corporación Tachirense de Turismo (COTATUR)</p>
+            <p class="mt-0.5">Registro estadístico de carácter anónimo.</p>
+        </footer>
+    </main>
 
-        btnToggle.addEventListener("click", () => {
-            isPhone = !isPhone;
-            if (isPhone) {
-                simWrapper.className = "phone-frame bg-slate-100 overflow-hidden relative flex flex-col transition-all duration-300";
-                notch.classList.remove("hidden");
-                btnToggle.textContent = "📱 Alternar Vista (Teléfono / Completa)";
-            } else {
-                simWrapper.className = "w-full max-w-xl h-[85vh] rounded-3xl bg-slate-100 overflow-hidden relative flex flex-col shadow-2xl transition-all duration-300";
-                notch.classList.add("hidden");
-                btnToggle.textContent = "💻 Alternar Vista (Teléfono / Completa)";
-            }
-        });
+    <!-- 3. Cuadro de Confirmación -->
+    <div id="modal-mount"></div>
 
-        // Tabs Nacional / Internacional
-        const tabNac = document.getElementById("tab-nac");
-        const tabInt = document.getElementById("tab-int");
-        const boxNac = document.getElementById("box-nac");
-        const boxInt = document.getElementById("box-int");
-
-        tabNac.addEventListener("click", () => {
-            tabNac.className = "py-1.5 text-xs font-bold rounded-lg bg-blue-900 text-white shadow-sm";
-            tabInt.className = "py-1.5 text-xs font-bold rounded-lg text-slate-600";
-            boxNac.classList.remove("hidden");
-            boxInt.classList.add("hidden");
-        });
-        tabInt.addEventListener("click", () => {
-            tabInt.className = "py-1.5 text-xs font-bold rounded-lg bg-blue-900 text-white shadow-sm";
-            tabNac.className = "py-1.5 text-xs font-bold rounded-lg text-slate-600";
-            boxInt.classList.remove("hidden");
-            boxNac.classList.add("hidden");
-        });
-
-        // Selección de motivos
-        const motivoBtns = document.querySelectorAll(".motivo-btn");
-        motivoBtns.forEach(btn => {
-            btn.addEventListener("click", () => {
-                motivoBtns.forEach(b => {
-                    b.className = "motivo-btn p-2 border border-slate-200 bg-slate-50 text-slate-700 rounded-xl text-[11px] font-bold text-left";
-                });
-                btn.className = "motivo-btn p-2 border-2 border-blue-900 bg-blue-900 text-white rounded-xl text-[11px] font-bold text-left";
-            });
-        });
-
-        // Envío simulado y modal de recompensa
-        const demoForm = document.getElementById("demo-form");
-        const demoModal = document.getElementById("demo-modal");
-        const btnCloseModal = document.getElementById("btn-close-demo-modal");
-
-        demoForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            demoModal.classList.remove("opacity-0", "pointer-events-none");
-            demoModal.classList.add("opacity-100", "pointer-events-auto");
-        });
-
-        btnCloseModal.addEventListener("click", () => {
-            demoModal.classList.add("opacity-0", "pointer-events-none");
-            demoModal.classList.remove("opacity-100", "pointer-events-auto");
-        });
-    </script>
+    <!-- 4. Inicialización -->
+    <script type="module" src="./apps/web-turista/js/app.js"></script>
 </body>
 </html>

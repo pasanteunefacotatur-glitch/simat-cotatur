@@ -1,34 +1,29 @@
 /**
  * ==============================================================================
- * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
- * INSTITUCIÓN: Corporación Tachirense de Turismo (COTATUR) / Gobernación del Táchira
- * DESARROLLADORA: Britney (Pasantía Institucional UNEFA)
+ * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: config.js
- * DESCRIPCIÓN: Configuración central, constantes geográficas y credenciales públicas.
+ * DESCRIPCIÓN: Parámetros de configuración, catálogos geográficos y conexión.
  * ==============================================================================
  */
 
 export const CONFIG = {
-    // Nombre institucional del sistema
-    SISTEMA_NOMBRE: "SIMAT - COTATUR",
-    ORGANIZACION: "Corporación Tachirense de Turismo",
-    GOBERNACION: "Gobernación del Estado Táchira",
+    SISTEMA_NOMBRE: "Sistema de Registro y Estadística Turística",
+    ENTIDAD: "Corporación Tachirense de Turismo (COTATUR)",
 
-    // Conexión con Supabase Cloud (Ingesta de encuestas)
+    // Conexión con Supabase (Ingesta de datos)
     SUPABASE_URL: "https://njcwdhakkbiabkinsafs.supabase.co",
     SUPABASE_PUBLISHABLE_KEY: "sb_publishable_icIarHUnV_Fvm84XkasTJA_OjsGvtNN",
 
-    // Cloudflare Turnstile (Protección contra bots sin fricción para el turista)
+    // Cloudflare Turnstile
     TURNSTILE_SITE_KEY: "0x4AAAAAAFwAvWm1yItma-Eq",
 
-    // Versión del formulario Web PWA
-    VERSION: "1.0.0-draft",
+    VERSION: "0.1.0-borrador",
     ANIO: 2026
 };
 
-// Municipios del Estado Táchira para selección rápida del turista
+// Catálogo de Municipios del Estado Táchira
 export const MUNICIPIOS_TACHIRA = [
-    "San Cristóbal (Capital)",
+    "San Cristóbal",
     "Cárdenas (Táriba)",
     "Jáuregui (La Grita)",
     "Capacho Nuevo",
@@ -48,32 +43,22 @@ export const MUNICIPIOS_TACHIRA = [
     "Panamericano (Coloncito)",
     "Samuel Darío Maldonado",
     "Sucre (Queniquea)",
-    "Francisco de Miranda (San José de Bolívar)",
+    "Francisco de Miranda",
     "Córdoba (Santa Ana)",
     "Fernández Feo (El Piñal)",
     "Seboruco",
     "José María Vargas (El Cobre)",
     "San Judas Tadeo (Umuquena)",
     "Simón Rodríguez (San Simón)",
-    "Antonio Rómulo Costa (Las Mesas)",
-    "Otro Municipio"
+    "Antonio Rómulo Costa",
+    "Otro municipio"
 ];
 
-// Estados de procedencia nacional común hacia el Táchira
+// Catálogo de Estados de Venezuela
 export const ESTADOS_VENEZUELA = [
-    "Zulia", "Mérida", "Barinas", "Distrito Capital", "Miranda",
-    "Carabobo", "Lara", "Aragua", "Trujillo", "Portuguesa",
-    "Falcón", "Anzoátegui", "Bolívar", "Yaracuy", "Monagas",
-    "Sucre", "Guárico", "Nueva Esparta", "Cojedes", "Delta Amacuro",
-    "Amazonas", "Apure", "La Guaira"
-];
-
-// Puntos de Captura y Campañas Oficiales
-export const PUNTOS_CAPTURA_DEFAULT = [
-    { id: "PEAJE_TARIBA", nombre: "Peaje Vega de Táriba (Troncal 1)", tipo: "PEAJE" },
-    { id: "PEAJE_CAMPANA", nombre: "Peaje La Pedrera / La Campana (Troncal 5)", tipo: "PEAJE" },
-    { id: "TERMINAL_SC", nombre: "Terminal Central Gen. Cipriano Castro", tipo: "TERMINAL" },
-    { id: "PUENTE_ATANASIO", nombre: "Puente Internacional Atanasio Girardot", tipo: "FRONTERA" },
-    { id: "PERIBECA", nombre: "Punto Turístico Peribeca Colonial", tipo: "ATRACCION" },
-    { id: "CHORRO_EL_INDIO", nombre: "Parque Nacional Chorro El Indio", tipo: "ATRACCION" }
+    "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas",
+    "Bolívar", "Carabobo", "Cojedes", "Delta Amacuro", "Distrito Capital",
+    "Falcón", "Guárico", "La Guaira", "Lara", "Mérida",
+    "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre",
+    "Trujillo", "Yaracuy", "Zulia"
 ];

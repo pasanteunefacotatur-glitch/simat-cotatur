@@ -1,9 +1,8 @@
 /**
  * ==============================================================================
- * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
+ * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: components/StepProcedencia.js
- * DESCRIPCIÓN: Sección 1 - Captura rápida del origen del visitante
- *              (Nacional por Estados o Internacional por Países).
+ * DESCRIPCIÓN: Sección I - Datos de procedencia del visitante.
  * ==============================================================================
  */
 
@@ -13,72 +12,74 @@ export function renderStepProcedencia(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Generar opciones de estados
     const estadosOptions = ESTADOS_VENEZUELA.map(
         estado => `<option value="${estado}">${estado}</option>`
     ).join("");
 
     container.innerHTML = `
-        <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 transition-all hover:shadow-md">
-            <div class="flex items-center space-x-3 mb-4">
-                <span class="w-7 h-7 bg-blue-100 text-blue-900 font-extrabold rounded-full flex items-center justify-center text-xs">
-                    1
-                </span>
-                <h3 class="text-base font-bold text-slate-800">
-                    ¿De dónde nos visitas?
-                </h3>
+        <section class="bg-white rounded border border-gray-300 p-5 shadow-sm">
+            <div class="border-b border-gray-200 pb-2.5 mb-4">
+                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                    I. Lugar de Procedencia
+                </h2>
             </div>
 
-            <!-- Selector Píldora: Nacional vs Internacional -->
-            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl mb-4">
-                <button type="button" id="btn-origen-nacional"
-                    class="py-2.5 text-xs font-bold rounded-xl transition-all shadow-sm bg-blue-900 text-white">
-                    🇻🇪 Venezuela
-                </button>
-                <button type="button" id="btn-origen-internacional"
-                    class="py-2.5 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900">
-                    🌎 Internacional
-                </button>
+            <!-- Selector de tipo de procedencia -->
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-700 mb-2">
+                    Tipo de procedencia <span class="text-red-600">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="btn-origen-nacional"
+                        class="py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors">
+                        Nacional (Venezuela)
+                    </button>
+                    <button type="button" id="btn-origen-internacional"
+                        class="py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors">
+                        Internacional (Otro país)
+                    </button>
+                </div>
             </div>
 
-            <!-- Contenedor dinámico según selección -->
-            <div id="wrapper-origen-nacional" class="space-y-2">
-                <label for="select-estado-origen" class="block text-xs font-semibold text-slate-600">
-                    Estado de Procedencia:
+            <!-- Selector de Estado (Nacional) -->
+            <div id="wrapper-origen-nacional">
+                <label for="select-estado-origen" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Estado de residencia habitual <span class="text-red-600">*</span>
                 </label>
                 <select id="select-estado-origen" 
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none transition-all">
-                    <option value="" disabled selected>Selecciona tu Estado de origen...</option>
+                    class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none">
+                    <option value="" disabled selected>Seleccione un estado...</option>
                     ${estadosOptions}
                 </select>
             </div>
 
-            <div id="wrapper-origen-internacional" class="space-y-2 hidden">
-                <label for="input-pais-origen" class="block text-xs font-semibold text-slate-600">
-                    País de Procedencia:
+            <!-- Campo de País (Internacional) -->
+            <div id="wrapper-origen-internacional" class="hidden">
+                <label for="input-pais-origen" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                    País de residencia habitual <span class="text-red-600">*</span>
                 </label>
-                <input type="text" id="input-pais-origen" placeholder="Ej: Colombia, Estados Unidos, España..."
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none transition-all" />
+                <input type="text" id="input-pais-origen" placeholder="Ej. Colombia, España, Ecuador..."
+                    class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none" />
             </div>
-        </div>
+        </section>
     `;
 
-    // Listeners para cambiar entre Nacional e Internacional
+    // Control de alternancia entre Nacional e Internacional
     const btnNacional = document.getElementById("btn-origen-nacional");
     const btnInternacional = document.getElementById("btn-origen-internacional");
     const wrapNacional = document.getElementById("wrapper-origen-nacional");
     const wrapInternacional = document.getElementById("wrapper-origen-internacional");
 
     btnNacional.addEventListener("click", () => {
-        btnNacional.className = "py-2.5 text-xs font-bold rounded-xl transition-all shadow-sm bg-blue-900 text-white";
-        btnInternacional.className = "py-2.5 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900";
+        btnNacional.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors";
+        btnInternacional.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors";
         wrapNacional.classList.remove("hidden");
         wrapInternacional.classList.add("hidden");
     });
 
     btnInternacional.addEventListener("click", () => {
-        btnInternacional.className = "py-2.5 text-xs font-bold rounded-xl transition-all shadow-sm bg-blue-900 text-white";
-        btnNacional.className = "py-2.5 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900";
+        btnInternacional.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors";
+        btnNacional.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors";
         wrapInternacional.classList.remove("hidden");
         wrapNacional.classList.add("hidden");
     });

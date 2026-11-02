@@ -1,9 +1,8 @@
 /**
  * ==============================================================================
- * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
+ * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: components/ModalRecompensa.js
- * DESCRIPCIÓN: Modal de Recompensa Instantánea al Turista tras completar la encuesta.
- *              Entrega el Mapa Oficial de Rutas y Directorio de Emergencias Viales.
+ * DESCRIPCIÓN: Comprobante de registro completado y descarga de material informativo.
  * ==============================================================================
  */
 
@@ -12,71 +11,57 @@ export function renderModalRecompensa(containerId) {
     if (!container) return;
 
     container.innerHTML = `
-        <div id="modal-recompensa-overlay" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0 pointer-events-none">
-            <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col transform transition-transform duration-300 translate-y-full sm:translate-y-0">
+        <div id="modal-recompensa-overlay" class="fixed inset-0 z-50 bg-gray-900/75 flex items-center justify-center p-4 transition-opacity duration-200 opacity-0 pointer-events-none">
+            <div class="bg-white w-full max-w-md rounded border border-gray-300 shadow-xl overflow-hidden">
                 
-                <!-- Encabezado conmemorativo institucional -->
-                <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 text-center relative">
-                    <div class="w-16 h-16 bg-amber-400 text-blue-950 font-black rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-lg border-2 border-amber-300 mb-3 animate-bounce">
-                        🎁
-                    </div>
-                    <span class="inline-block px-3 py-1 bg-amber-400/20 text-amber-300 text-xs font-bold rounded-full mb-1">
-                        Recompensa Oficial COTATUR
-                    </span>
-                    <h3 class="text-xl font-black tracking-tight">¡Gracias por visitar el Táchira!</h3>
-                    <p class="text-xs text-blue-200 mt-1">
-                        Tu opinión fortalece el desarrollo turístico de nuestro estado. Aquí tienes tu obsequio digital:
+                <!-- Encabezado de confirmación -->
+                <div class="bg-slate-900 text-white px-5 py-4 border-b border-slate-700">
+                    <p class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">
+                        Registro Completado
                     </p>
+                    <h3 class="text-base font-bold mt-0.5">
+                        Encuesta procesada correctamente
+                    </h3>
                 </div>
 
-                <!-- Contenido descargable de alto valor -->
-                <div class="p-6 overflow-y-auto space-y-4">
-                    
-                    <!-- Tarjeta 1: Mapa Oficial de Rutas Turísticas -->
-                    <div class="p-4 rounded-2xl border border-amber-200 bg-amber-50/60 flex items-start space-x-3 shadow-sm">
-                        <div class="p-3 bg-amber-400 text-blue-950 rounded-xl text-2xl font-bold">
-                            🗺️
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-extrabold text-slate-800">Mapa Oficial de Rutas y Posadas</h4>
-                            <p class="text-xs text-slate-600 mt-0.5">
-                                Conoce las paradas de la Ruta de la Montaña, Chorro El Indio, Peribeca Colonial y Páramo El Zumbador.
-                            </p>
-                            <a href="#descargar-mapa" id="btn-descarga-mapa"
-                                class="mt-3 inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-extrabold text-blue-950 bg-amber-400 hover:bg-amber-300 shadow transition-all active:scale-95">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                </svg>
-                                Descargar Guía PDF (Gratis)
-                            </a>
-                        </div>
+                <!-- Cuerpo informativo y descargas -->
+                <div class="p-5 space-y-4 text-xs text-gray-700">
+                    <p>
+                        Sus respuestas han sido registradas de forma anónima en el sistema estadístico de COTATUR. Como material de apoyo para su recorrido, tiene a disposición los siguientes recursos:
+                    </p>
+
+                    <!-- Recurso 1: Guía de Rutas -->
+                    <div class="p-3.5 rounded border border-gray-300 bg-gray-50">
+                        <h4 class="font-bold text-gray-900 text-xs">
+                            Guía de Rutas Turísticas y Alojamientos
+                        </h4>
+                        <p class="text-gray-600 mt-1 text-[11px]">
+                            Documento informativo con circuitos principales (Ruta de la Montaña, Chorro El Indio, Peribeca y Páramo El Zumbador).
+                        </p>
+                        <button type="button" id="btn-descarga-mapa"
+                            class="mt-2.5 inline-block px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded text-xs transition-colors">
+                            Descargar Guía en PDF
+                        </button>
                     </div>
 
-                    <!-- Tarjeta 2: Directorio de Emergencias Viales -->
-                    <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-start space-x-3">
-                        <div class="p-3 bg-red-100 text-red-600 rounded-xl text-2xl font-bold">
-                            🚨
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-extrabold text-slate-800">Directorio de Asistencia Vial</h4>
-                            <p class="text-xs text-slate-600 mt-0.5">
-                                Asistencia en carretera gratuita y teléfonos de emergencia durante tu viaje por el estado:
-                            </p>
-                            <div class="mt-2 text-xs space-y-1 font-semibold text-slate-700">
-                                <p>• Protección Civil Táchira: <span class="text-blue-900 font-bold">0800-8224472</span></p>
-                                <p>• Servicio Grúa de Peajes: <span class="text-blue-900 font-bold">Canal 9 Radio / Peaje Táriba</span></p>
-                                <p>• Emergencias Policía Turística: <span class="text-blue-900 font-bold">VEN 911</span></p>
-                            </div>
-                        </div>
+                    <!-- Recurso 2: Contactos de Asistencia Vial -->
+                    <div class="p-3.5 rounded border border-gray-300 bg-gray-50">
+                        <h4 class="font-bold text-gray-900 text-xs">
+                            Directorio de Asistencia Vial y Emergencias
+                        </h4>
+                        <ul class="mt-1.5 space-y-1 text-[11px] text-gray-700">
+                            <li>• Protección Civil Regional: <b>0800-8224472</b></li>
+                            <li>• Sistema Integrado de Emergencias: <b>911</b></li>
+                            <li>• Asistencia en Peajes: <b>Canal Vial Troncal 1 / Troncal 5</b></li>
+                        </ul>
                     </div>
-
                 </div>
 
-                <!-- Botón de Cierre -->
-                <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                <!-- Pie del cuadro de diálogo -->
+                <div class="px-5 py-3 bg-gray-100 border-t border-gray-200 flex justify-end">
                     <button type="button" id="btn-cerrar-modal-recompensa"
-                        class="w-full py-3 bg-blue-900 hover:bg-blue-950 text-white font-extrabold text-sm rounded-xl shadow-md transition-all active:scale-98">
-                        ¡Entendido y Buen Viaje!
+                        class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold text-xs rounded transition-colors">
+                        Cerrar y finalizar
                     </button>
                 </div>
 
@@ -93,15 +78,11 @@ export function renderModalRecompensa(containerId) {
         overlay.classList.remove("opacity-100", "pointer-events-auto");
     });
 
-    btnDescarga.addEventListener("click", (e) => {
-        e.preventDefault();
-        alert("¡Descargando Guía Turística Oficial de Rutas y Posadas del Estado Táchira (COTATUR 2026)!");
+    btnDescarga.addEventListener("click", () => {
+        alert("Descarga iniciada: Guia_Rutas_Turisticas_COTATUR.pdf");
     });
 }
 
-/**
- * Muestra el modal de recompensa en pantalla con transición suave.
- */
 export function abrirModalRecompensa() {
     const overlay = document.getElementById("modal-recompensa-overlay");
     if (!overlay) return;
