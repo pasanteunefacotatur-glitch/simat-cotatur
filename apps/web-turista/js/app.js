@@ -3,8 +3,8 @@
  * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: app.js
  * DESCRIPCIÓN: Controlador principal del formulario web. Coordina el montaje
- *              de módulos, detección de punto por URL (?p=), sanitización,
- *              cola de contingencia offline y envío hacia Supabase.
+ *              de módulos, resolución de punto por URL (?p=) contra Supabase,
+ *              sanitización, cola de contingencia offline y envío RPC.
  * ==============================================================================
  */
 
@@ -23,23 +23,54 @@ import { renderStepDestinoPerfil } from "./components/StepDestinoPerfil.js";
 import { renderStepCalificacion } from "./components/StepCalificacion.js";
 import { renderModalRecompensa, abrirModalRecompensa } from "./components/ModalRecompensa.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+// Estado activo del punto de control
+let activePoint = PUNTOS_CONTROL_QR.PEAJE_TARIBA;
+
+document.addEventListener("DOMContentLoaded", async () => {
     getOrCreateVisitorId();
     startSurveyTimer();
 
     // 1. Detectar el Punto de Control QR mediante parámetro URL (?p=CODIGO)
     const params = new URLSearchParams(window.location.search);
     const codigoPunto = (params.get("p") || "PEAJE_TARIBA").toUpperCase();
-    const nombrePunto = PUNTOS_CONTROL_QR[codigoPunto] || PUNTOS_CONTROL_QR.PEAJE_TARIBA;
+
+    if (PUNTOS_CONTROL_QR[codigoPunto]) {
+        activePoint = PUNTOS_CONTROL_QR[codigoPunto];
+    }
 
     // 2. Renderizar los módulos de la interfaz
-    renderHeader("header-mount", nombrePunto);
+    renderHeader("header-mount", activePoint.nombre);
     renderStepProcedencia("step-1-mount");
     renderStepDestinoPerfil("step-2-mount");
     renderStepCalificacion("step-3-mount");
     renderModalRecompensa("modal-mount");
 
-    // 3. Eventos de sincronización automática de la cola offline
+    // 3. Si COTATUR agregó un punto nuevo en Supabase, sincronizar su nombre e ID en vivo
+    if (navigator.onLine) {
+        try {
+            const res = await fetch(
+                `${CONFIG.SUPABASE_URL}/rest/v1/puntos_captura?select=id,codigo,nombre&codigo=eq.${encodeURIComponent(codigoPunto)}&activo=eq.true`,
+                {
+                    headers: {
+                        "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                        "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                    }
+                }
+            );
+            if (res.ok) {
+                const rows = await res.json();
+                if (Array.isArray(rows) && rows.length > 0) {
+                    activePoint = { id: rows[0].id, nombre: rows[0].nombre };
+                    const headerPointEl = document.getElementById("header-point-name");
+                    if (headerPointEl) headerPointEl.textContent = activePoint.nombre;
+                }
+            }
+        } catch (_) {
+            // Usa el catálogo local como respaldo silencioso
+        }
+    }
+
+    // 4. Eventos de sincronización automática de la cola offline
     flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
     window.addEventListener("online", () => {
         flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
@@ -50,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 4. Vincular evento de envío
+    // 5. Vincular evento de envío
     const form = document.getElementById("form-encuesta-turistica");
     if (form) {
         form.addEventListener("submit", handleSubmitEncuesta);
@@ -110,7 +141,7 @@ async function handleSubmitEncuesta(event) {
 
         const payload = {
             id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : undefined,
-            punto_captura_id: null,
+            punto_captura_id: activePoint ? activePoint.id : null,
             visitor_client_id: getOrCreateVisitorId(),
             duracion_llenado_seg: getElapsedFillingSeconds(),
             procedencia_tipo: esNacional ? "NACIONAL" : "INTERNACIONAL",

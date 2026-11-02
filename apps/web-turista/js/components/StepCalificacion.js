@@ -3,21 +3,17 @@
  * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: components/StepCalificacion.js
  * DESCRIPCIÓN: Sección III - Evaluación numérica de servicios (Escala 1 al 5).
+ *              Consume CRITERIOS_EVALUACION desde config.js.
  * ==============================================================================
  */
+
+import { CRITERIOS_EVALUACION } from "../config.js";
 
 export function renderStepCalificacion(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const criterios = [
-        { id: "vialidad", label: "Estado de las vías de acceso", default: 4 },
-        { id: "seguridad", label: "Percepción de seguridad", default: 5 },
-        { id: "hospitalidad", label: "Atención al visitante", default: 5 },
-        { id: "servicios", label: "Servicios públicos y estaciones", default: 4 }
-    ];
-
-    const criteriosHTML = criterios.map(c => `
+    const criteriosHTML = CRITERIOS_EVALUACION.map(c => `
         <div class="py-2.5 border-b border-gray-200 last:border-b-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span class="text-xs font-medium text-gray-800">${c.label}</span>
             <div class="flex space-x-1" data-rating-group="${c.id}" data-current="${c.default}">

@@ -3,11 +3,12 @@
  * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: components/StepDestinoPerfil.js
  * DESCRIPCIÓN: Sección II - Destino dentro del estado, motivo de viaje y estadía.
- *              Incluye lógica condicional (RF-02) para visitantes sin pernocta.
+ *              Genera sus opciones dinámicamente desde config.js para facilitar
+ *              futuras modificaciones solicitadas por COTATUR.
  * ==============================================================================
  */
 
-import { MUNICIPIOS_TACHIRA } from "../config.js";
+import { MUNICIPIOS_TACHIRA, MOTIVOS_VIAJE, TIPOS_ALOJAMIENTO } from "../config.js";
 
 export function renderStepDestinoPerfil(containerId) {
     const container = document.getElementById(containerId);
@@ -15,6 +16,19 @@ export function renderStepDestinoPerfil(containerId) {
 
     const municipiosOptions = MUNICIPIOS_TACHIRA.map(
         m => `<option value="${m}">${m}</option>`
+    ).join("");
+
+    const motivosButtons = MOTIVOS_VIAJE.map(
+        m => `
+            <button type="button" data-motivo="${m.codigo}"
+                class="btn-option py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left transition-colors">
+                ${m.etiqueta}
+            </button>
+        `
+    ).join("");
+
+    const alojamientosOptions = TIPOS_ALOJAMIENTO.map(
+        a => `<option value="${a.codigo}">${a.etiqueta}</option>`
     ).join("");
 
     container.innerHTML = `
@@ -43,22 +57,7 @@ export function renderStepDestinoPerfil(containerId) {
                     Motivo principal del viaje <span class="text-red-600">*</span>
                 </label>
                 <div class="grid grid-cols-2 gap-2" id="group-motivo-viaje">
-                    <button type="button" data-motivo="TURISMO_RECREACION"
-                        class="btn-option py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left transition-colors">
-                        Turismo / Recreación
-                    </button>
-                    <button type="button" data-motivo="FAMILIAR"
-                        class="btn-option py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left transition-colors">
-                        Visita a familiares
-                    </button>
-                    <button type="button" data-motivo="NEGOCIOS"
-                        class="btn-option py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left transition-colors">
-                        Negocios / Trabajo
-                    </button>
-                    <button type="button" data-motivo="RELIGIOSO_CULTURAL"
-                        class="btn-option py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left transition-colors">
-                        Religioso / Evento
-                    </button>
+                    ${motivosButtons}
                 </div>
             </div>
 
@@ -87,11 +86,7 @@ export function renderStepDestinoPerfil(containerId) {
                 </label>
                 <select id="select-tipo-alojamiento"
                     class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none">
-                    <option value="HOTEL">Hotel</option>
-                    <option value="POSADA" selected>Posada turística</option>
-                    <option value="CASA_FAMILIAR">Vivienda de familiares o amigos</option>
-                    <option value="ALQUILER_TEMPORAL">Alquiler temporal / Cabaña</option>
-                    <option value="SIN_PERNOCTA">Sin pernocta (Visita de un día)</option>
+                    ${alojamientosOptions}
                 </select>
             </div>
         </section>
