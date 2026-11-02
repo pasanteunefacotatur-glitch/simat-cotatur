@@ -25,7 +25,7 @@
                     </h1>
                 </div>
                 <span class="text-[11px] bg-slate-800 text-slate-200 px-2.5 py-1 rounded border border-slate-600 font-mono">
-                    BORRADOR v0.1
+                    BORRADOR v0.2
                 </span>
             </div>
 
@@ -69,15 +69,18 @@
                         Estado de residencia habitual <span class="text-red-600">*</span>
                     </label>
                     <select class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 outline-none">
-                        <option value="" disabled selected>Seleccione un estado...</option>
+                        <option value="" disabled selected>Seleccione un estado (ordenados por frecuencia)...</option>
                         <option value="Zulia">Zulia</option>
                         <option value="Mérida">Mérida</option>
                         <option value="Barinas">Barinas</option>
                         <option value="Distrito Capital">Distrito Capital</option>
                         <option value="Carabobo">Carabobo</option>
                         <option value="Lara">Lara</option>
-                        <option value="Aragua">Aragua</option>
                         <option value="Miranda">Miranda</option>
+                        <option value="Aragua">Aragua</option>
+                        <option value="Trujillo">Trujillo</option>
+                        <option value="Portuguesa">Portuguesa</option>
+                        <option value="Táchira">Táchira (Turismo interno)</option>
                         <option value="Otro">Otro estado</option>
                     </select>
                 </div>
@@ -86,7 +89,10 @@
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">
                         País de residencia habitual <span class="text-red-600">*</span>
                     </label>
-                    <input type="text" placeholder="Ej. Colombia, España, Ecuador..." class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 outline-none" />
+                    <div id="demo-mount-pais"></div>
+                    <p class="text-[11px] text-gray-500 mt-1">
+                        Escriba el país o ciudad para autocompletar, o elija entre los más frecuentes.
+                    </p>
                 </div>
             </section>
 
@@ -100,19 +106,12 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Municipio de destino principal <span class="text-red-600">*</span>
+                        Municipio o capital de destino <span class="text-red-600">*</span>
                     </label>
-                    <select class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 outline-none">
-                        <option value="" disabled selected>Seleccione el municipio de destino...</option>
-                        <option value="San Cristóbal">San Cristóbal</option>
-                        <option value="Cárdenas">Cárdenas (Táriba)</option>
-                        <option value="Jáuregui">Jáuregui (La Grita)</option>
-                        <option value="Capacho Nuevo">Capacho Nuevo</option>
-                        <option value="Junín">Junín (Rubio)</option>
-                        <option value="Bolívar">Bolívar (San Antonio)</option>
-                        <option value="Pedro María Ureña">Pedro María Ureña</option>
-                        <option value="Otro">Otro municipio</option>
-                    </select>
+                    <div id="demo-mount-municipio"></div>
+                    <p class="text-[11px] text-gray-500 mt-1">
+                        Puede buscar por municipio (ej. Jáuregui, Junín), por su capital (ej. La Grita, Rubio) o localidad (ej. Peribeca).
+                    </p>
                 </div>
 
                 <div>
@@ -142,8 +141,18 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Noches de pernocta</label>
-                        <input type="number" min="0" max="90" value="3" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 outline-none" />
+                        <input type="number" id="demo-dias" min="0" max="90" value="3" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 outline-none" />
                     </div>
+                </div>
+
+                <div id="demo-wrap-alojamiento">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Tipo de alojamiento previsto</label>
+                    <select class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 outline-none">
+                        <option value="POSADA">Posada turística</option>
+                        <option value="HOTEL">Hotel</option>
+                        <option value="CASA_FAMILIAR">Vivienda de familiares o amigos</option>
+                        <option value="ALQUILER_TEMPORAL">Alquiler temporal / Cabaña</option>
+                    </select>
                 </div>
             </section>
 
@@ -235,6 +244,117 @@
     </div>
 
     <script>
+        const MUNICIPIOS = [
+            { m: "San Cristóbal", c: "San Cristóbal", r: "FISS, Pueblo Nuevo, Chorro El Indio" },
+            { m: "Cárdenas", c: "Táriba", r: "Basílica Consolación, Vega de Táriba" },
+            { m: "Capacho Nuevo", c: "Independencia", r: "Peribeca, Cerro El Cristo" },
+            { m: "Jáuregui", c: "La Grita", r: "Santo Cristo, Páramo El Rosal" },
+            { m: "Bolívar", c: "San Antonio del Táchira", r: "Frontera, Aduana, Peracal" },
+            { m: "Pedro María Ureña", c: "Ureña", r: "Aguas Termales, Tienditas" },
+            { m: "Junín", c: "Rubio", r: "Ciudad Pontálida, Ruta del Café" },
+            { m: "Guásimos", c: "Palmira", r: "Agroturismo, Cestería, La Laguna" },
+            { m: "Andrés Bello", c: "Cordero", r: "Ruta de la Montaña, Monte Carmelo" },
+            { m: "José María Vargas", c: "El Cobre", r: "Páramo El Zumbador, Angostura" },
+            { m: "Lobatera", c: "Lobatera", r: "San Pedro del Río, Borotá" },
+            { m: "Ayacucho", c: "San Juan de Colón", r: "Colón, San Pedro del Río" },
+            { m: "Michelena", c: "Michelena", r: "Boca de Monte" },
+            { m: "Capacho Viejo", c: "Libertad", r: "Lomas Bajas" },
+            { m: "García de Hevia", c: "La Fría", r: "Aeropuerto, Boca de Grita" },
+            { m: "Fernández Feo", c: "San Rafael del Piñal", r: "El Piñal, Río Doradas" },
+            { m: "Libertador", c: "Abejales", r: "La Pedrera, San Joaquín de Navay" },
+            { m: "Uribante", c: "Pregonero", r: "Represa Uribante Caparo, La Trampa" },
+            { m: "Córdoba", c: "Santa Ana del Táchira", r: "Santa Ana" },
+            { m: "Torbes", c: "San Josecito", r: "Río Torbes" },
+            { m: "Sucre", c: "Queniquea", r: "Páramo El Batallón" },
+            { m: "Francisco de Miranda", c: "San José de Bolívar", r: "Río Bobo" },
+            { m: "Seboruco", c: "Seboruco", r: "Santa Filomena" },
+            { m: "Rafael Urdaneta", c: "Delicias", r: "Páramo El Tamá, Betania" },
+            { m: "Panamericano", c: "Coloncito", r: "La Palmita" },
+            { m: "Samuel Darío Maldonado", c: "La Tendida", r: "Boconó" },
+            { m: "Antonio Rómulo Costa", c: "Las Mesas", r: "Piedra Gorda" },
+            { m: "San Judas Tadeo", c: "Umuquena", r: "Las Talas" },
+            { m: "Simón Rodríguez", c: "San Simón", r: "Pueblo Hondo" }
+        ];
+
+        const PAISES = [
+            { n: "Colombia", r: "Cúcuta, Norte de Santander, Bogotá, Bucaramanga, Medellín" },
+            { n: "Estados Unidos", r: "USA, Miami, Florida, Nueva York" },
+            { n: "España", r: "Madrid, Barcelona, Canarias" },
+            { n: "Ecuador", r: "Quito, Guayaquil" },
+            { n: "Perú", r: "Lima, Arequipa" },
+            { n: "Chile", r: "Santiago" },
+            { n: "Panamá", r: "Ciudad de Panamá" },
+            { n: "México", r: "CDMX, Monterrey" },
+            { n: "Argentina", r: "Buenos Aires" },
+            { n: "Brasil", r: "São Paulo, Manaos" },
+            { n: "Italia", r: "Roma, Milán" },
+            { n: "Portugal", r: "Lisboa, Madeira" },
+            { n: "Canadá", r: "Toronto, Montreal" },
+            { n: "Alemania", r: "Berlín, Múnich" },
+            { n: "Francia", r: "París" }
+        ];
+
+        function norm(s) {
+            return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        }
+
+        function initAutocomplete(mountId, placeholder, list, getLabel, getSub, getSearch) {
+            const mount = document.getElementById(mountId);
+            mount.innerHTML = `
+                <div class="relative">
+                    <input type="text" placeholder="${placeholder}" class="ac-in w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 outline-none" autocomplete="off" />
+                    <div class="ac-dd hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-gray-300 rounded shadow-lg z-30 divide-y divide-gray-100"></div>
+                </div>
+            `;
+            const inp = mount.querySelector(".ac-in");
+            const dd = mount.querySelector(".ac-dd");
+
+            function render(q) {
+                const nq = norm(q);
+                const filtered = !nq ? list : list.filter(x => norm(getSearch(x)).includes(nq));
+                const head = `<div class="px-3 py-1.5 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-500">${!nq ? "Ordenados por los más utilizados" : "Coincidencias (" + filtered.length + ")"}</div>`;
+                dd.innerHTML = head + filtered.map((x, i) => `
+                    <button type="button" data-val="${getLabel(x)}" class="ac-item w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-semibold text-gray-900">${getLabel(x)}</div>
+                            <div class="text-[11px] text-gray-500">${getSub(x)}</div>
+                        </div>
+                        ${!nq && i < 6 ? '<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-200">Frecuente</span>' : ''}
+                    </button>
+                `).join("");
+                dd.classList.remove("hidden");
+                dd.querySelectorAll(".ac-item").forEach(b => {
+                    b.addEventListener("mousedown", (e) => {
+                        e.preventDefault();
+                        inp.value = b.getAttribute("data-val");
+                        dd.classList.add("hidden");
+                    });
+                });
+            }
+            inp.addEventListener("focus", () => render(""));
+            inp.addEventListener("click", () => render(""));
+            inp.addEventListener("input", () => render(inp.value));
+            inp.addEventListener("blur", () => setTimeout(() => dd.classList.add("hidden"), 150));
+        }
+
+        initAutocomplete(
+            "demo-mount-municipio",
+            "Escriba municipio o capital (ej. San Cristóbal, La Grita, Táriba)...",
+            MUNICIPIOS,
+            x => `${x.m} (Cap. ${x.c})`,
+            x => `Capital: ${x.c} • Ref: ${x.r}`,
+            x => `${x.m} ${x.c} ${x.r}`
+        );
+
+        initAutocomplete(
+            "demo-mount-pais",
+            "Escriba o seleccione el país (ej. Colombia, España)...",
+            PAISES,
+            x => x.n,
+            x => `Ref: ${x.r}`,
+            x => `${x.n} ${x.r}`
+        );
+
         const tabNac = document.getElementById("tab-nac");
         const tabInt = document.getElementById("tab-int");
         const boxNac = document.getElementById("box-nac");
@@ -251,6 +371,12 @@
             tabNac.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors";
             boxInt.classList.remove("hidden");
             boxNac.classList.add("hidden");
+        });
+
+        document.getElementById("demo-dias").addEventListener("input", (e) => {
+            const w = document.getElementById("demo-wrap-alojamiento");
+            if (parseInt(e.target.value || "0", 10) === 0) w.classList.add("hidden");
+            else w.classList.remove("hidden");
         });
 
         document.querySelectorAll(".motivo-btn").forEach(btn => {
