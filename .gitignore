@@ -1,0 +1,15 @@
+# Variables de entorno y secretos
+.env.local
+.env.*.local
+*.env
+
+# Dependencias y compilación
+node_modules/
+dist/
+build/
+.cache/
+
+# Sistema y logs
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,41 @@
+/**
+ * ==============================================================================
+ * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
+ * ARCHIVO: styles.css
+ * DESCRIPCIÓN: Estilos base, compatibilidad con muescas (Notch / Safe Areas),
+ *              pantallas curvas y prevención de zoom automático en iOS Safari.
+ * ==============================================================================
+ */
+
+/* Compatibilidad con muescas de cámaras y barras de navegación móviles */
+.pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.px-safe {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+/* Regla crítica para iPhone / iOS Safari: Previene zoom involuntario en inputs */
+input, select, textarea {
+    font-size: 16px !important;
+}
+
+/* Suavizado de fuentes y transiciones táctiles */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+}
+
+/* Animación sutil de estrellas */
+.star-btn {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
