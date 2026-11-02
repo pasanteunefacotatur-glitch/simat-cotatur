@@ -1,8 +1,8 @@
 /**
  * ==============================================================================
- * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
+ * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
  * ARCHIVO: components/StepCalificacion.js
- * DESCRIPCIÓN: Sección 3 - Calificación de servicios y atención en el Táchira.
+ * DESCRIPCIÓN: Sección III - Evaluación numérica de servicios (Escala 1 al 5).
  * ==============================================================================
  */
 
@@ -11,23 +11,24 @@ export function renderStepCalificacion(containerId) {
     if (!container) return;
 
     const criterios = [
-        { id: "vialidad", label: "Estado de la Vialidad", icon: "🛣️", default: 4 },
-        { id: "seguridad", label: "Seguridad Ciudadana", icon: "🛡️", default: 5 },
-        { id: "hospitalidad", label: "Hospitalidad Tachirense", icon: "🤝", default: 5 },
-        { id: "servicios", label: "Servicios Públicos", icon: "💡", default: 4 }
+        { id: "vialidad", label: "Estado de las vías de acceso", default: 4 },
+        { id: "seguridad", label: "Percepción de seguridad", default: 5 },
+        { id: "hospitalidad", label: "Atención al visitante", default: 5 },
+        { id: "servicios", label: "Servicios públicos y estaciones", default: 4 }
     ];
 
     const criteriosHTML = criterios.map(c => `
-        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
-            <div class="flex items-center space-x-2.5">
-                <span class="text-xl">${c.icon}</span>
-                <span class="text-xs font-bold text-slate-700">${c.label}</span>
-            </div>
+        <div class="py-2.5 border-b border-gray-200 last:border-b-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-xs font-medium text-gray-800">${c.label}</span>
             <div class="flex space-x-1" data-rating-group="${c.id}" data-current="${c.default}">
-                ${[1, 2, 3, 4, 5].map(star => `
-                    <button type="button" data-val="${star}" 
-                        class="star-btn w-8 h-8 flex items-center justify-center text-lg transition-transform active:scale-125 focus:outline-none">
-                        ${star <= c.default ? "⭐" : "☆"}
+                ${[1, 2, 3, 4, 5].map(num => `
+                    <button type="button" data-val="${num}" 
+                        class="rating-btn w-9 h-8 rounded border text-xs font-semibold transition-colors ${
+                            num === c.default
+                                ? "bg-slate-800 text-white border-slate-800"
+                                : "bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100"
+                        }">
+                        ${num}
                     </button>
                 `).join("")}
             </div>
@@ -35,36 +36,36 @@ export function renderStepCalificacion(containerId) {
     `).join("");
 
     container.innerHTML = `
-        <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
-            <div class="flex items-center space-x-3">
-                <span class="w-7 h-7 bg-blue-100 text-blue-900 font-extrabold rounded-full flex items-center justify-center text-xs">
-                    3
-                </span>
-                <h3 class="text-base font-bold text-slate-800">
-                    Tu Calificación de Servicios
-                </h3>
+        <section class="bg-white rounded border border-gray-300 p-5 shadow-sm space-y-3">
+            <div class="border-b border-gray-200 pb-2.5">
+                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                    III. Evaluación de Servicios
+                </h2>
+                <p class="text-[11px] text-gray-500 mt-0.5">
+                    Califique en escala del 1 (Deficiente) al 5 (Excelente).
+                </p>
             </div>
 
-            <p class="text-xs text-slate-500">
-                Toca las estrellas para evaluar tu experiencia durante el recorrido:
-            </p>
-
-            <div class="space-y-2.5">
+            <div class="divide-y divide-gray-200">
                 ${criteriosHTML}
             </div>
-        </div>
+        </section>
     `;
 
-    // Lógica interactiva de cambio de estrellas
+    // Interacción de los botones numéricos (1 al 5)
     container.querySelectorAll("[data-rating-group]").forEach(group => {
-        const buttons = group.querySelectorAll(".star-btn");
+        const buttons = group.querySelectorAll(".rating-btn");
         buttons.forEach(btn => {
             btn.addEventListener("click", () => {
                 const val = parseInt(btn.getAttribute("data-val"), 10);
                 group.setAttribute("data-current", val);
                 buttons.forEach(b => {
                     const bVal = parseInt(b.getAttribute("data-val"), 10);
-                    b.textContent = bVal <= val ? "⭐" : "☆";
+                    if (bVal === val) {
+                        b.className = "rating-btn w-9 h-8 rounded border text-xs font-semibold transition-colors bg-slate-800 text-white border-slate-800";
+                    } else {
+                        b.className = "rating-btn w-9 h-8 rounded border text-xs font-semibold transition-colors bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100";
+                    }
                 });
             });
         });
