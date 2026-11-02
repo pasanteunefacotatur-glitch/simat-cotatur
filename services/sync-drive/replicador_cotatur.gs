@@ -8,7 +8,6 @@
  *              2. Replicación incremental por cursor (replicated_at IS NULL LIMIT 500).
  *              3. Auto-encadenamiento (Auto-Chaining) en temporadas altas (FISS).
  *              4. Auto-regeneración de la pestaña protegida (_BD_CRUDA).
- *              5. Generación de respaldos fríos (.xlsx) en Google Drive.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
@@ -22,23 +21,38 @@ const SYNC_CONFIG = {
 };
 
 /**
- * Función de configuración inicial (Ejecutar una sola vez en el editor de Apps Script).
- * Registra la llave secreta en las propiedades seguras del script y crea el disparador.
+ * FUNCIÓN 1 (EJECUTAR UNA SOLA VEZ):
+ * Crea la pestaña _BD_CRUDA, instala el reloj automático cada 12 horas
+ * y ejecuta la primera sincronización de prueba con Supabase.
  */
-function configurarPropiedadesYTrigger(secretKey) {
-  if (secretKey) {
-    PropertiesService.getScriptProperties().setProperty("SUPABASE_SECRET_KEY", secretKey);
+function activarSistemaCotatur() {
+  // 1. Verificar que la propiedad SUPABASE_SECRET_KEY esté registrada
+  var secretKey = PropertiesService.getScriptProperties().getProperty("SUPABASE_SECRET_KEY");
+  if (!secretKey) {
+    throw new Error(
+      "Falta agregar la propiedad SUPABASE_SECRET_KEY en Configuración del proyecto (icono de engranaje) -> Propiedades de secuencia de comandos."
+    );
   }
-  // Eliminar disparadores previos para evitar duplicados
-  const triggers = ScriptApp.getProjectTriggers();
+
+  // 2. Preparar la pestaña _BD_CRUDA en el Google Sheet
+  var ss = SpreadsheetApp.openById(SYNC_CONFIG.SPREADSHEET_ID);
+  obtenerHojaCruda(ss);
+
+  // 3. Limpiar disparadores anteriores para no duplicarlos
+  var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
     ScriptApp.deleteTrigger(triggers[i]);
   }
-  // Crear disparador base cada 12 horas (Keep-Alive + Replicación)
+
+  // 4. Crear el disparador automático cada 12 horas (Keep-Alive + Sincronización)
   ScriptApp.newTrigger("ejecutarSincronizacionIncremental")
     .timeBased()
     .everyHours(12)
     .create();
+
+  // 5. Ejecutar primera sincronización inmediata
+  ejecutarSincronizacionIncremental();
+  Logger.log("[SIMAT-COTATUR] Sistema activado, hoja creada y reloj de 12h programado con éxito.");
 }
 
 /**
@@ -69,19 +83,23 @@ function obtenerHojaCruda(spreadsheet) {
       "GPS Lat", "GPS Lng", "GPS Simulado", "Fecha Replicación"
     ];
     sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#0f172a").setFontColor("#ffffff");
+    sheet.getRange(1, 1, 1, headers.length)
+      .setFontWeight("bold")
+      .setBackground("#0f172a")
+      .setFontColor("#ffffff");
     sheet.setFrozenRows(1);
   }
   return sheet;
 }
 
 /**
- * Rutina principal de sincronización incremental y latido Keep-Alive.
+ * FUNCIÓN 2 (AUTOMÁTICA CADA 12 HORAS):
+ * Consulta encuestas nuevas en Supabase y las vuelca en Google Sheets.
  */
 function ejecutarSincronizacionIncremental() {
   var secretKey = PropertiesService.getScriptProperties().getProperty("SUPABASE_SECRET_KEY");
   if (!secretKey) {
-    Logger.log("[SIMAT] Falta configurar SUPABASE_SECRET_KEY en ScriptProperties.");
+    Logger.log("[SIMAT] Falta configurar SUPABASE_SECRET_KEY en Propiedades del Script.");
     return;
   }
 
@@ -158,6 +176,8 @@ function ejecutarSincronizacionIncremental() {
     payload: JSON.stringify({ replicated_at: ahoraISO }),
     muteHttpExceptions: true
   });
+
+  Logger.log("[SIMAT] Se replicaron exitosamente " + filasNuevas.length + " encuestas hacia Google Sheets.");
 
   // 4. Auto-Chaining: Si el lote llegó al límite (500), programar otro ciclo en 2 minutos
   if (registros.length === SYNC_CONFIG.BATCH_LIMIT) {
