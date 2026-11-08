@@ -3,24 +3,24 @@
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-admin/js/adminApp.js
  * DESCRIPCIÓN: Controlador principal del Portal de Administración y Supervisión.
- *              Autenticación por Cédula y Contraseña, Activación de Primer Ingreso,
- *              vínculo opcional con Google para correo, temas con lista desplegable.
+ *              Flujo optimizado de pestañas: Puntos y Equipos -> QR -> Personal -> Mi Perfil.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
 import { CONFIG } from "../../web-turista/js/config.js";
-import { initTheme, renderThemeDropdownHtml, bindThemeDropdown } from "../../web-turista/js/components/ThemeManager.js";
+import { initTheme, renderThemeButtonHtml, toggleTheme } from "../../web-turista/js/components/ThemeManager.js";
 import { renderCartelQRAdmin } from "./components/CartelQRAdmin.js";
 import { renderGestionPuntosAdmin } from "./components/GestionPuntosAdmin.js";
 import { renderGestionPersonalAdmin } from "./components/GestionPersonalAdmin.js";
+import { renderMiPerfilAdmin } from "./components/MiPerfilAdmin.js";
 
 const SESSION_KEY = "simat_supervisor_session";
 let activeSession = null;
 let cachedPuntos = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Inicializar tema (Predeterminado: Sistema en lista desplegable)
+    // 1. Inicializar tema (Detecta ajuste del dispositivo por defecto)
     initTheme();
 
     // 2. Comprobar sesión activa de supervisor
@@ -36,16 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
         mostrarModalLogin();
     }
 
-    // 3. Montar dropdown de tema en la barra superior
+    // 3. Montar botón con icono de tema en la esquina superior derecha
     const mountTheme = document.getElementById("admin-theme-btn-mount");
     if (mountTheme) {
-        mountTheme.innerHTML = renderThemeDropdownHtml();
-        bindThemeDropdown("select-theme-dropdown");
+        mountTheme.innerHTML = renderThemeButtonHtml();
+        const btn = document.getElementById("btn-toggle-theme");
+        if (btn) btn.addEventListener("click", () => toggleTheme());
     }
 });
 
 /**
- * Muestra el modal de inicio de sesión por Cédula y Contraseña.
+ * Modal de inicio de sesión por Cédula y Contraseña.
  */
 function mostrarModalLogin() {
     const modal = document.getElementById("admin-auth-modal");
@@ -85,9 +86,8 @@ function mostrarModalLogin() {
                 return;
             }
 
-            // Verificar si tiene privilegios de supervisión
             if (!data.es_supervisor) {
-                errorMsg.textContent = "Acceso denegado: Este usuario no tiene rango de Supervisor para ingresar al Panel Maestro.";
+                errorMsg.textContent = "Acceso denegado: Se requiere rango de Supervisor para ingresar al Panel Maestro.";
                 errorMsg.classList.remove("hidden");
                 return;
             }
@@ -99,14 +99,13 @@ function mostrarModalLogin() {
                 configuracion: data.configuracion
             };
 
-            // Si es primer ingreso (o debe cambiar clave), mostrar modal de activación
+            // Primer ingreso
             if (data.debe_cambiar_clave) {
                 modal.classList.add("hidden");
                 mostrarModalPrimerIngreso(data.funcionario);
                 return;
             }
 
-            // Guardar sesión y entrar al dashboard
             sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
             modal.classList.add("hidden");
             iniciarDashboard();
@@ -122,7 +121,7 @@ function mostrarModalLogin() {
 }
 
 /**
- * Modal obligatorio de activación para primer ingreso (Cédula como clave inicial).
+ * Modal de activación de primer ingreso.
  */
 function mostrarModalPrimerIngreso(funcionario) {
     const modal = document.getElementById("modal-primer-ingreso");
@@ -138,13 +137,12 @@ function mostrarModalPrimerIngreso(funcionario) {
     const form = document.getElementById("form-primer-ingreso");
     const btnGoogle = document.getElementById("btn-activar-google");
 
-    // Opción interactiva para autocompletar con Google
     if (btnGoogle) {
         btnGoogle.onclick = () => {
-            const correoIngresado = prompt("Ingrese su correo de Google (Gmail institucional o personal):", funcionario.email || "");
+            const correoIngresado = prompt("Ingrese su correo de Google (Gmail):", funcionario.email || "");
             if (correoIngresado && correoIngresado.includes("@")) {
                 document.getElementById("activar-email").value = correoIngresado.trim();
-                alert("¡Correo vinculado con éxito! Servirá para el restablecimiento de su clave.");
+                alert("¡Correo vinculado con éxito!");
             }
         };
     }
@@ -158,12 +156,7 @@ function mostrarModalPrimerIngreso(funcionario) {
         const email = document.getElementById("activar-email").value.trim();
 
         if (nuevaClave !== confirmarClave) {
-            alert("Las contraseñas no coinciden. Verifique.");
-            return;
-        }
-
-        if (nuevaClave.length < 4) {
-            alert("La nueva contraseña debe tener al menos 4 caracteres.");
+            alert("Las contraseñas no coinciden.");
             return;
         }
 
@@ -203,24 +196,18 @@ function mostrarModalPrimerIngreso(funcionario) {
 }
 
 /**
- * Inicializa el Panel Principal de Supervisión tras autenticación.
+ * Inicializa el Panel Principal de Supervisión.
  */
 function iniciarDashboard() {
     const dashboard = document.getElementById("admin-dashboard-root");
     if (dashboard) dashboard.classList.remove("hidden");
 
-    // Actualizar nombre de usuario activo en cabecera
-    const userBadge = document.getElementById("admin-current-user-badge");
-    if (userBadge && activeSession && activeSession.funcionario) {
-        userBadge.textContent = `${activeSession.funcionario.nombre_completo} (C.I: ${activeSession.funcionario.cedula})`;
-    }
-
-    // Configurar pestañas
+    actualizarBadgeUsuario();
     configurarTabs();
 
     const credencialSupervisor = () => (activeSession ? (activeSession.funcionario.id || activeSession.clave) : "cotatur2026");
 
-    // Montar Pestaña: Gestión de Puntos con Mapa Interactivo
+    // 1. Puntos de Control y Equipos Asignados (Pestaña Principal)
     renderGestionPuntosAdmin(
         "tab-puntos-mount",
         CONFIG,
@@ -232,19 +219,38 @@ function iniciarDashboard() {
         }
     );
 
-    // Montar Pestaña: Códigos QR y Afiches (Carta vs Solo QR)
+    // 2. Generador de Códigos QR y Afiches
     renderCartelQRAdmin("tab-qr-mount", cachedPuntos);
 
-    // Montar Pestaña: Gestión de Personal (Nómina por Cédula y Ajuste Global de Punto)
+    // 3. Nómina de Personal y Ajuste Global de Punto
     renderGestionPersonalAdmin("tab-personal-mount", CONFIG, credencialSupervisor, cachedPuntos);
 
-    // Cerrar Sesión
+    // 4. Mi Perfil
+    renderMiPerfilAdmin(
+        "tab-perfil-mount",
+        CONFIG,
+        () => activeSession,
+        (perfilActualizado) => {
+            activeSession.funcionario = perfilActualizado;
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+            actualizarBadgeUsuario();
+        }
+    );
+
+    // Botón Salir
     const btnLogout = document.getElementById("btn-admin-logout");
     if (btnLogout) {
         btnLogout.addEventListener("click", () => {
             sessionStorage.removeItem(SESSION_KEY);
             window.location.reload();
         });
+    }
+}
+
+function actualizarBadgeUsuario() {
+    const userBadge = document.getElementById("admin-current-user-badge");
+    if (userBadge && activeSession && activeSession.funcionario) {
+        userBadge.textContent = `${activeSession.funcionario.nombre_completo} (C.I: ${activeSession.funcionario.cedula})`;
     }
 }
 

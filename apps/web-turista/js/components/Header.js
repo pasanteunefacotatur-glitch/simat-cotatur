@@ -3,14 +3,14 @@
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-turista/js/components/Header.js
  * DESCRIPCIÓN: Encabezado público para turistas con logos oficiales de COTATUR
- *              y Táchira es Turismo (tachiraesturismo.com.ve), lista desplegable
- *              de temas (Predeterminado: Sistema) y punto de control activo.
+ *              y Táchira es Turismo (tachiraesturismo.com.ve), botón interactivo
+ *              de tema en la esquina superior derecha y punto de control activo.
  *              Excluye controles administrativos para blindar la vista del visitante.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
-import { renderThemeDropdownHtml, bindThemeDropdown } from "./ThemeManager.js";
+import { renderThemeButtonHtml, toggleTheme } from "./ThemeManager.js";
 
 export function renderHeader(containerId, activePointName = "Peaje Vega de Táriba - Troncal 1") {
     const container = document.getElementById(containerId);
@@ -20,7 +20,7 @@ export function renderHeader(containerId, activePointName = "Peaje Vega de Tári
         <header class="bg-[#1c1c1c] text-white border-b-4 border-amber-500 pt-safe shadow-md font-['Montserrat',sans-serif]">
             <div class="max-w-xl mx-auto px-4 py-3">
                 
-                <!-- Barra superior: Logos oficiales y Lista Desplegable de Temas -->
+                <!-- Barra superior: Logos oficiales e Icono de Tema en la esquina superior derecha -->
                 <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
                     <!-- Logos oficiales COTATUR + Táchira es Turismo -->
                     <div class="flex items-center space-x-3">
@@ -29,9 +29,9 @@ export function renderHeader(containerId, activePointName = "Peaje Vega de Tári
                         <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo Logo" class="h-8 w-auto object-contain drop-shadow" />
                     </div>
 
-                    <!-- Lista desplegable de temas (Predeterminado: Sistema) -->
-                    <div class="flex items-center space-x-2">
-                        ${renderThemeDropdownHtml()}
+                    <!-- Botón con icono de tema en la esquina superior derecha -->
+                    <div>
+                        ${renderThemeButtonHtml()}
                     </div>
                 </div>
 
@@ -58,6 +58,11 @@ export function renderHeader(containerId, activePointName = "Peaje Vega de Tári
         </header>
     `;
 
-    // Enlazar evento al dropdown
-    bindThemeDropdown("select-theme-dropdown");
+    // Vincular clic al botón de tema
+    const btnTheme = document.getElementById("btn-toggle-theme");
+    if (btnTheme) {
+        btnTheme.addEventListener("click", () => {
+            toggleTheme();
+        });
+    }
 }

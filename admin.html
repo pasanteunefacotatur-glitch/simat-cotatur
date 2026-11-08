@@ -45,7 +45,7 @@
 
                 <div>
                     <label for="input-admin-clave" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        Contraseña (o PIN maestro):
+                        Contraseña:
                     </label>
                     <input type="password" id="input-admin-clave" placeholder="Ingresa tu contraseña" required
                         class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-amber-500" />
@@ -68,7 +68,7 @@
     </div>
 
     <!-- =========================================================================
-         2. MODAL DE PRIMER INGRESO (ACTIVACIÓN Y CAMBIO DE CONTRASEÑA)
+         2. MODAL DE ACTIVACIÓN (PRIMER INGRESO)
          ========================================================================= -->
     <div id="modal-primer-ingreso" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border-2 border-amber-500/40 p-6 space-y-4">
@@ -76,7 +76,7 @@
                 <span class="text-2xl">🎉</span>
                 <h3 class="text-base font-black text-slate-900 dark:text-white">Activación de Cuenta de Funcionario</h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Es tu primer ingreso. Por seguridad, debes definir una contraseña personal y completar tus datos.
+                    Es tu primer ingreso. Por favor define tu contraseña personal y completa tus datos.
                 </p>
                 <div id="activar-cedula-badge" class="inline-block bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 font-mono text-xs px-3 py-1 rounded-full font-bold">
                     Cédula: ---
@@ -159,7 +159,7 @@
                     </div>
                 </div>
 
-                <!-- Dropdown de Tema (Sistema/Claro/LCD/AMOLED) + Salir -->
+                <!-- Botón con icono de tema en la esquina superior derecha + Salir -->
                 <div class="flex items-center space-x-2">
                     <div id="admin-theme-btn-mount"></div>
                     <button type="button" id="btn-admin-logout"
@@ -170,28 +170,28 @@
                 </div>
             </div>
 
-            <!-- Barra de Pestañas de Navegación -->
+            <!-- Flujo Ordenado de Pestañas de Navegación -->
             <div class="bg-black/30 border-t border-white/10">
                 <div class="max-w-6xl mx-auto px-4 flex space-x-1 overflow-x-auto text-xs">
-                    <button type="button" data-target="tab-qr"
+                    <button type="button" data-target="tab-puntos"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-amber-500 text-amber-500 font-bold flex items-center space-x-1.5 whitespace-nowrap">
+                        <span>📍</span>
+                        <span>Puntos de Encuesta y Equipos</span>
+                    </button>
+                    <button type="button" data-target="tab-qr"
+                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📱</span>
                         <span>Generador QR y Afiches</span>
-                    </button>
-                    <button type="button" data-target="tab-puntos"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
-                        <span>📍</span>
-                        <span>Puntos y Mapa Interactivo</span>
                     </button>
                     <button type="button" data-target="tab-personal"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>👥</span>
-                        <span>Personal y Ajustes de Campo</span>
+                        <span>Personal y Nómina</span>
                     </button>
-                    <button type="button" data-target="tab-sync"
+                    <button type="button" data-target="tab-perfil"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
-                        <span>🔄</span>
-                        <span>Google Sheets y Respaldo</span>
+                        <span>👤</span>
+                        <span>Mi Perfil</span>
                     </button>
                 </div>
             </div>
@@ -200,53 +200,24 @@
         <!-- Contenedor Principal de Pestañas -->
         <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
             
-            <!-- PESTAÑA 1: GENERADOR QR Y AFICHES (Hoja Carta vs Solo QR Publicidad) -->
-            <section id="tab-qr" class="admin-tab-content">
-                <div id="tab-qr-mount"></div>
-            </section>
-
-            <!-- PESTAÑA 2: PUNTOS DE CONTROL Y MAPA INTERACTIVO -->
-            <section id="tab-puntos" class="admin-tab-content hidden">
+            <!-- PESTAÑA 1: PUNTOS DE CONTROL, MAPA Y EQUIPOS ASIGNADOS -->
+            <section id="tab-puntos" class="admin-tab-content">
                 <div id="tab-puntos-mount"></div>
             </section>
 
-            <!-- PESTAÑA 3: PERSONAL ENCUESTADOR Y AJUSTE GLOBAL DE PUNTO -->
+            <!-- PESTAÑA 2: GENERADOR QR Y AFICHES (Hoja Carta vs Solo QR Publicidad) -->
+            <section id="tab-qr" class="admin-tab-content hidden">
+                <div id="tab-qr-mount"></div>
+            </section>
+
+            <!-- PESTAÑA 3: PERSONAL ENCUESTADOR Y AJUSTES DE CAMPO -->
             <section id="tab-personal" class="admin-tab-content hidden space-y-6">
                 <div id="tab-personal-mount"></div>
             </section>
 
-            <!-- PESTAÑA 4: GOOGLE SHEETS & DRIVE SYNC -->
-            <section id="tab-sync" class="admin-tab-content hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">🟢</span>
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                                Sincronizador Soberano Google Sheets & Supabase
-                            </h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">
-                                Replicación automática cada 12 horas con latido Keep-Alive y costo $0.00.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                        <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1">
-                            <span class="text-slate-500 dark:text-slate-400 font-semibold block">Endpoint Google Apps Script:</span>
-                            <span class="font-mono text-emerald-600 dark:text-emerald-400 break-all text-[11px] block">
-                                https://script.google.com/macros/s/AKfycbxGg-i12rn7-RSt6EInuc6H7UVhyCJ16lEaqIXPvQC-jXlsBEpDMWHUlZX_EvBLjBOdYQ/exec
-                            </span>
-                        </div>
-
-                        <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-1">
-                            <span class="text-slate-500 dark:text-slate-400 font-semibold block">Libro Maestro Google Sheets:</span>
-                            <a href="https://docs.google.com/spreadsheets/d/1px8KeUIK99SRjHflNupU5CgL9meyKkW3l_hrIjilLp8/edit" target="_blank"
-                                class="font-bold text-amber-500 hover:underline flex items-center space-x-1 mt-1">
-                                <span>Abrir Hoja de Cálculo (_BD_CRUDA) ↗</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <!-- PESTAÑA 4: MI PERFIL (Datos y Cambio de Clave) -->
+            <section id="tab-perfil" class="admin-tab-content hidden space-y-6">
+                <div id="tab-perfil-mount"></div>
             </section>
 
         </main>

@@ -2,126 +2,112 @@
  * ==============================================================================
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-turista/js/components/ThemeManager.js
- * DESCRIPCIÓN: Gestor de temas con lista desplegable y detección automática
- *              del dispositivo como opción predeterminada:
- *              1. Automático (Sistema) 🖥️ -> Sigue el ajuste del teléfono/PC.
- *              2. Claro ☀️ -> Para uso bajo luz solar en peajes.
- *              3. Oscuro LCD 🌙 -> Paleta nocturna antirreflejo.
- *              4. Oscuro AMOLED ⬛ -> Negro absoluto (#000000) para ahorro de batería.
+ * DESCRIPCIÓN: Gestor de temas mediante botón interactivo con icono en la esquina
+ *              superior derecha. Inicia en base al ajuste del dispositivo (Auto)
+ *              y permite alternar con un toque entre Claro, Oscuro LCD y AMOLED.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
-const STORAGE_KEY = "simat_cotatur_theme_mode";
+const STORAGE_KEY = "simat_cotatur_theme";
+const THEMES = ["light", "dark", "amoled"];
 
-// Temas disponibles
-export const THEME_OPTIONS = [
-    { id: "auto", label: "🖥️ Sistema (Auto)", barColor: "#1c1c1c" },
-    { id: "light", label: "☀️ Modo Claro", barColor: "#f1f5f9" },
-    { id: "dark", label: "🌙 Oscuro (LCD)", barColor: "#0f172a" },
-    { id: "amoled", label: "⬛ Oscuro (AMOLED)", barColor: "#000000" }
-];
+const THEME_INFO = {
+    light: { icon: "☀️", label: "Claro", barColor: "#f1f5f9" },
+    dark: { icon: "🌙", label: "Oscuro", barColor: "#0f172a" },
+    amoled: { icon: "⬛", label: "AMOLED", barColor: "#000000" }
+};
 
 /**
- * Retorna la preferencia guardada o 'auto' por defecto.
+ * Obtiene el tema actual. Si no hay guardado, usa la configuración del dispositivo.
  */
-export function getSavedThemePreference() {
+export function getCurrentTheme() {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return ["auto", "light", "dark", "amoled"].includes(saved) ? saved : "auto";
-}
-
-/**
- * Resuelve el tema efectivo ('light', 'dark', 'amoled') según la preferencia.
- */
-export function resolveEffectiveTheme(preference) {
-    if (preference === "auto") {
-        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            return "dark";
-        }
-        return "light";
+    if (saved && THEMES.includes(saved)) {
+        return saved;
     }
-    return preference;
+    // Detección automática por defecto de la configuración del teléfono / PC
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+    }
+    return "light";
 }
 
 /**
- * Aplica el tema en el DOM y actualiza el color de la barra del navegador móvil.
+ * Aplica el tema en el DOM y actualiza la barra del navegador.
  */
-export function applyTheme(preference) {
-    const effective = resolveEffectiveTheme(preference);
+export function applyTheme(theme) {
+    if (!THEMES.includes(theme)) theme = "light";
 
-    document.documentElement.setAttribute("data-theme", effective);
+    document.documentElement.setAttribute("data-theme", theme);
     if (document.body) {
-        document.body.setAttribute("data-theme", effective);
+        document.body.setAttribute("data-theme", theme);
     }
-    localStorage.setItem(STORAGE_KEY, preference);
+    localStorage.setItem(STORAGE_KEY, theme);
 
-    // Ajustar color de la barra del navegador (Android / Safari)
-    const activeMeta = THEME_OPTIONS.find(t => t.id === preference) || THEME_OPTIONS[0];
+    // Color de barra móvil
+    const info = THEME_INFO[theme] || THEME_INFO.light;
     let metaTheme = document.querySelector('meta[name="theme-color"]');
     if (!metaTheme) {
         metaTheme = document.createElement("meta");
         metaTheme.name = "theme-color";
         document.head.appendChild(metaTheme);
     }
-    metaTheme.content = activeMeta.barColor;
+    metaTheme.content = info.barColor;
 
-    // Sincronizar el valor en cualquier select de tema presente en pantalla
-    const selects = document.querySelectorAll(".simat-theme-dropdown");
-    selects.forEach(sel => {
-        if (sel.value !== preference) {
-            sel.value = preference;
-        }
-    });
+    actualizarIconoBoton(theme);
 }
 
 /**
- * Inicializa el tema al cargar la página.
+ * Alterna secuencialmente entre Claro -> Oscuro LCD -> AMOLED -> Claro.
+ */
+export function toggleTheme() {
+    const current = getCurrentTheme();
+    const nextIdx = (THEMES.indexOf(current) + 1) % THEMES.length;
+    const nextTheme = THEMES[nextIdx];
+    applyTheme(nextTheme);
+    return nextTheme;
+}
+
+/**
+ * Inicializa el tema al cargar.
  */
 export function initTheme() {
-    const pref = getSavedThemePreference();
-    applyTheme(pref);
+    const current = getCurrentTheme();
+    applyTheme(current);
 
-    // Escuchar cambios del sistema en tiempo real si está en modo automático
     if (window.matchMedia) {
-        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-            if (getSavedThemePreference() === "auto") {
-                applyTheme("auto");
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+            if (!localStorage.getItem(STORAGE_KEY)) {
+                applyTheme(e.matches ? "dark" : "light");
             }
         });
     }
 }
 
 /**
- * Genera el HTML de la lista desplegable de temas institucionales.
+ * Genera el HTML del botón con icono en la esquina superior derecha.
  */
-export function renderThemeDropdownHtml() {
-    const currentPref = getSavedThemePreference();
-
-    const optionsHtml = THEME_OPTIONS.map(opt => `
-        <option value="${opt.id}" ${opt.id === currentPref ? 'selected' : ''}>
-            ${opt.label}
-        </option>
-    `).join("");
+export function renderThemeButtonHtml() {
+    const current = getCurrentTheme();
+    const info = THEME_INFO[current] || THEME_INFO.light;
 
     return `
-        <div class="inline-flex items-center text-xs no-print">
-            <select id="select-theme-dropdown"
-                class="simat-theme-dropdown bg-white/10 hover:bg-white/20 text-slate-200 border border-white/20 rounded-lg px-2 py-1 text-[11px] font-medium outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer transition-colors"
-                title="Seleccionar tema visual">
-                ${optionsHtml}
-            </select>
-        </div>
+        <button type="button" id="btn-toggle-theme"
+            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-slate-200 border border-white/20 transition-all flex items-center space-x-1 shadow-sm active:scale-95 no-print"
+            title="Cambiar tema: Claro (☀️), Oscuro LCD (🌙), AMOLED Puro (⬛)">
+            <span id="theme-icon">${info.icon}</span>
+            <span id="theme-label" class="hidden sm:inline">${info.label}</span>
+        </button>
     `;
 }
 
-/**
- * Vincula el evento de cambio a cualquier dropdown de tema existente.
- */
-export function bindThemeDropdown(selectElementId = "select-theme-dropdown") {
-    const el = document.getElementById(selectElementId);
-    if (el) {
-        el.addEventListener("change", (e) => {
-            applyTheme(e.target.value);
-        });
+function actualizarIconoBoton(theme) {
+    const iconEl = document.getElementById("theme-icon");
+    const labelEl = document.getElementById("theme-label");
+    const info = THEME_INFO[theme];
+    if (iconEl && info) {
+        iconEl.textContent = info.icon;
+        if (labelEl) labelEl.textContent = info.label;
     }
 }

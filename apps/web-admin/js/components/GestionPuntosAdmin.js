@@ -2,9 +2,11 @@
  * ==============================================================================
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-admin/js/components/GestionPuntosAdmin.js
- * DESCRIPCIÓN: Módulo interactivo de administración de Puntos de Control Turístico.
- *              Permite crear nuevos puntos fijando su ubicación en el mapa
- *              de forma visual e interactiva sin tener que escribir coordenadas manuales.
+ * DESCRIPCIÓN: Módulo interactivo de Puntos de Control y Equipos de Campo:
+ *              1. Creación visual de puntos mediante mapa (sin teclear coordenadas).
+ *              2. Clic en punto para abrir Ficha Detallada con Información y Funcionarios.
+ *              3. Asignación directa de encuestadores participantes al punto.
+ *              4. Generación inmediata de Cartel e impresión desde la ficha.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
@@ -23,10 +25,10 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 <div>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                         <span>📍</span>
-                        <span>Puntos de Control Turístico Registrados</span>
+                        <span>Puntos de Control Turístico y Equipos Asignados</span>
                     </h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                        Peajes, terminales y sitios de afluencia donde se aplican encuestas SIMAT.
+                        Haz clic en cualquier punto para ver sus funcionarios participantes, detalles y material QR.
                     </p>
                 </div>
                 <button type="button" id="btn-toggle-nuevo-punto"
@@ -44,7 +46,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                             📍 Registro Interactivo de Nuevo Punto de Control
                         </h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400">
-                            Arrastra el pin en el mapa o haz clic en los accesos rápidos para fijar la ubicación sin teclear números.
+                            Arrastra el pin en el mapa para fijar la ubicación sin teclear números.
                         </p>
                     </div>
                     <button type="button" id="btn-cancelar-crear-punto" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold">
@@ -84,10 +86,10 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     </div>
                 </div>
 
-                <!-- Accesos Rápidos de Ubicación en el Táchira -->
+                <!-- Atajos rápidos -->
                 <div class="space-y-1.5">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Atajos rápidos (Haz clic para mover el mapa al lugar):
+                        Atajos rápidos (Mueve el pin al lugar con un clic):
                     </span>
                     <div class="flex flex-wrap gap-1.5" id="presets-mapa-container">
                         ${PRESETS_TACHIRA.map((p, idx) => `
@@ -103,14 +105,13 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 <div class="space-y-2">
                     <div class="flex items-center justify-between text-xs">
                         <span class="font-bold text-slate-700 dark:text-slate-300">
-                            Fijar ubicación exacta (Mueve el pin o haz clic en el mapa):
+                            Fijar ubicación (Arrastra el pin al punto exacto):
                         </span>
                         <div id="map-coords-status" class="flex items-center text-[11px] text-emerald-600 dark:text-emerald-400">
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
                             <span>Ubicación lista en el mapa</span>
                         </div>
                     </div>
-                    
                     <div id="leaflet-picker-map" class="w-full h-72 rounded-xl border-2 border-slate-300 dark:border-slate-700 overflow-hidden shadow-inner z-0"></div>
                 </div>
 
@@ -124,11 +125,11 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 </div>
             </div>
 
-            <!-- Tabla de Puntos Existentes -->
+            <!-- Tabla de Puntos con Acción de Ver Detalle y Funcionarios -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Listado de Puntos Operativos
+                        Puntos Operativos (Haz clic para ver funcionarios asociados)
                     </span>
                     <button type="button" id="btn-recargar-puntos" class="text-xs text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
                         <span>🔄</span>
@@ -141,19 +142,94 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                         <thead class="bg-slate-50 dark:bg-slate-800 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                             <tr>
                                 <th class="p-3">Código</th>
-                                <th class="p-3">Nombre Oficial</th>
+                                <th class="p-3">Nombre Oficial (Clic para detalle)</th>
                                 <th class="p-3">Tipo</th>
                                 <th class="p-3">Municipio</th>
                                 <th class="p-3 text-center">Estado</th>
-                                <th class="p-3 text-right">Acción</th>
+                                <th class="p-3 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-puntos-body" class="divide-y divide-slate-200 dark:divide-slate-800 font-medium">
                             <tr>
-                                <td colspan="6" class="p-6 text-center text-slate-400">Cargando puntos de control...</td>
+                                <td colspan="6" class="p-6 text-center text-slate-400">Cargando puntos...</td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- MODAL: FICHA DETALLADA DE PUNTO Y FUNCIONARIOS PARTICIPANTES -->
+            <div id="modal-detalle-punto" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+                <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+                    
+                    <!-- Cabecera de Ficha -->
+                    <div class="bg-[#1c1c1c] text-white p-4 border-b-2 border-amber-500 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-lg">📍</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold" id="detalle-punto-titulo">Ficha del Punto</h3>
+                                <p class="text-[10px] text-amber-400 font-mono" id="detalle-punto-codigo">CODIGO</p>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-cerrar-detalle-punto" class="text-slate-400 hover:text-white font-bold text-lg px-2">✕</button>
+                    </div>
+
+                    <!-- Cuerpo de Ficha -->
+                    <div class="p-5 overflow-y-auto space-y-5 text-xs">
+                        
+                        <!-- Metadatos Básicos -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Municipio:</span>
+                                <span class="font-bold text-slate-900 dark:text-white" id="detalle-punto-municipio">---</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Tipo:</span>
+                                <span class="font-bold text-slate-900 dark:text-white" id="detalle-punto-tipo">---</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Coordenadas:</span>
+                                <span class="font-bold text-slate-900 dark:text-white font-mono text-[11px]" id="detalle-punto-coords">---</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Estado:</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400" id="detalle-punto-estado">Activo</span>
+                            </div>
+                        </div>
+
+                        <!-- Sección de Funcionarios Participantes Asignados -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <h4 class="font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>👥</span>
+                                    <span>Funcionarios Participantes en este Punto</span>
+                                </h4>
+                                <span class="text-[11px] font-bold text-amber-500" id="detalle-participantes-count">0 funcionarios</span>
+                            </div>
+
+                            <!-- Asignar nuevo funcionario a este punto con un clic -->
+                            <div class="bg-amber-500/10 dark:bg-amber-950/30 p-3 rounded-xl border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div class="text-[11px] text-slate-700 dark:text-slate-300 font-semibold">
+                                    ➕ Asignar funcionario existente a este punto:
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <select id="select-asignar-funcionario" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-white outline-none">
+                                        <option value="">Seleccione un funcionario...</option>
+                                    </select>
+                                    <button type="button" id="btn-confirmar-asignacion" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs transition-colors">
+                                        Asignar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Listado de Funcionarios de este Punto -->
+                            <div id="lista-participantes-container" class="space-y-2">
+                                <div class="text-center p-4 text-slate-400">Sin participantes asignados.</div>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
 
@@ -162,6 +238,8 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
 
     let mapController = null;
     let selectedCoords = { lat: 7.8228, lng: -72.2272 };
+    let activePuntoIdModal = null;
+    let todosLosFuncionarios = [];
 
     const seccionCrear = document.getElementById("seccion-crear-punto-mapa");
     const btnToggle = document.getElementById("btn-toggle-nuevo-punto");
@@ -170,7 +248,14 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     const btnRecargar = document.getElementById("btn-recargar-puntos");
     const tablaBody = document.getElementById("tabla-puntos-body");
 
-    // Desplegar/Ocultar creación interactiva
+    const modalDetalle = document.getElementById("modal-detalle-punto");
+    const btnCerrarDetalle = document.getElementById("btn-cerrar-detalle-punto");
+    const selectAsignar = document.getElementById("select-asignar-funcionario");
+    const btnAsignar = document.getElementById("btn-confirmar-asignacion");
+
+    btnCerrarDetalle.addEventListener("click", () => modalDetalle.classList.add("hidden"));
+
+    // Desplegar creación interactiva
     btnToggle.addEventListener("click", () => {
         const isHidden = seccionCrear.classList.contains("hidden");
         if (isHidden) {
@@ -192,7 +277,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
         document.getElementById("label-toggle-nuevo-punto").textContent = "Nuevo Punto con Mapa";
     });
 
-    // Enlazar Presets
+    // Presets
     document.querySelectorAll(".preset-map-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             const idx = parseInt(e.currentTarget.getAttribute("data-idx"), 10);
@@ -206,6 +291,131 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 if (!inputMuni.value) inputMuni.value = p.municipio;
             }
         });
+    });
+
+    // Cargar funcionarios para el selector de asignación
+    async function precargarFuncionarios() {
+        try {
+            const cred = getAdminPinCallback();
+            const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ p_credencial: cred, p_accion: "LISTAR", p_datos: {} })
+            });
+            if (res.ok) {
+                todosLosFuncionarios = await res.json();
+            }
+        } catch (_) {}
+    }
+
+    // Abrir Ficha Detallada del Punto con Funcionarios
+    async function abrirDetallePunto(puntoId) {
+        activePuntoIdModal = puntoId;
+        modalDetalle.classList.remove("hidden");
+        await precargarFuncionarios();
+
+        // Rellenar selector de asignación
+        selectAsignar.innerHTML = `<option value="">Seleccione un funcionario...</option>` +
+            todosLosFuncionarios.map(f => `
+                <option value="${f.id}">${f.nombre_completo} (${f.cedula}) - Actual: ${f.punto_nombre || 'Sin asignar'}</option>
+            `).join("");
+
+        try {
+            const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_obtener_punto_detalle`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ p_punto_id: puntoId })
+            });
+
+            if (!res.ok) throw new Error("Error al obtener detalle.");
+            const data = await res.json();
+            const p = data.punto;
+            const participantes = data.participantes || [];
+
+            document.getElementById("detalle-punto-titulo").textContent = p.nombre;
+            document.getElementById("detalle-punto-codigo").textContent = `CÓDIGO OFICIAL: ${p.codigo}`;
+            document.getElementById("detalle-punto-municipio").textContent = p.municipio;
+            document.getElementById("detalle-punto-tipo").textContent = p.tipo;
+            document.getElementById("detalle-punto-coords").textContent = `${p.latitud_referencia || '7.8228'}, ${p.longitud_referencia || '-72.2272'}`;
+            document.getElementById("detalle-punto-estado").textContent = p.activo ? '🟢 Activo' : '🔴 Inactivo';
+
+            document.getElementById("detalle-participantes-count").textContent = `${participantes.length} funcionario(s)`;
+
+            const listaContainer = document.getElementById("lista-participantes-container");
+            if (participantes.length === 0) {
+                listaContainer.innerHTML = `<div class="text-center p-4 text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-xl">No hay encuestadores asignados a este punto actualmente.</div>`;
+            } else {
+                listaContainer.innerHTML = participantes.map(f => `
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold text-slate-900 dark:text-white">${f.nombre_completo}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">C.I: ${f.cedula} • Tel: ${f.telefono || 'Sin teléfono'}</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${f.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
+                                ${f.activo ? '🟢 Activo' : '🔴 Inactivo'}
+                            </span>
+                            <button type="button" data-funcid="${f.id}" class="btn-desasignar-func text-[11px] font-bold text-red-600 hover:underline">
+                                Quitar
+                            </button>
+                        </div>
+                    </div>
+                `).join("");
+
+                document.querySelectorAll(".btn-desasignar-func").forEach(btn => {
+                    btn.addEventListener("click", async (e) => {
+                        const fid = e.currentTarget.getAttribute("data-funcid");
+                        const cred = getAdminPinCallback();
+                        await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_asignar_funcionario_punto`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
+                                "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
+                            },
+                            body: JSON.stringify({ p_credencial: cred, p_funcionario_id: fid, p_punto_id: null })
+                        });
+                        abrirDetallePunto(puntoId);
+                    });
+                });
+            }
+
+        } catch (err) {
+            alert("Error al cargar ficha: " + err.message);
+        }
+    }
+
+    // Confirmar asignación de funcionario al punto
+    btnAsignar.addEventListener("click", async () => {
+        const funcId = selectAsignar.value;
+        if (!funcId || !activePuntoIdModal) {
+            alert("Seleccione un funcionario para asignarlo.");
+            return;
+        }
+
+        try {
+            const cred = getAdminPinCallback();
+            const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_asignar_funcionario_punto`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ p_credencial: cred, p_funcionario_id: funcId, p_punto_id: activePuntoIdModal })
+            });
+            if (res.ok) {
+                abrirDetallePunto(activePuntoIdModal);
+            }
+        } catch (_) {}
     });
 
     // Cargar Puntos desde Supabase
@@ -232,9 +442,14 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
             }
 
             tablaBody.innerHTML = puntos.map(p => `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer row-punto-click" data-id="${p.id}">
                     <td class="p-3 font-mono font-bold text-amber-600 dark:text-amber-400">${p.codigo}</td>
-                    <td class="p-3 font-semibold text-slate-900 dark:text-white">${p.nombre}</td>
+                    <td class="p-3">
+                        <div class="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 hover:text-amber-500 transition-colors">
+                            <span>📍 ${p.nombre}</span>
+                            <span class="text-[10px] text-amber-500 font-semibold">(Ver ficha ↗)</span>
+                        </div>
+                    </td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800">${p.tipo}</span></td>
                     <td class="p-3">${p.municipio}</td>
                     <td class="p-3 text-center">
@@ -242,7 +457,10 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                             ${p.activo ? '🟢 Activo' : '🔴 Inactivo'}
                         </span>
                     </td>
-                    <td class="p-3 text-right">
+                    <td class="p-3 text-right space-x-2">
+                        <button type="button" data-id="${p.id}" class="btn-abrir-ficha text-xs font-bold text-amber-600 hover:underline">
+                            Ver Ficha
+                        </button>
                         <button type="button" data-id="${p.id}" class="btn-toggle-punto text-xs font-bold ${p.activo ? 'text-red-600 hover:text-red-700' : 'text-emerald-600 hover:text-emerald-700'}">
                             ${p.activo ? 'Desactivar' : 'Reactivar'}
                         </button>
@@ -250,39 +468,46 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 </tr>
             `).join("");
 
-            // Notificar al generador de QR con los puntos actualizados
             if (typeof onPuntosUpdatedCallback === "function") {
                 onPuntosUpdatedCallback(puntos);
             }
 
-            // Enlazar botones de alternar
+            // Enlazar clics para abrir la ficha de funcionarios
+            document.querySelectorAll(".row-punto-click td:nth-child(2)").forEach(td => {
+                td.addEventListener("click", (e) => {
+                    const id = e.currentTarget.closest("tr").getAttribute("data-id");
+                    abrirDetallePunto(id);
+                });
+            });
+
+            document.querySelectorAll(".btn-abrir-ficha").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const id = e.currentTarget.getAttribute("data-id");
+                    abrirDetallePunto(id);
+                });
+            });
+
             document.querySelectorAll(".btn-toggle-punto").forEach(btn => {
                 btn.addEventListener("click", async (e) => {
+                    e.stopPropagation();
                     const id = e.currentTarget.getAttribute("data-id");
-                    await alternarEstadoPunto(id);
+                    await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_punto`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
+                            "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
+                        },
+                        body: JSON.stringify({ p_pin: pin, p_accion: "TOGGLE_ACTIVO", p_datos: { id } })
+                    });
+                    cargarPuntos();
                 });
             });
 
         } catch (err) {
             tablaBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error: ${err.message}</td></tr>`;
         }
-    }
-
-    // Alternar estado activo de punto
-    async function alternarEstadoPunto(id) {
-        try {
-            const pin = getAdminPinCallback();
-            const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_punto`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
-                },
-                body: JSON.stringify({ p_pin: pin, p_accion: "TOGGLE_ACTIVO", p_datos: { id } })
-            });
-            if (res.ok) cargarPuntos();
-        } catch (_) {}
     }
 
     // Guardar nuevo punto
@@ -311,21 +536,14 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 body: JSON.stringify({
                     p_pin: pin,
                     p_accion: "CREAR",
-                    p_datos: {
-                        nombre,
-                        tipo,
-                        municipio,
-                        latitud: selectedCoords.lat,
-                        longitud: selectedCoords.lng,
-                        activo: true
-                    }
+                    p_datos: { nombre, tipo, municipio, latitud: selectedCoords.lat, longitud: selectedCoords.lng, activo: true }
                 })
             });
 
             const resp = await res.json();
             if (!res.ok) throw new Error(resp.message || "Error al registrar punto");
 
-            alert("¡Punto de control registrado exitosamente con coordenadas fijadas en el mapa!");
+            alert("¡Punto de control registrado con éxito!");
             document.getElementById("nuevo-punto-nombre").value = "";
             document.getElementById("nuevo-punto-municipio").value = "";
             seccionCrear.classList.add("hidden");
