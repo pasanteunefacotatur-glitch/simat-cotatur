@@ -3,15 +3,21 @@
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-admin/js/components/GestionPuntosAdmin.js
  * DESCRIPCIÓN: Módulo interactivo de Puntos de Control y Equipos de Campo:
- *              1. Creación visual de puntos mediante mapa (sin teclear coordenadas).
- *              2. Tabla operativa con clic para abrir Ficha Detallada (ModalDetallePunto).
- *              3. Sanitización HTML contra inyección XSS.
+ *              1. Creación visual de puntos mediante mapa (sin puntos rápidos).
+ *              2. Autodetección de municipio y validación del Estado Táchira.
+ *              3. Asignación de personal en 2 columnas (Asignados vs Sin Asignar)
+ *                 directamente al crear el punto y en su ficha detallada.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
-import { initMapPicker, PRESETS_TACHIRA } from "./MapPicker.js";
+import { initMapPicker } from "./MapPicker.js";
 import { getModalDetallePuntoHtml, initModalDetallePuntoController } from "./ModalDetallePunto.js";
+import {
+    renderSelectorPersonalDobleColumna,
+    obtenerMapaAsignacionesMultiples,
+    guardarAsignacionesPuntoEnServidor
+} from "./SelectorPersonalDobleColumna.js";
 
 function escapeHtml(str) {
     if (!str) return "";
@@ -38,7 +44,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                         <span>Puntos de Control Turístico y Equipos Asignados</span>
                     </h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                        Haz clic en cualquier punto para ver sus funcionarios participantes, detalles y coordenadas.
+                        Haz clic en cualquier punto para ver o gestionar sus funcionarios en 2 columnas (Asignados / Sin Asignar).
                     </p>
                 </div>
                 <button type="button" id="btn-toggle-nuevo-punto"
@@ -48,15 +54,15 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 </button>
             </div>
 
-            <!-- Panel de Creación con Mapa Interactivo (Oculto por defecto) -->
-            <div id="seccion-crear-punto-mapa" class="hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-amber-500/40 shadow-lg space-y-4">
+            <!-- Panel de Creación con Mapa Interactivo y Asignación de Personal (Oculto por defecto) -->
+            <div id="seccion-crear-punto-mapa" class="hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-amber-500/40 shadow-lg space-y-5">
                 <div class="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
                     <div>
                         <h4 class="text-sm font-extrabold text-slate-900 dark:text-white">
-                            📍 Registro Interactivo de Nuevo Punto de Control
+                            📍 Registro de Nuevo Punto de Control y Equipo de Campo
                         </h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400">
-                            Arrastra el pin en el mapa para fijar la ubicación sin teclear números.
+                            Ubica el pin en el mapa dentro del Estado Táchira para detectar automáticamente el municipio y asigna el personal participante.
                         </p>
                     </div>
                     <button type="button" id="btn-cancelar-crear-punto" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold">
@@ -70,7 +76,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Nombre del Punto Oficial <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" id="nuevo-punto-nombre" placeholder="Ej: Peaje La Restauradora"
+                        <input type="text" id="nuevo-punto-nombre" placeholder="Ej: Peaje Vega de Táriba"
                             class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-amber-500" />
                     </div>
 
@@ -89,40 +95,38 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            Municipio del Táchira <span class="text-red-500">*</span>
+                            Municipio del Táchira (Autodetectado por Mapa) <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" id="nuevo-punto-municipio" placeholder="Ej: Cárdenas, San Cristóbal..."
-                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-amber-500" />
+                        <input type="text" id="nuevo-punto-municipio" readonly placeholder="Mueve el pin en el mapa..."
+                            class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-900 dark:text-white outline-none" />
                     </div>
                 </div>
 
-                <!-- Atajos rápidos -->
-                <div class="space-y-1.5">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Atajos rápidos (Mueve el pin al lugar con un clic):
-                    </span>
-                    <div class="flex flex-wrap gap-1.5" id="presets-mapa-container">
-                        ${PRESETS_TACHIRA.map((p, idx) => `
-                            <button type="button" data-idx="${idx}"
-                                class="preset-map-btn px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-slate-800 dark:text-slate-200 text-[11px] font-medium rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
-                                📍 ${escapeHtml(p.nombre)}
-                            </button>
-                        `).join("")}
-                    </div>
-                </div>
-
-                <!-- Contenedor del Mapa Interactivo -->
+                <!-- Contenedor del Mapa Interactivo (Sin Puntos Rápidos) -->
                 <div class="space-y-2">
-                    <div class="flex items-center justify-between text-xs">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
                         <span class="font-bold text-slate-700 dark:text-slate-300">
-                            Fijar ubicación (Arrastra el pin al punto exacto):
+                            1. Fijar ubicación exacta en el mapa del Estado Táchira:
                         </span>
                         <div id="map-coords-status" class="flex items-center text-[11px] text-emerald-600 dark:text-emerald-400">
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
-                            <span>Ubicación lista en el mapa</span>
+                            <span>Verificando territorio tachirense...</span>
                         </div>
                     </div>
                     <div id="leaflet-picker-map" class="w-full h-72 rounded-xl border-2 border-slate-300 dark:border-slate-700 overflow-hidden shadow-inner z-0"></div>
+                </div>
+
+                <!-- Selector de Personal en 2 Columnas al Crear Punto -->
+                <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div>
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                            2. Asignación de Personal al Punto (Izquierda: Asignados / Derecha: Sin Asignar):
+                        </span>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                            Los funcionarios pueden tener varios puntos de encuesta activos simultáneamente.
+                        </p>
+                    </div>
+                    <div id="crear-punto-selector-personal-mount"></div>
                 </div>
 
                 <!-- Botón de Guardado -->
@@ -130,7 +134,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     <button type="button" id="btn-guardar-punto-mapa"
                         class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition-all text-xs flex items-center space-x-1.5 active:scale-95">
                         <span>💾</span>
-                        <span>Guardar Punto en Base de Datos</span>
+                        <span>Guardar Punto y Asignar Personal</span>
                     </button>
                 </div>
             </div>
@@ -139,7 +143,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Puntos Operativos (Haz clic para ver funcionarios asociados)
+                        Puntos Operativos (Haz clic para gestionar equipo en 2 columnas)
                     </span>
                     <button type="button" id="btn-recargar-puntos" class="text-xs text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
                         <span>🔄</span>
@@ -174,7 +178,9 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     `;
 
     let mapController = null;
-    let selectedCoords = { lat: 7.8228, lng: -72.2272 };
+    let currentMapState = { lat: 7.7669, lng: -72.2250, municipio: "San Cristóbal", esValidoTachira: true, motivoInvalido: "" };
+    let selectorCrearController = null;
+    let cachedPuntosList = [];
 
     const seccionCrear = document.getElementById("seccion-crear-punto-mapa");
     const btnToggle = document.getElementById("btn-toggle-nuevo-punto");
@@ -183,7 +189,39 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     const btnRecargar = document.getElementById("btn-recargar-puntos");
     const tablaBody = document.getElementById("tabla-puntos-body");
 
-    const { abrirDetallePunto } = initModalDetallePuntoController(supabaseConfig, getAdminPinCallback);
+    const { abrirDetallePunto } = initModalDetallePuntoController(
+        supabaseConfig,
+        getAdminPinCallback,
+        () => cachedPuntosList,
+        () => cargarPuntos()
+    );
+
+    async function inicializarSelectorPersonalCreacion() {
+        try {
+            const cred = getAdminPinCallback();
+            const [resFunc, mapaMulti] = await Promise.all([
+                fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
+                        "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
+                    },
+                    body: JSON.stringify({ p_credencial: cred, p_accion: "LISTAR", p_datos: {} })
+                }),
+                obtenerMapaAsignacionesMultiples(supabaseConfig)
+            ]);
+
+            const todosLosFuncionarios = resFunc.ok ? await resFunc.json() : [];
+            selectorCrearController = renderSelectorPersonalDobleColumna({
+                containerId: "crear-punto-selector-personal-mount",
+                todosLosFuncionarios: Array.isArray(todosLosFuncionarios) ? todosLosFuncionarios : [],
+                asignadosInicialesIds: [],
+                mapaMulti,
+                todosLosPuntos: cachedPuntosList
+            });
+        } catch (_) {}
+    }
 
     // Desplegar creación interactiva
     btnToggle.addEventListener("click", () => {
@@ -192,10 +230,11 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
             seccionCrear.classList.remove("hidden");
             document.getElementById("label-toggle-nuevo-punto").textContent = "Ocultar Formulario";
             if (!mapController) {
-                mapController = initMapPicker("leaflet-picker-map", (coords) => {
-                    selectedCoords = coords;
+                mapController = initMapPicker("leaflet-picker-map", (state) => {
+                    currentMapState = state;
                 });
             }
+            inicializarSelectorPersonalCreacion();
         } else {
             seccionCrear.classList.add("hidden");
             document.getElementById("label-toggle-nuevo-punto").textContent = "Nuevo Punto con Mapa";
@@ -205,22 +244,6 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     btnCancelar.addEventListener("click", () => {
         seccionCrear.classList.add("hidden");
         document.getElementById("label-toggle-nuevo-punto").textContent = "Nuevo Punto con Mapa";
-    });
-
-    // Presets
-    document.querySelectorAll(".preset-map-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            const idx = parseInt(e.currentTarget.getAttribute("data-idx"), 10);
-            const p = PRESETS_TACHIRA[idx];
-            if (p && mapController) {
-                mapController.setPreset(p.lat, p.lng);
-                selectedCoords = { lat: p.lat, lng: p.lng };
-                const inputNombre = document.getElementById("nuevo-punto-nombre");
-                const inputMuni = document.getElementById("nuevo-punto-municipio");
-                if (!inputNombre.value) inputNombre.value = p.nombre;
-                if (!inputMuni.value) inputMuni.value = p.municipio;
-            }
-        });
     });
 
     // Cargar Puntos desde Supabase
@@ -239,19 +262,20 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
 
             if (!res.ok) throw new Error("Error al consultar puntos.");
             const puntos = await res.json();
+            cachedPuntosList = Array.isArray(puntos) ? puntos : [];
 
-            if (!Array.isArray(puntos) || puntos.length === 0) {
+            if (cachedPuntosList.length === 0) {
                 tablaBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay puntos registrados.</td></tr>`;
                 return;
             }
 
-            tablaBody.innerHTML = puntos.map(p => `
+            tablaBody.innerHTML = cachedPuntosList.map(p => `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer row-punto-click" data-id="${escapeHtml(p.id)}">
                     <td class="p-3 font-mono font-bold text-amber-600 dark:text-amber-400">${escapeHtml(p.codigo)}</td>
                     <td class="p-3">
                         <div class="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 hover:text-amber-500 transition-colors">
                             <span>📍 ${escapeHtml(p.nombre)}</span>
-                            <span class="text-[10px] text-amber-500 font-semibold">(Ver ficha ↗)</span>
+                            <span class="text-[10px] text-amber-500 font-semibold">(Gestionar equipo ↗)</span>
                         </div>
                     </td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800">${escapeHtml(p.tipo)}</span></td>
@@ -263,7 +287,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     </td>
                     <td class="p-3 text-right space-x-2">
                         <button type="button" data-id="${escapeHtml(p.id)}" class="btn-abrir-ficha text-xs font-bold text-amber-600 hover:underline">
-                            Ver Ficha
+                            Equipo / Ficha
                         </button>
                         <button type="button" data-id="${escapeHtml(p.id)}" class="btn-toggle-punto text-xs font-bold ${p.activo ? 'text-red-600 hover:text-red-700' : 'text-emerald-600 hover:text-emerald-700'}">
                             ${p.activo ? 'Desactivar' : 'Reactivar'}
@@ -273,10 +297,9 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
             `).join("");
 
             if (typeof onPuntosUpdatedCallback === "function") {
-                onPuntosUpdatedCallback(puntos);
+                onPuntosUpdatedCallback(cachedPuntosList);
             }
 
-            // Enlazar clics para abrir la ficha de funcionarios
             document.querySelectorAll(".row-punto-click td:nth-child(2)").forEach(td => {
                 td.addEventListener("click", (e) => {
                     const id = e.currentTarget.closest("tr").getAttribute("data-id");
@@ -314,19 +337,24 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
         }
     }
 
-    // Guardar nuevo punto
+    // Guardar nuevo punto validando que esté dentro del Estado Táchira y asignando personal
     btnGuardar.addEventListener("click", async () => {
         const nombre = document.getElementById("nuevo-punto-nombre").value.trim();
         const tipo = document.getElementById("nuevo-punto-tipo").value;
         const municipio = document.getElementById("nuevo-punto-municipio").value.trim();
 
+        if (!currentMapState.esValidoTachira) {
+            alert(`⚠️ Ubicación no permitida:\n${currentMapState.motivoInvalido || "El pin debe estar ubicado dentro de los límites del Estado Táchira."}`);
+            return;
+        }
+
         if (!nombre || !municipio) {
-            alert("Por favor indique el nombre y el municipio del punto de control.");
+            alert("Por favor indique el nombre oficial del punto y verifique que el pin esté dentro del Estado Táchira.");
             return;
         }
 
         btnGuardar.disabled = true;
-        btnGuardar.innerHTML = "Guardando...";
+        btnGuardar.innerHTML = "Guardando punto y equipo...";
 
         try {
             const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_punto`, {
@@ -339,16 +367,29 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 body: JSON.stringify({
                     p_pin: "cotatur2026",
                     p_accion: "CREAR",
-                    p_datos: { nombre, tipo, municipio, latitud: selectedCoords.lat, longitud: selectedCoords.lng, activo: true }
+                    p_datos: {
+                        nombre,
+                        tipo,
+                        municipio,
+                        latitud: currentMapState.lat,
+                        longitud: currentMapState.lng,
+                        activo: true
+                    }
                 })
             });
 
             const resp = await res.json();
             if (!res.ok) throw new Error(resp.message || "Error al registrar punto");
 
-            alert("¡Punto de control registrado con éxito!");
+            // Si se seleccionaron funcionarios en la columna izquierda, asignarlos al nuevo punto
+            const asignadosIds = selectorCrearController ? selectorCrearController.getSelectedIds() : [];
+            if (resp.id && asignadosIds.length > 0) {
+                const cred = getAdminPinCallback();
+                await guardarAsignacionesPuntoEnServidor(supabaseConfig, cred, resp.id, asignadosIds);
+            }
+
+            alert(`¡Punto "${nombre}" (${municipio}) registrado con éxito con ${asignadosIds.length} funcionario(s) asignado(s)!`);
             document.getElementById("nuevo-punto-nombre").value = "";
-            document.getElementById("nuevo-punto-municipio").value = "";
             seccionCrear.classList.add("hidden");
             document.getElementById("label-toggle-nuevo-punto").textContent = "Nuevo Punto con Mapa";
             cargarPuntos();
@@ -356,7 +397,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
             alert("Error: " + e.message);
         } finally {
             btnGuardar.disabled = false;
-            btnGuardar.innerHTML = `<span>💾</span><span>Guardar Punto en Base de Datos</span>`;
+            btnGuardar.innerHTML = `<span>💾</span><span>Guardar Punto y Asignar Personal</span>`;
         }
     });
 

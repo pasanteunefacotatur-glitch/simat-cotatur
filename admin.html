@@ -8,6 +8,11 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
 
     <!-- Leaflet Map CSS y JS (100% Libre y de Código Abierto) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -170,9 +175,9 @@
                 </div>
             </div>
 
-            <!-- Flujo Ordenado de Pestañas de Navegación -->
+            <!-- Flujo Ordenado de Pestañas de Navegación (Sin barra de desplazamiento visible) -->
             <div class="bg-black/30 border-t border-white/10 no-print">
-                <div class="max-w-6xl mx-auto px-4 flex space-x-1 overflow-x-auto text-xs">
+                <div class="max-w-6xl mx-auto px-4 flex space-x-1 overflow-x-auto no-scrollbar text-xs">
                     <button type="button" data-target="tab-prensa"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-amber-500 text-amber-500 font-bold flex items-center space-x-1.5 whitespace-nowrap">
                         <span>🎙️</span>

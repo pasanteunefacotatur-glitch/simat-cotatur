@@ -4,13 +4,14 @@
  * ARCHIVO: apps/web-admin/js/components/CalendarioAsuetosAdmin.js
  * DESCRIPCIÓN: Módulo de Calendario Turístico, Programación de Asuetos y Eventos.
  *              Calcula automáticamente fechas móviles (Carnavales y Semana Santa)
- *              mediante el algoritmo astronómico de Pascua y permite programar
- *              nuevos operativos feriales y decretos turísticos.
+ *              mediante el algoritmo astronómico de Pascua, sincroniza en vivo
+ *              con Supabase (calendario_asuetos_eventos) y permite programar,
+ *              activar o desactivar asuetos que controlan dinámicamente la encuesta.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
-import { CONFIG, TEMPORADAS_CONFIG } from "../../../web-turista/js/config.js";
+import { CONFIG } from "../../../web-turista/js/config.js";
 
 /**
  * Algoritmo astronómico Meeus/Jones/Butcher para calcular Domingo de Pascua
@@ -39,12 +40,11 @@ export function calcularPascua(anio) {
 export function obtenerAsuetosPorAnio(anio) {
     const pascua = calcularPascua(anio);
 
-    // Carnavales: Lunes y Martes de Carnaval (48 y 47 días antes de Pascua)
-    // El operativo turístico inicia desde el viernes previo (51 días antes)
+    // Carnavales: Desde el viernes previo hasta el Martes de Carnaval
     const carnavalesInicio = new Date(pascua.getTime() - (51 * 24 * 60 * 60 * 1000));
     const carnavalesFin = new Date(pascua.getTime() - (47 * 24 * 60 * 60 * 1000));
 
-    // Semana Santa: Desde Viernes de Concilio / Domingo de Ramos hasta Domingo de Pascua
+    // Semana Santa: Desde Viernes de Concilio hasta Domingo de Pascua
     const semanaSantaInicio = new Date(pascua.getTime() - (9 * 24 * 60 * 60 * 1000));
     const semanaSantaFin = pascua;
 
@@ -59,7 +59,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: `${anio}-02-01`,
             prioridad: 5,
             activo: true,
-            tipo_fecha: "Fija Anual (Enero)"
+            descripcion: "Fija Anual (Enero)"
         },
         {
             codigo: `CARNAVALES_${anio}`,
@@ -69,7 +69,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: fmt(carnavalesFin),
             prioridad: 5,
             activo: true,
-            tipo_fecha: "Móvil Astronómica (Pascua -48d)"
+            descripcion: "Móvil Astronómica (Pascua -48d)"
         },
         {
             codigo: `SEMANA_SANTA_${anio}`,
@@ -79,7 +79,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: fmt(semanaSantaFin),
             prioridad: 5,
             activo: true,
-            tipo_fecha: "Móvil Astronómica (Pascua)"
+            descripcion: "Móvil Astronómica (Pascua)"
         },
         {
             codigo: `VACACIONES_${anio}`,
@@ -89,7 +89,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: `${anio}-09-15`,
             prioridad: 2,
             activo: true,
-            tipo_fecha: "Fija Anual (Jul-Sep)"
+            descripcion: "Fija Anual (Jul-Sep)"
         },
         {
             codigo: `SANTO_CRISTO_${anio}`,
@@ -99,7 +99,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: `${anio}-08-10`,
             prioridad: 10,
             activo: true,
-            tipo_fecha: "Fija Anual (Día central: 6 Ago)"
+            descripcion: "Fija Anual (Día central: 6 Ago)"
         },
         {
             codigo: `CONSOLACION_${anio}`,
@@ -109,7 +109,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: `${anio}-08-18`,
             prioridad: 10,
             activo: true,
-            tipo_fecha: "Fija Anual (Día central: 15 Ago)"
+            descripcion: "Fija Anual (Día central: 15 Ago)"
         },
         {
             codigo: `FERIAS_MUN_${anio}`,
@@ -119,7 +119,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: `${anio}-09-30`,
             prioridad: 3,
             activo: true,
-            tipo_fecha: "Fija Anual (Septiembre)"
+            descripcion: "Fija Anual (Septiembre)"
         },
         {
             codigo: `FIN_DE_ANO_${anio}`,
@@ -129,7 +129,7 @@ export function obtenerAsuetosPorAnio(anio) {
             fecha_fin: `${anio + 1}-01-07`,
             prioridad: 5,
             activo: true,
-            tipo_fecha: "Fija Anual (Diciembre-Enero)"
+            descripcion: "Fija Anual (Diciembre-Enero)"
         }
     ];
 }
@@ -142,15 +142,76 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
     if (!container) return;
 
     let selectedYear = new Date().getFullYear();
-    let asuetosList = obtenerAsuetosPorAnio(selectedYear);
+    let dbAsuetos = [];
+    const credencial = authUser?.id || authUser?.cedula || "cotatur2026";
+
+    async function cargarDesdeSupabase() {
+        try {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_calendario`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({
+                    p_accion: "LISTAR",
+                    p_credencial: credencial,
+                    p_datos: {}
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.asuntos)) {
+                    dbAsuetos = data.asuntos.filter(x => x.codigo !== "SYS_ASIGNACIONES_MULTIPUNTO" && x.tipo_cuestionario !== "SISTEMA_CONFIG");
+                }
+            }
+        } catch (_) {}
+        render();
+    }
+
+    function obtenerListaCombinadaAnio(anio) {
+        const base = obtenerAsuetosPorAnio(anio);
+        const mapa = new Map();
+        base.forEach(item => mapa.set(item.codigo, { ...item }));
+
+        // Sobrescribir o agregar eventos desde Supabase que correspondan al año seleccionado
+        dbAsuetos.forEach(dbItem => {
+            const empiezaEnAnio = String(dbItem.fecha_inicio || "").startsWith(String(anio));
+            const terminaEnAnio = String(dbItem.fecha_fin || "").startsWith(String(anio));
+            if (empiezaEnAnio || terminaEnAnio || mapa.has(dbItem.codigo)) {
+                mapa.set(dbItem.codigo, {
+                    ...mapa.get(dbItem.codigo),
+                    ...dbItem,
+                    tipo_fecha: dbItem.descripcion || "Programado en Calendario Oficial"
+                });
+            }
+        });
+
+        return Array.from(mapa.values()).sort((a, b) => String(a.fecha_inicio).localeCompare(String(b.fecha_inicio)));
+    }
 
     const render = () => {
         const hoyStr = new Date().toISOString().split("T")[0];
+        const asuetosList = obtenerListaCombinadaAnio(selectedYear);
+        const activosHoy = asuetosList.filter(a => a.activo && hoyStr >= a.fecha_inicio && hoyStr <= a.fecha_fin);
+
+        const bannerEstadoEncuesta = activosHoy.length === 0
+            ? `<div class="p-3 bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs flex items-center justify-between">
+                   <span>📌 <b>Estado hoy en la Encuesta (${hoyStr}):</b> Sin asuetos activos en esta fecha. La encuesta se fija automáticamente en <b>Temporada Regular</b> (sin selector).</span>
+               </div>`
+            : activosHoy.length === 1
+                ? `<div class="p-3 bg-emerald-500/15 border border-emerald-500/40 rounded-2xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+                       <span>🎯 <b>Asueto único activo hoy (${hoyStr}):</b> La encuesta selecciona automáticamente <b>"${activosHoy[0].nombre}"</b> sin mostrar lista de otros eventos.</span>
+                   </div>`
+                : `<div class="p-3 bg-amber-500/15 border border-amber-500/40 rounded-2xl text-xs text-amber-900 dark:text-amber-300 flex items-center justify-between">
+                       <span>⚡ <b>${activosHoy.length} Asuetos coinciden hoy (${hoyStr}):</b> La encuesta muestra el selector únicamente con: <b>${activosHoy.map(x => x.nombre).join(" / ")}</b>.</span>
+                   </div>`;
 
         const cardsHTML = asuetosList.map(a => {
-            const isEnCurso = hoyStr >= a.fecha_inicio && hoyStr <= a.fecha_fin;
+            const isEnCurso = a.activo && hoyStr >= a.fecha_inicio && hoyStr <= a.fecha_fin;
             const badgeEnCurso = isEnCurso
-                ? `<span class="px-2 py-0.5 text-[10px] bg-emerald-500 text-white font-extrabold rounded-full animate-pulse">EN CURSO HOY</span>`
+                ? `<span class="px-2 py-0.5 text-[10px] bg-emerald-500 text-white font-extrabold rounded-full animate-pulse">ACTIVO EN ENCUESTA HOY</span>`
                 : "";
 
             return `
@@ -170,7 +231,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                             <span>${a.fecha_inicio} al ${a.fecha_fin}</span>
                         </p>
                         <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                            Modo: <span class="font-medium">${a.tipo_fecha || "Programado"}</span>
+                            Modo: <span class="font-medium">${a.descripcion || a.tipo_fecha || "Programado"}</span>
                         </p>
                     </div>
 
@@ -182,7 +243,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                                     ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
                                     : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700"
                             }">
-                                ${a.activo ? "Activo" : "Inactivo"}
+                                ${a.activo ? "🟢 Activo" : "⚪ Inactivo"}
                             </button>
                         </div>
                     </div>
@@ -191,7 +252,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
         }).join("");
 
         container.innerHTML = `
-            <div class="space-y-6">
+            <div class="space-y-5">
                 <!-- Cabecera y Selector de Año -->
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -202,7 +263,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                             </h3>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Cálculo automático de Carnavales, Semana Santa y fechas fijas de COTATUR. Las preguntas de temporada se activan automáticamente al llegar la fecha.
+                            Vinculado directamente a la Encuesta: el encuestador no puede elegir asuetos fuera de fecha. Si hay 1 asueto hoy se fija automáticamente; si coinciden 2 o más hoy, permite elegir solo entre los vigentes.
                         </p>
                     </div>
 
@@ -222,6 +283,8 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                         </button>
                     </div>
                 </div>
+
+                ${bannerEstadoEncuesta}
 
                 <!-- Grilla de Asuetos -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -246,12 +309,12 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fecha Inicio *</label>
-                                    <input type="date" id="input-evento-inicio" required
+                                    <input type="date" id="input-evento-inicio" required value="${hoyStr}"
                                         class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none" />
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fecha Fin *</label>
-                                    <input type="date" id="input-evento-fin" required
+                                    <input type="date" id="input-evento-fin" required value="${hoyStr}"
                                         class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none" />
                                 </div>
                             </div>
@@ -279,7 +342,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
 
                             <div class="pt-2 flex justify-end space-x-2">
                                 <button type="button" id="btn-cancelar-modal-evento" class="px-3 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs">Cancelar</button>
-                                <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs">Guardar Actividad</button>
+                                <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs">Guardar en Calendario</button>
                             </div>
                         </form>
                     </div>
@@ -292,24 +355,50 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
         if (yearSelect) {
             yearSelect.addEventListener("change", (e) => {
                 selectedYear = parseInt(e.target.value, 10);
-                asuetosList = obtenerAsuetosPorAnio(selectedYear);
                 render();
             });
         }
 
-        // Toggles
+        // Toggles con persistencia en Supabase
         container.querySelectorAll(".btn-toggle-asueto").forEach(btn => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
                 const cod = btn.getAttribute("data-codigo");
                 const item = asuetosList.find(x => x.codigo === cod);
                 if (item) {
-                    item.activo = !item.activo;
-                    render();
+                    const nuevoActivo = !item.activo;
+                    item.activo = nuevoActivo;
+
+                    try {
+                        await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_calendario`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                                "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                            },
+                            body: JSON.stringify({
+                                p_accion: "GUARDAR",
+                                p_credencial: credencial,
+                                p_datos: {
+                                    codigo: item.codigo,
+                                    nombre: item.nombre,
+                                    tipo_cuestionario: item.tipo_cuestionario,
+                                    fecha_inicio: item.fecha_inicio,
+                                    fecha_fin: item.fecha_fin,
+                                    prioridad: item.prioridad,
+                                    activo: nuevoActivo,
+                                    descripcion: item.descripcion || "Calendario Oficial"
+                                }
+                            })
+                        });
+                    } catch (_) {}
+
+                    await cargarDesdeSupabase();
                 }
             });
         });
 
-        // Modal
+        // Modal de Nuevo Evento
         const modal = container.querySelector("#modal-nuevo-evento");
         const btnOpen = container.querySelector("#btn-nuevo-evento-modal");
         const btnClose = container.querySelector("#btn-cerrar-modal-evento");
@@ -321,7 +410,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
         if (btnCancel && modal) btnCancel.addEventListener("click", () => modal.classList.add("hidden"));
 
         if (form) {
-            form.addEventListener("submit", (e) => {
+            form.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const nombre = document.getElementById("input-evento-nombre").value.trim();
                 const inicio = document.getElementById("input-evento-inicio").value;
@@ -335,23 +424,37 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                 }
 
                 const nuevoCodigo = `EVT_${Date.now()}`;
-                asuetosList.unshift({
-                    codigo: nuevoCodigo,
-                    nombre,
-                    tipo_cuestionario: tipo,
-                    fecha_inicio: inicio,
-                    fecha_fin: fin,
-                    prioridad,
-                    activo: true,
-                    tipo_fecha: "Actividad Programada"
-                });
+                try {
+                    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_calendario`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                            "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                        },
+                        body: JSON.stringify({
+                            p_accion: "GUARDAR",
+                            p_credencial: credencial,
+                            p_datos: {
+                                codigo: nuevoCodigo,
+                                nombre,
+                                tipo_cuestionario: tipo,
+                                fecha_inicio: inicio,
+                                fecha_fin: fin,
+                                prioridad,
+                                activo: true,
+                                descripcion: "Actividad Programada en Calendario"
+                            }
+                        })
+                    });
+                } catch (_) {}
 
                 modal.classList.add("hidden");
-                render();
-                alert(`Actividad "${nombre}" programada con éxito.`);
+                await cargarDesdeSupabase();
+                alert(`Actividad "${nombre}" guardada en el calendario oficial de COTATUR.`);
             });
         }
     };
 
-    render();
+    cargarDesdeSupabase();
 }

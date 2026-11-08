@@ -24,31 +24,49 @@ export const CONFIG = {
     ANIO: 2026
 };
 
-// Puntos de Control QR sincronizados con los UUIDs reales de Supabase
+// Puntos de Control QR sincronizados con los UUIDs y coordenadas reales de Supabase
 export const PUNTOS_CONTROL_QR = {
     PEAJE_TARIBA: {
         id: "a07731b0-c77a-4df8-8cc6-95396d6743e9",
-        nombre: "Peaje Vega de Táriba - Troncal 1"
+        codigo: "PEAJE_TARIBA",
+        nombre: "Peaje Vega de Táriba - Troncal 1",
+        lat: 7.8228,
+        lng: -72.2272
     },
     PEAJE_CAMPANA: {
         id: "674525d8-2fd8-455a-af0f-a71c1854bdfb",
-        nombre: "Peaje La Pedrera / La Campana - Troncal 5"
+        codigo: "PEAJE_CAMPANA",
+        nombre: "Peaje La Pedrera / La Campana - Troncal 5",
+        lat: 7.5150,
+        lng: -71.5580
     },
     TERMINAL_SC: {
         id: "64d20a51-333e-478f-95cc-a45d05e96edb",
-        nombre: "Terminal de Pasajeros - San Cristóbal"
+        codigo: "TERMINAL_SC",
+        nombre: "Terminal de Pasajeros - San Cristóbal",
+        lat: 7.7608,
+        lng: -72.2356
     },
     PUENTE_ATANASIO: {
         id: "d4249187-3b50-4bc6-9a05-f85160a6b479",
-        nombre: "Puente Internacional Atanasio Girardot"
+        codigo: "PUENTE_ATANASIO",
+        nombre: "Puente Internacional Atanasio Girardot",
+        lat: 7.8833,
+        lng: -72.4333
     },
     PERIBECA_PUEBLO: {
         id: "9dc01181-7f8f-4f91-9c54-66aec8c580c5",
-        nombre: "Punto de Información Turística - Peribeca"
+        codigo: "PERIBECA_PUEBLO",
+        nombre: "Punto de Información Turística - Peribeca",
+        lat: 7.8183,
+        lng: -72.3167
     },
     CHORRO_EL_INDIO: {
         id: "fafd9b9b-54ff-42d2-8949-d636ccf912e2",
-        nombre: "Parque Nacional Chorro El Indio"
+        codigo: "CHORRO_EL_INDIO",
+        nombre: "Parque Nacional Chorro El Indio",
+        lat: 7.7380,
+        lng: -72.1860
     }
 };
 

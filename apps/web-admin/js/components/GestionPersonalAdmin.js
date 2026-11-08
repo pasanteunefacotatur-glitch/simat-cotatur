@@ -11,6 +11,11 @@
  * ==============================================================================
  */
 
+import {
+    obtenerMapaAsignacionesMultiples,
+    obtenerNombresPuntosDeFuncionario
+} from "./SelectorPersonalDobleColumna.js";
+
 function escapeHtml(str) {
     if (!str) return "";
     return String(str)
@@ -201,15 +206,18 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
 
         try {
             const cred = getAdminCredencialCallback();
-            const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
-                },
-                body: JSON.stringify({ p_credencial: cred, p_accion: "LISTAR", p_datos: {} })
-            });
+            const [res, mapaMulti] = await Promise.all([
+                fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
+                        "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
+                    },
+                    body: JSON.stringify({ p_credencial: cred, p_accion: "LISTAR", p_datos: {} })
+                }),
+                obtenerMapaAsignacionesMultiples(supabaseConfig)
+            ]);
 
             if (!res.ok) throw new Error("No se pudo cargar la nómina.");
             const lista = await res.json();
@@ -219,7 +227,13 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                 return;
             }
 
-            tablaBody.innerHTML = lista.map(f => `
+            tablaBody.innerHTML = lista.map(f => {
+                const puntosActivos = obtenerNombresPuntosDeFuncionario(f, puntosList, mapaMulti);
+                const puntosDisplay = puntosActivos.length > 0
+                    ? puntosActivos.map(n => `<span class="inline-block px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold mr-1 mb-1">📍 ${escapeHtml(n)}</span>`).join("")
+                    : `<span class="text-slate-400 text-[11px]">Sin asignar</span>`;
+
+                return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td class="p-3 font-mono font-bold text-slate-900 dark:text-white">${escapeHtml(f.cedula)}</td>
                     <td class="p-3">
@@ -233,7 +247,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                             ${escapeHtml(f.rol)}
                         </span>
                     </td>
-                    <td class="p-3">${escapeHtml(f.punto_nombre)}</td>
+                    <td class="p-3">${puntosDisplay}</td>
                     <td class="p-3 text-center">
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${f.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
                             ${f.activo ? '🟢 Activo' : '🔴 Inactivo'}
@@ -259,7 +273,8 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                         </button>
                     </td>
                 </tr>
-            `).join("");
+            `;
+            }).join("");
 
             // Enlazar botones de acción
             document.querySelectorAll(".btn-action-func").forEach(btn => {

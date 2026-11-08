@@ -2,15 +2,26 @@
  * ==============================================================================
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-turista/js/components/Header.js
- * DESCRIPCIÓN: Encabezado público para turistas con logos oficiales de COTATUR
- *              y Táchira es Turismo (tachiraesturismo.com.ve), botón interactivo
- *              de tema en la esquina superior derecha y punto de control activo.
- *              Excluye controles administrativos para blindar la vista del visitante.
+ * DESCRIPCIÓN: Encabezado público con logos oficiales de COTATUR y Táchira es
+ *              Turismo, botón interactivo de tema en la esquina superior derecha,
+ *              punto de control activo e indicador pasivo por ubicación GPS
+ *              para confirmar al encuestador/usuario que está en el formulario
+ *              del punto correcto (o permitirle cambiar con un toque).
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
 import { renderThemeButtonHtml, toggleTheme } from "./ThemeManager.js";
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
 export function renderHeader(containerId, activePointName = "Peaje Vega de Táriba - Troncal 1") {
     const container = document.getElementById(containerId);
@@ -49,10 +60,13 @@ export function renderHeader(containerId, activePointName = "Peaje Vega de Tári
                         <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1.5 animate-pulse"></span>
                         <span class="font-medium text-slate-300 mr-1">Punto:</span>
                         <span class="font-bold text-white truncate max-w-[200px]" id="header-point-name">
-                            ${activePointName}
+                            ${escapeHtml(activePointName)}
                         </span>
                     </div>
                 </div>
+
+                <!-- Indicador Pasivo por Ubicación GPS (Verifica si está en el formulario del punto correcto) -->
+                <div id="header-gps-passive-banner" class="hidden mt-2.5 pt-2 border-t border-white/10"></div>
 
             </div>
         </header>
@@ -64,5 +78,57 @@ export function renderHeader(containerId, activePointName = "Peaje Vega de Tári
         btnTheme.addEventListener("click", () => {
             toggleTheme();
         });
+    }
+}
+
+/**
+ * Muestra un aviso pasivo (no bloqueante) basado en el GPS del dispositivo:
+ * - Si coincide con el punto del formulario actual: muestra confirmación pasiva en verde.
+ * - Si el GPS detecta que está físicamente en otro punto de encuesta registrado:
+ *   muestra aviso pasivo sugiriendo cambiar con un toque al formulario correcto.
+ */
+export function updatePassiveGpsIndicator({
+    coincidePuntoActual,
+    puntoCercano,
+    distanciaKm,
+    onSwitchPointCallback
+}) {
+    const banner = document.getElementById("header-gps-passive-banner");
+    if (!banner || !puntoCercano) return;
+
+    banner.classList.remove("hidden");
+    const distTexto = distanciaKm < 1
+        ? `${Math.round(distanciaKm * 1000)} m`
+        : `${distanciaKm.toFixed(1)} km`;
+
+    if (coincidePuntoActual) {
+        banner.innerHTML = `
+            <div class="flex items-center justify-between text-[11px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 px-2.5 py-1.5 rounded-lg">
+                <span class="flex items-center gap-1.5">
+                    <span>📍</span>
+                    <span><b>Ubicación GPS verificada:</b> Estás en el formulario del punto correcto (${escapeHtml(puntoCercano.nombre)} • a ${distTexto}).</span>
+                </span>
+            </div>
+        `;
+    } else {
+        banner.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] bg-amber-500/20 border border-amber-400/40 text-amber-200 px-3 py-2 rounded-lg">
+                <span class="flex items-center gap-1.5">
+                    <span>📡</span>
+                    <span><b>Aviso GPS pasivo:</b> Tu ubicación actual está más cerca de <b>"${escapeHtml(puntoCercano.nombre)}"</b> (${distTexto}).</span>
+                </span>
+                <button type="button" id="btn-switch-gps-point"
+                    class="shrink-0 px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold rounded-md text-[10px] uppercase tracking-wider shadow transition-colors">
+                    Cambiar a ese formulario
+                </button>
+            </div>
+        `;
+
+        const btnSwitch = document.getElementById("btn-switch-gps-point");
+        if (btnSwitch && typeof onSwitchPointCallback === "function") {
+            btnSwitch.addEventListener("click", () => {
+                onSwitchPointCallback(puntoCercano);
+            });
+        }
     }
 }

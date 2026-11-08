@@ -2,12 +2,13 @@
  * ==============================================================================
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-turista/css/styles.css
- * DESCRIPCIÓN: Estilos base con soporte de 3 temas:
+ * DESCRIPCIÓN: Estilos base con soporte de 3 temas sincronizados en todos los módulos:
  *              1. Modo Claro (Light): Alto contraste para luz solar exterior en peajes.
  *              2. Modo Oscuro LCD (Dark): Reducción de fatiga visual nocturna.
  *              3. Modo AMOLED (Pure Black): Negro 100% (#000000) que apaga píxeles
  *                 en pantallas OLED/AMOLED ahorrando batería en campo.
- *              Incluye aislamiento del Cartel Carta y reglas @media print exactas.
+ *              Incluye ocultamiento de barra de desplazamiento en pestañas,
+ *              aislamiento del Cartel Carta y reglas @media print exactas.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
@@ -48,13 +49,13 @@
 /* Modo AMOLED (Negro Absoluto #000000 - Máximo ahorro de batería en móviles OLED) */
 [data-theme="amoled"] {
     --bg-page: #000000;
-    --bg-surface: #0a0a0a;
+    --bg-surface: #09090b;
     --bg-surface-subtle: #000000;
     --border-color: #27272a;
     --border-subtle: #18181b;
     --text-primary: #ffffff;
     --text-secondary: #e4e4e7;
-    --text-muted: #71717a;
+    --text-muted: #a1a1aa;
     --input-bg: #09090b;
     --input-border: #27272a;
     --header-bg: #000000;
@@ -76,6 +77,15 @@ h1, h2, h3, h4, h5, h6, .font-heading {
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* Ocultar barra de desplazamiento horizontal en barra superior de pestañas */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 /* Compatibilidad con muescas (Notch / Safe Area) */
 .pt-safe {
     padding-top: max(0.75rem, env(safe-area-inset-top));
@@ -93,30 +103,35 @@ input, select, textarea {
     font-size: 16px !important;
 }
 
-/* --- 3. Sobrescrituras para Modo Oscuro y AMOLED en Componentes --- */
+/* --- 3. Sobrescrituras Sincronizadas para Modo Claro, Oscuro LCD y AMOLED --- */
 [data-theme="dark"] .bg-white:not(#cartel-hoja-carta):not(.qr-white-box),
-[data-theme="amoled"] .bg-white:not(#cartel-hoja-carta):not(.qr-white-box) {
+[data-theme="amoled"] .bg-white:not(#cartel-hoja-carta):not(.qr-white-box),
+[data-theme="amoled"] .dark\:bg-slate-900:not(#cartel-hoja-carta):not(.qr-white-box) {
     background-color: var(--bg-surface) !important;
     border-color: var(--border-color) !important;
 }
 
 [data-theme="dark"] .bg-gray-100,
-[data-theme="amoled"] .bg-gray-100 {
+[data-theme="amoled"] .bg-gray-100,
+[data-theme="dark"] .bg-slate-100:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .bg-slate-100:not(#cartel-hoja-carta *) {
     background-color: var(--bg-page) !important;
 }
 
 [data-theme="dark"] .bg-gray-50:not(#cartel-hoja-carta *),
 [data-theme="amoled"] .bg-gray-50:not(#cartel-hoja-carta *),
 [data-theme="dark"] .bg-slate-50:not(#cartel-hoja-carta *),
-[data-theme="amoled"] .bg-slate-50:not(#cartel-hoja-carta *) {
+[data-theme="amoled"] .bg-slate-50:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .dark\:bg-slate-800:not(#cartel-hoja-carta *):not(button),
+[data-theme="amoled"] .dark\:bg-slate-800\/60:not(#cartel-hoja-carta *) {
     background-color: var(--bg-surface-subtle) !important;
     border-color: var(--border-color) !important;
 }
 
 [data-theme="dark"] .text-gray-900:not(#cartel-hoja-carta *),
 [data-theme="amoled"] .text-gray-900:not(#cartel-hoja-carta *),
-[data-theme="dark"] .text-slate-900:not(#cartel-hoja-carta):not(#cartel-hoja-carta *),
-[data-theme="amoled"] .text-slate-900:not(#cartel-hoja-carta):not(#cartel-hoja-carta *) {
+[data-theme="dark"] .text-slate-900:not(#cartel-hoja-carta):not(#cartel-hoja-carta *):not(.bg-amber-500):not(.bg-amber-400),
+[data-theme="amoled"] .text-slate-900:not(#cartel-hoja-carta):not(#cartel-hoja-carta *):not(.bg-amber-500):not(.bg-amber-400) {
     color: var(--text-primary) !important;
 }
 
@@ -134,7 +149,9 @@ input, select, textarea {
 [data-theme="dark"] .text-gray-600:not(#cartel-hoja-carta *),
 [data-theme="dark"] .text-gray-500:not(#cartel-hoja-carta *),
 [data-theme="amoled"] .text-gray-600:not(#cartel-hoja-carta *),
-[data-theme="amoled"] .text-gray-500:not(#cartel-hoja-carta *) {
+[data-theme="amoled"] .text-gray-500:not(#cartel-hoja-carta *),
+[data-theme="dark"] .text-slate-500:not(#cartel-hoja-carta *):not(.admin-tab-btn),
+[data-theme="amoled"] .text-slate-500:not(#cartel-hoja-carta *):not(.admin-tab-btn) {
     color: var(--text-muted) !important;
 }
 
@@ -145,13 +162,17 @@ input, select, textarea {
 [data-theme="dark"] .border-slate-200:not(#cartel-hoja-carta *),
 [data-theme="dark"] .border-slate-300:not(#cartel-hoja-carta *),
 [data-theme="amoled"] .border-slate-200:not(#cartel-hoja-carta *),
-[data-theme="amoled"] .border-slate-300:not(#cartel-hoja-carta *) {
+[data-theme="amoled"] .border-slate-300:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .dark\:border-slate-800:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .dark\:border-slate-700:not(#cartel-hoja-carta *) {
     border-color: var(--border-color) !important;
 }
 
 /* Botones de selección activos en modo oscuro/AMOLED resaltados en Oro Institucional */
-[data-theme="dark"] button.bg-slate-800,
-[data-theme="amoled"] button.bg-slate-800 {
+[data-theme="dark"] button.bg-slate-800:not(#btn-admin-download-qr-only):not(#btn-descarga-mapa),
+[data-theme="amoled"] button.bg-slate-800:not(#btn-admin-download-qr-only):not(#btn-descarga-mapa),
+[data-theme="dark"] button.bg-slate-900,
+[data-theme="amoled"] button.bg-slate-900 {
     background-color: #f59e0b !important;
     color: #09090b !important;
     border-color: #fbbf24 !important;
