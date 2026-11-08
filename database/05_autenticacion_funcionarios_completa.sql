@@ -22,11 +22,13 @@ ALTER TABLE public.perfiles_funcionarios
     ADD COLUMN IF NOT EXISTS google_id VARCHAR(150),
     ADD COLUMN IF NOT EXISTS ultimo_ingreso TIMESTAMPTZ;
 
--- Crear supervisor inicial por defecto (Cédula: 00000000, clave inicial: cotatur2026)
+-- Crear supervisores iniciales por defecto (Cédula: 00000000 y 31061007, clave: cotatur2026)
 INSERT INTO public.perfiles_funcionarios (id, cedula, nombre_completo, cargo, rol, activo, debe_cambiar_clave, password_hash)
-VALUES ('00000000-0000-0000-0000-000000000000', '00000000', 'Supervisor General COTATUR', 'Supervisión de Operativo', 'SUPERVISOR', TRUE, FALSE, crypt('cotatur2026', gen_salt('bf')))
+VALUES 
+('00000000-0000-0000-0000-000000000000', '00000000', 'Supervisor General COTATUR', 'Supervisión de Operativo', 'SUPERVISOR', TRUE, FALSE, crypt('cotatur2026', gen_salt('bf'))),
+('14651847-e3c8-4b12-bd0d-1944aacec972', '31061007', 'Britney (Supervisora General SIMAT-COTATUR)', 'Administradora del Sistema SIMAT', 'SUPERVISOR', TRUE, FALSE, crypt('cotatur2026', gen_salt('bf')))
 ON CONFLICT (cedula) DO UPDATE 
-SET id = '00000000-0000-0000-0000-000000000000', rol = 'SUPERVISOR', activo = TRUE, password_hash = crypt('cotatur2026', gen_salt('bf'));
+SET rol = 'SUPERVISOR', activo = TRUE, debe_cambiar_clave = FALSE, password_hash = crypt('cotatur2026', gen_salt('bf'));
 
 -- 2. TABLA DE CONFIGURACIÓN GLOBAL DEL SISTEMA
 CREATE TABLE IF NOT EXISTS public.configuracion_global (
@@ -100,6 +102,7 @@ BEGIN
                 'es_supervisor', TRUE,
                 'debe_cambiar_clave', FALSE,
                 'funcionario', jsonb_build_object(
+                    'id', '00000000-0000-0000-0000-000000000000',
                     'cedula', v_identificador_limpio,
                     'nombre_completo', 'Supervisor Autorizado (PIN Maestro)',
                     'rol', 'SUPERVISOR'

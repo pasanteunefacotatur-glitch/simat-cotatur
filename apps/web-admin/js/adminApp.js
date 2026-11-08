@@ -30,8 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (saved) {
         try {
             activeSession = JSON.parse(saved);
-            iniciarDashboard();
+            if (activeSession && activeSession.funcionario && activeSession.funcionario.id) {
+                iniciarDashboard();
+            } else {
+                sessionStorage.removeItem(SESSION_KEY);
+                mostrarModalLogin();
+            }
         } catch (_) {
+            sessionStorage.removeItem(SESSION_KEY);
             mostrarModalLogin();
         }
     } else {
@@ -58,6 +64,14 @@ function mostrarModalLogin() {
     const inputId = document.getElementById("input-admin-cedula");
     const inputClave = document.getElementById("input-admin-clave");
     const errorMsg = document.getElementById("admin-auth-error");
+
+    // Fijar valores por defecto institucionales: Cédula 31061007 y clave cotatur2026
+    if (inputId && (!inputId.value || inputId.value === "00000000")) {
+        inputId.value = "31061007";
+    }
+    if (inputClave && !inputClave.value) {
+        inputClave.value = "cotatur2026";
+    }
 
     form.onsubmit = async (e) => {
         e.preventDefault();
@@ -207,7 +221,7 @@ function iniciarDashboard() {
     actualizarBadgeUsuario();
     configurarTabs();
 
-    const credencialSupervisor = () => (activeSession ? (activeSession.funcionario.id || activeSession.clave) : "cotatur2026");
+    const credencialSupervisor = () => (activeSession ? (activeSession.funcionario?.id || activeSession.funcionario?.cedula || activeSession.clave) : "cotatur2026");
 
     // 1. Rueda de Prensa del Gobernador (Pestaña Principal Ejecutiva)
     renderRuedaPrensaAdmin("tab-prensa-mount", activeSession?.funcionario);
