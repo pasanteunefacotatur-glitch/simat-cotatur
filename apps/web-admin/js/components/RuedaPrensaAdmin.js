@@ -36,7 +36,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
         container.innerHTML = `
             <div class="p-12 text-center text-slate-400">
                 <div class="inline-block animate-spin text-3xl mb-3">⚙️</div>
-                <p class="text-sm font-semibold">Generando analítica ejecutiva para Rueda de Prensa...</p>
+                <p class="text-sm font-semibold">Generando indicadores clave de gestión turística...</p>
             </div>
         `;
 
@@ -154,16 +154,16 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
                     <div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-2xl">🎙️</span>
+                            <span class="text-2xl">📊</span>
                             <h3 class="text-base font-extrabold text-slate-900 dark:text-white">
-                                Resumen Oficial para Ruedas de Prensa del Gobernador
+                                Indicadores de Gestión para el Despacho del Gobernador
                             </h3>
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                                 v0.5.0-alpha
                             </span>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Lámina ejecutiva con métricas oficiales de afluencia, tipología de grupos, pernocta y ocupación hotelera.
+                            Tablero con indicadores clave de rendimiento (KPI) de afluencia, tipología de grupos, pernocta y ocupación hotelera.
                         </p>
                     </div>
 
@@ -264,7 +264,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                 <div id="modal-diapositiva-16-9" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md p-2 sm:p-6 flex flex-col items-center justify-center">
                     <div class="w-full max-w-6xl flex items-center justify-between pb-3 text-white">
                         <span class="text-xs font-extrabold uppercase tracking-widest text-amber-400">
-                            Lámina Oficial de Rueda de Prensa • Relación de Aspecto 16:9
+                            Lámina Oficial de Indicadores de Gestión • Relación de Aspecto 16:9
                         </span>
                         <div class="flex items-center gap-2">
                             <button type="button" id="btn-slide-fullscreen" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold border border-slate-700">
@@ -289,7 +289,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                                 <img src="./assets/img/logo_tachira.png" alt="Táchira" class="h-9 w-auto object-contain" />
                                 <div>
                                     <h2 class="text-sm font-black tracking-wide uppercase text-amber-400">Gobernación del Estado Táchira • COTATUR</h2>
-                                    <p class="text-[11px] text-slate-300 font-semibold">Balance Estadístico Oficial • ${filtroTemporada}</p>
+                                    <p class="text-[11px] text-slate-300 font-semibold">Indicadores Clave de Gestión Turística • ${filtroTemporada}</p>
                                 </div>
                             </div>
                             <div class="text-right font-mono text-xs text-slate-400">
