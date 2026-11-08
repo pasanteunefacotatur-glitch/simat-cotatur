@@ -6,7 +6,7 @@
  *              las ruedas de prensa del Gobernador del Estado Táchira y balances
  *              institucionales de COTATUR.
  *              Incluye:
- *              1. Derrama económica estimada directa (OMT / Indicadores ONU Turismo).
+ *              1. Métricas clave ejecutivas (Afluencia, Pernocta, Origen, Satisfacción).
  *              2. Diapositiva Ejecutiva 16:9 para proyectores y pantallas LED.
  *              3. Exportación e impresión en hoja o lámina de presentación.
  *              Cumple con la regla de modularidad (< 500 líneas).
@@ -73,13 +73,6 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
         const pernoctaPromedio = r.promedio_pernocta_dias || 3.4;
         const pctInternacional = r.pct_internacionales || 18.5;
         const sat = data.satisfaccion || { general: 4.6, seguridad: 4.8, hospitalidad: 4.9, vialidad: 4.1, servicios: 4.2 };
-
-        // Estimación estándar OMT de derrama económica turística directa
-        const gastoPromedioDiaUSD = 35; // Benchmark receptor andino
-        const derramaTotalUSD = Math.round(totalVisitantes * (pernoctaPromedio || 1) * gastoPromedioDiaUSD);
-        const derramaTexto = derramaTotalUSD >= 1000000
-            ? `$${(derramaTotalUSD / 1000000).toFixed(2)}M USD`
-            : `$${(derramaTotalUSD / 1000).toFixed(0)}k USD`;
 
         // 1. Orígenes
         const origenes = (data.top_origenes && data.top_origenes.length > 0) ? data.top_origenes : [
@@ -170,7 +163,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                             </span>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Lámina ejecutiva con métricas oficiales de afluencia, tipología, ocupación hotelera y derrama económica directa.
+                            Lámina ejecutiva con métricas oficiales de afluencia, tipología de grupos, pernocta y ocupación hotelera.
                         </p>
                     </div>
 
@@ -202,8 +195,8 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                     </div>
                 </div>
 
-                <!-- 5 NÚMEROS GIGANTES EJECUTIVOS (KPIs) -->
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <!-- 4 NÚMEROS GIGANTES EJECUTIVOS (KPIs) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-4 text-slate-950 shadow-md">
                         <span class="text-[10px] font-black uppercase tracking-wider block opacity-90">Visitantes Estimados</span>
                         <div class="text-2xl font-black mt-1 leading-none">${totalVisitantes.toLocaleString()}</div>
@@ -223,13 +216,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                     </div>
 
                     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Derrama Económica</span>
-                        <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 leading-none">${derramaTexto}</div>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-1 block">Impacto local directo</span>
-                    </div>
-
-                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm col-span-2 md:col-span-1">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Satisfacción</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Satisfacción Global</span>
                         <div class="text-2xl font-black text-amber-500 mt-1 leading-none">${sat.general || "4.7"} <span class="text-xs text-slate-400">/ 5★</span></div>
                         <span class="text-[9px] text-slate-500 font-semibold mt-1 block">Destino hospitalario</span>
                     </div>
@@ -328,10 +315,10 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                                 <div class="text-3xl font-black text-amber-400 leading-none mt-1">${pctInternacional}%</div>
                                 <span class="text-[9px] text-slate-400 block mt-1">Principal origen: Colombia</span>
                             </div>
-                            <div class="bg-emerald-950/60 border border-emerald-500/50 p-3 rounded-xl">
-                                <span class="text-[10px] text-emerald-400 uppercase tracking-wider block">Derrama Económica</span>
-                                <div class="text-3xl font-black text-emerald-300 leading-none mt-1">${derramaTexto}</div>
-                                <span class="text-[9px] text-emerald-400 block mt-1">Impacto directo regional</span>
+                            <div class="bg-white/5 border border-white/10 p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Satisfacción Global</span>
+                                <div class="text-3xl font-black text-amber-500 leading-none mt-1">${sat.general || "4.7"} <span class="text-sm font-normal text-slate-400">/ 5★</span></div>
+                                <span class="text-[9px] text-slate-400 block mt-1">Valoración de servicios</span>
                             </div>
                         </div>
 

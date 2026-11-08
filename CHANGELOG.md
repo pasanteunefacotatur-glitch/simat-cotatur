@@ -8,7 +8,6 @@ Todas las modificaciones notables del **Sistema Integrado de Medición y Analít
 
 ### 🚀 Novedades y Características Principales
 - **Diapositiva Ejecutiva 16:9 para Ruedas de Prensa:** Incorporación de un modo de presentación en relación de aspecto 16:9 (`1920x1080 px`) con modo pantalla completa y exportación/impresión horizontal directa para videobeams y pantallas LED de la Gobernación del Estado Táchira.
-- **Estimación de Derrama Económica Directa:** Integración de la métrica de impacto macroeconómico turístico basada en los estándares de ONU Turismo (OMT): $\text{Impacto USD} = \text{Visitantes} \times \text{Pernocta Media} \times \text{Gasto Diario Base (\$35 USD)}$.
 - **Vinculación Estricta Asueto-Calendario:**
   - $0$ eventos hoy: Fija automáticamente `REGULAR` y oculta el selector para evitar errores humanos.
   - $1$ evento hoy: Se selecciona automáticamente ese asueto y despliega sus preguntas específicas sin opciones redundantes.
