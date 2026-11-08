@@ -43,41 +43,41 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                     </select>
                 </div>
 
-                <!-- Botones de Acción: Afiche Completo vs Solo el QR para Diseñador -->
+                <!-- Botones de Acción: Cartel Completo y Código QR -->
                 <div class="flex flex-wrap items-center gap-2">
                     <button type="button" id="btn-admin-print-afiche"
                         class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow transition-all flex items-center space-x-1.5 text-xs active:scale-95"
                         title="Imprimir cartel completo oficial en papel tamaño Carta">
                         <span>🖨️</span>
-                        <span>Imprimir Afiche Carta</span>
+                        <span>Imprimir Cartel Oficial</span>
                     </button>
 
                     <button type="button" id="btn-admin-download-qr-only"
                         class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-xl shadow border border-slate-700 transition-all flex items-center space-x-1.5 text-xs active:scale-95"
-                        title="Descargar únicamente el archivo PNG del QR en alta resolución para imprentas o publicidad">
+                        title="Descargar archivo PNG del código QR en alta resolución">
                         <span>📥</span>
-                        <span>Descargar Solo QR (Publicidad)</span>
+                        <span>Descargar Código QR</span>
                     </button>
 
                     <button type="button" id="btn-admin-copy-link"
                         class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-semibold rounded-xl border border-slate-300 dark:border-slate-700 transition-all text-xs active:scale-95"
-                        title="Copiar enlace de encuesta para compartir por WhatsApp o redes">
+                        title="Copiar enlace de la encuesta">
                         <span>📋</span>
-                        <span id="copy-btn-text">Copiar Link</span>
+                        <span id="copy-btn-text">Copiar Enlace</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Vista Previa Dividida: Cartel Carta y QR Aislado -->
+            <!-- Vista Previa Dividida: Cartel y QR Aislado -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 
                 <!-- Columna Izquierda (1 Col): Solo el QR Puro para Publicidad -->
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 flex flex-col items-center text-center space-y-3">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                        Código QR Puro (Para Diseñadores)
+                        Código QR de Alta Resolución
                     </span>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400">
-                        Este código QR aislado es el que se envía a la empresa de publicidad para insertar en vallas, pendones o calcomanías:
+                        Código QR aislado para imprentas, vallas publicitarias, pendones o calcomanías:
                     </p>
                     
                     <div class="qr-white-box p-3 bg-white rounded-xl shadow border border-slate-200 inline-block">
@@ -90,14 +90,14 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
 
                     <button type="button" id="btn-quick-download-raw"
                         class="w-full py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded-lg font-bold text-xs transition-colors">
-                        Descargar PNG (1024x1024 px)
+                        Descargar Imagen en Alta Resolución
                     </button>
                 </div>
 
-                <!-- Columna Derecha (2 Cols): Lámina Completa de Afiche Carta -->
+                <!-- Columna Derecha (2 Cols): Lámina Completa de Cartel Oficial -->
                 <div class="lg:col-span-2 flex flex-col items-center">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                        Vista Previa del Afiche Listo para Imprimir (Hoja Carta)
+                        Vista previa del cartel oficial para impresión
                     </span>
 
                     <!-- LÁMINA CARTA IMPRIMIBLE -->

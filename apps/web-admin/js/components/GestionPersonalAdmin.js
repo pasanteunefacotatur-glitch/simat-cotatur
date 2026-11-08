@@ -41,13 +41,13 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
             <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 p-5 rounded-2xl border border-amber-500/30 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                        Ajuste Operativo de Campo (Global)
+                        Ajuste Operativo General
                     </span>
                     <h3 class="text-sm font-black text-slate-900 dark:text-white">
                         ¿Permitir a los encuestadores seleccionar el Punto de Captura?
                     </h3>
                     <p class="text-xs text-slate-600 dark:text-slate-400 max-w-2xl">
-                        Si está <strong>desactivado</strong> (recomendado), cada encuestador queda bloqueado únicamente en su punto asignado. Si se <strong>activa</strong>, el encuestador podrá cambiar de peaje en la app.
+                        En la modalidad estándar recomendada, cada encuestador atiende únicamente el punto que le ha sido asignado. Al habilitar esta opción, el encuestador podrá alternar entre los puntos registrados.
                     </p>
                 </div>
 
@@ -67,7 +67,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                 <div class="border-b border-slate-200 dark:border-slate-800 pb-2">
                     <h3 class="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                         <span>➕</span>
-                        <span>Registrar Nuevo Funcionario (Solo Cédula)</span>
+                        <span>Registrar Nuevo Funcionario</span>
                     </h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
                         La contraseña inicial será automáticamente el número de cédula. El funcionario deberá cambiarla en su primer ingreso.
@@ -98,7 +98,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                             Punto Asignado
                         </label>
                         <select id="nuevo-func-punto" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white outline-none">
-                            <option value="">Sin punto fijo (Todos)</option>
+                            <option value="">Sin punto exclusivo asignado</option>
                             ${puntosOptions}
                         </select>
                     </div>
@@ -106,7 +106,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     <div>
                         <button type="submit" id="btn-guardar-nuevo-func"
                             class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow transition-all active:scale-95">
-                            Guardar Funcionario
+                            Registrar Funcionario
                         </button>
                     </div>
                 </form>
@@ -133,7 +133,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                                 <th class="p-3">Rol</th>
                                 <th class="p-3">Punto Asignado</th>
                                 <th class="p-3 text-center">Estado</th>
-                                <th class="p-3 text-right">Acciones de Supervisor</th>
+                                <th class="p-3 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-nomina-body" class="divide-y divide-slate-200 dark:divide-slate-800 font-medium">
@@ -239,7 +239,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     <td class="p-3">
                         <div class="font-semibold text-slate-900 dark:text-white">${escapeHtml(f.nombre_completo)}</div>
                         <div class="text-[10px] text-slate-400">
-                            ${f.debe_cambiar_clave ? '⚠️ Pendiente de activación (clave inicial)' : escapeHtml(f.email || 'Activo')}
+                            ${f.debe_cambiar_clave ? '⚠️ Pendiente de primer ingreso' : escapeHtml(f.email || 'Activo')}
                         </div>
                     </td>
                     <td class="p-3">

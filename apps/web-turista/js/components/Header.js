@@ -112,11 +112,11 @@ export function updatePassiveGpsIndicator({
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] bg-amber-500/20 border border-amber-400/40 text-amber-200 px-3 py-2 rounded-lg">
             <span class="flex items-center gap-1.5">
                 <span>📡</span>
-                <span><b>Aviso GPS:</b> Tu ubicación física está en <b>"${escapeHtml(puntoCercano.nombre)}"</b> (a ${distTexto}).</span>
+                <span><b>Verificación de Ubicación:</b> Su dispositivo se encuentra en las proximidades de <b>"${escapeHtml(puntoCercano.nombre)}"</b>, a una distancia aproximada de ${distTexto}.</span>
             </span>
             <button type="button" id="btn-switch-gps-point"
                 class="shrink-0 px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold rounded-md text-[10px] uppercase tracking-wider shadow transition-colors">
-                Cambiar a ese punto
+                Cambiar a este punto
             </button>
         </div>
     `;

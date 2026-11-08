@@ -38,7 +38,7 @@ export function renderStepCalificacion(containerId) {
                     IV. Evaluación de Servicios
                 </h2>
                 <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">
-                    Califique en escala del 1 (Deficiente) al 5 (Excelente).
+                    Indique su valoración del 1 al 5, donde 5 representa la mejor experiencia.
                 </p>
             </div>
 

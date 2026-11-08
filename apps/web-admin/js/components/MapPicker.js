@@ -274,7 +274,7 @@ async function procesarUbicacionSeleccionada(lat, lng, callback) {
                 if (paisCode !== "ve" || (estadoStr && !estadoStr.includes("tachira"))) {
                     activeState.esValidoTachira = false;
                     activeState.municipio = "";
-                    activeState.motivoInvalido = `Ubicación fuera del Estado Táchira (${addr.state || addr.country || "Otro territorio"}).`;
+                    activeState.motivoInvalido = `Ubicación fuera de los límites del Estado Táchira: ${addr.state || addr.country || "Territorio externo"}.`;
                 } else {
                     const candidatoRaw = `${addr.county || ""} ${addr.municipality || ""} ${addr.city || ""} ${addr.town || ""} ${addr.village || ""}`;
                     const muniExacto = normalizarMunicipioNominatim(candidatoRaw);

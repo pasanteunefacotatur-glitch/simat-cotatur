@@ -67,14 +67,14 @@ export function renderStepDestinoPerfil(containerId) {
                 </label>
                 <div id="mount-autocomplete-municipio"></div>
                 <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-1">
-                    Puede buscar por municipio (ej. Jáuregui, Junín), por su capital (ej. La Grita, Rubio) o localidad (ej. Peribeca).
+                    Puede buscar por municipio, por su ciudad principal o por localidad turística.
                 </p>
             </div>
 
-            <!-- ¿Con quién viaja? (Tipología de la demanda) -->
+            <!-- ¿Con quién realiza su viaje? -->
             <div>
                 <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-                    ¿Con quién viaja? (Composición del grupo) <span class="text-red-600">*</span>
+                    ¿Con quién realiza su viaje? <span class="text-red-600">*</span>
                 </label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="group-composicion-viaje">
                     ${composicionButtons}
@@ -136,9 +136,9 @@ export function renderStepDestinoPerfil(containerId) {
     createAutocomplete({
         mountId: "mount-autocomplete-municipio",
         inputId: "select-municipio-destino",
-        placeholder: "Escriba municipio o capital (ej. San Cristóbal, La Grita, Táriba)...",
+        placeholder: "Escriba el municipio, capital o poblado de destino...",
         items: CATALOGO_MUNICIPIOS_TACHIRA,
-        getLabel: (item) => `${item.municipio} (Cap. ${item.capital})`,
+        getLabel: (item) => `${item.municipio} — ${item.capital}`,
         getSubLabel: (item) => `Capital: ${item.capital} • Ref: ${item.referencias}`,
         getSearchString: (item) => `${item.municipio} ${item.capital} ${item.referencias}`,
         allowCustom: false

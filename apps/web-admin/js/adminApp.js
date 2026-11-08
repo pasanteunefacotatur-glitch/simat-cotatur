@@ -279,7 +279,7 @@ function iniciarDashboard() {
 function actualizarBadgeUsuario() {
     const userBadge = document.getElementById("admin-current-user-badge");
     if (userBadge && activeSession && activeSession.funcionario) {
-        userBadge.textContent = `${activeSession.funcionario.nombre_completo} (C.I: ${activeSession.funcionario.cedula})`;
+        userBadge.textContent = `${activeSession.funcionario.nombre_completo} • Cédula: ${activeSession.funcionario.cedula}`;
     }
 }
 

@@ -72,7 +72,7 @@ export function renderMiPerfilAdmin(containerId, supabaseConfig, getActiveSessio
 
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                Correo Electrónico (Para recuperación):
+                                Correo Electrónico para Recuperación:
                             </label>
                             <input type="email" id="perfil-input-email" value="${func.email || ''}" placeholder="correo@gmail.com"
                                 class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-amber-500" />
@@ -108,9 +108,9 @@ export function renderMiPerfilAdmin(containerId, supabaseConfig, getActiveSessio
 
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                Confirmar Nueva:
+                                Confirmar Nueva Contraseña:
                             </label>
-                            <input type="password" id="perfil-input-confirmar-clave" placeholder="Repetir clave"
+                            <input type="password" id="perfil-input-confirmar-clave" placeholder="Repita la clave"
                                 class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white outline-none" />
                         </div>
                     </div>
@@ -121,7 +121,7 @@ export function renderMiPerfilAdmin(containerId, supabaseConfig, getActiveSessio
                     <button type="submit" id="btn-guardar-perfil"
                         class="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center space-x-1.5">
                         <span>💾</span>
-                        <span>Guardar Cambios en Mi Perfil</span>
+                        <span>Guardar Cambios</span>
                     </button>
                 </div>
             </form>

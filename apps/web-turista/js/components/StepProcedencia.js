@@ -34,24 +34,24 @@ export function renderStepProcedencia(containerId) {
                 </label>
                 <div class="grid grid-cols-2 gap-2">
                     <button type="button" id="btn-origen-nacional"
-                        class="py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors">
-                        Nacional (Venezuela)
+                        class="py-2.5 px-3 text-xs font-semibold rounded-lg border border-slate-800 bg-slate-800 text-white transition-colors">
+                        Procedencia Nacional
                     </button>
                     <button type="button" id="btn-origen-internacional"
-                        class="py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors">
-                        Internacional (Otro país)
+                        class="py-2.5 px-3 text-xs font-semibold rounded-lg border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors">
+                        Procedencia Internacional
                     </button>
                 </div>
             </div>
 
-            <!-- Selector de Estado (Nacional - Ordenado por los más frecuentes) -->
+            <!-- Selector de Estado de Procedencia Nacional -->
             <div id="wrapper-origen-nacional">
                 <label for="select-estado-origen" class="block text-xs font-semibold text-gray-700 mb-1.5">
                     Estado de residencia habitual <span class="text-red-600">*</span>
                 </label>
                 <select id="select-estado-origen" 
                     class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none">
-                    <option value="" disabled selected>Seleccione un estado (ordenados por frecuencia)...</option>
+                    <option value="" disabled selected>Seleccione el estado de procedencia...</option>
                     ${estadosOptions}
                 </select>
             </div>
@@ -63,7 +63,7 @@ export function renderStepProcedencia(containerId) {
                 </label>
                 <div id="mount-autocomplete-pais"></div>
                 <p class="text-[11px] text-gray-500 mt-1">
-                    Escriba el país o ciudad para autocompletar, o elija entre los más frecuentes.
+                    Escriba el nombre del país para autocompletar la selección.
                 </p>
             </div>
         </section>
@@ -73,7 +73,7 @@ export function renderStepProcedencia(containerId) {
     createAutocomplete({
         mountId: "mount-autocomplete-pais",
         inputId: "input-pais-origen",
-        placeholder: "Escriba o seleccione el país (ej. Colombia, España)...",
+        placeholder: "Indique el país de procedencia...",
         items: CATALOGO_PAISES,
         getLabel: (item) => item.nombre,
         getSubLabel: (item) => item.referencias ? `Ref: ${item.referencias}` : "",

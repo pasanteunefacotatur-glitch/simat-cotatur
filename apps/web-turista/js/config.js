@@ -141,55 +141,55 @@ export const CATALOGO_PAISES = [
 export const ESTADOS_VENEZUELA = [
     "Zulia", "Mérida", "Barinas", "Distrito Capital", "Carabobo",
     "Lara", "Miranda", "Aragua", "Trujillo", "Portuguesa",
-    "Táchira (Turismo interno)", "Anzoátegui", "Bolívar", "Falcón", "Apure",
+    "Táchira", "Anzoátegui", "Bolívar", "Falcón", "Apure",
     "Monagas", "Yaracuy", "Guárico", "Sucre", "Nueva Esparta",
     "La Guaira", "Cojedes", "Delta Amacuro", "Amazonas"
 ];
 
 export const MOTIVOS_VIAJE = [
-    { codigo: "TURISMO_RECREACION", etiqueta: "Turismo / Recreación" },
-    { codigo: "FAMILIAR", etiqueta: "Visita a familiares" },
-    { codigo: "NEGOCIOS", etiqueta: "Negocios / Trabajo" },
-    { codigo: "RELIGIOSO_CULTURAL", etiqueta: "Religioso / Evento" }
+    { codigo: "TURISMO_RECREACION", etiqueta: "Turismo y Recreación" },
+    { codigo: "FAMILIAR", etiqueta: "Visita a Familiares y Amigos" },
+    { codigo: "NEGOCIOS", etiqueta: "Negocios y Trabajo" },
+    { codigo: "RELIGIOSO_CULTURAL", etiqueta: "Motivo Religioso o Cultural" }
 ];
 
 export const TIPOS_ALOJAMIENTO = [
-    { codigo: "POSADA", etiqueta: "Posada turística" },
+    { codigo: "POSADA", etiqueta: "Posada Turística" },
     { codigo: "HOTEL", etiqueta: "Hotel" },
-    { codigo: "CASA_FAMILIAR", etiqueta: "Vivienda de familiares o amigos" },
-    { codigo: "ALQUILER_TEMPORAL", etiqueta: "Alquiler temporal / Cabaña" },
-    { codigo: "SIN_PERNOCTA", etiqueta: "Sin pernocta (Visita de un día)" }
+    { codigo: "CASA_FAMILIAR", etiqueta: "Vivienda de Familiares o Amigos" },
+    { codigo: "ALQUILER_TEMPORAL", etiqueta: "Alquiler Vacacional o Cabaña" },
+    { codigo: "SIN_PERNOCTA", etiqueta: "Sin pernocta — Visita por el día" }
 ];
 
 export const CRITERIOS_EVALUACION = [
     { id: "vialidad", label: "Estado de las vías de acceso", default: 4 },
     { id: "seguridad", label: "Percepción de seguridad", default: 5 },
-    { id: "hospitalidad", label: "Atención al visitante", default: 5 },
+    { id: "hospitalidad", label: "Atención y hospitalidad", default: 5 },
     { id: "servicios", label: "Servicios públicos y estaciones", default: 4 }
 ];
 
 /**
- * Catálogo de Tipología de Viaje (¿Con quién viaja?)
+ * Catálogo de Tipología de Viaje (Composición del grupo)
  */
 export const COMPOSICION_GRUPO = [
-    { codigo: "GRUPO_FAMILIAR", etiqueta: "👨‍👩‍👧‍👦 Familia (con niños / adultos mayores)" },
+    { codigo: "GRUPO_FAMILIAR", etiqueta: "👨‍👩‍👧‍👦 Grupo Familiar" },
     { codigo: "PAREJA", etiqueta: "👫 En Pareja" },
-    { codigo: "AMIGOS_COMPANEROS", etiqueta: "👥 Amigos / Compañeros" },
-    { codigo: "SOLO_INDIVIDUAL", etiqueta: "🎒 Solo / Individual" },
-    { codigo: "EXCURSION_ORGANIZADA", etiqueta: "🚌 Excursión Organizada" }
+    { codigo: "AMIGOS_COMPANEROS", etiqueta: "👥 Amigos o Compañeros" },
+    { codigo: "SOLO_INDIVIDUAL", etiqueta: "🎒 Viajero Individual" },
+    { codigo: "EXCURSION_ORGANIZADA", etiqueta: "🚌 Excursión Turística Organizada" }
 ];
 
 /**
  * Rangos de edad predominante del responsable o grupo
  */
 export const RANGOS_EDAD = [
-    { codigo: "18_29", etiqueta: "18 a 29 años (Jóvenes)" },
-    { codigo: "30_49", etiqueta: "30 a 49 años (Adultos)" },
-    { codigo: "50_MAS", etiqueta: "50 años o más (Adultos mayores)" }
+    { codigo: "18_29", etiqueta: "18 a 29 años" },
+    { codigo: "30_49", etiqueta: "30 a 49 años" },
+    { codigo: "50_MAS", etiqueta: "50 años o más" }
 ];
 
 /**
- * Configuración de Preguntas Específicas por Temporada / Asueto
+ * Configuración de Preguntas Específicas por Temporada o Evento
  */
 export const TEMPORADAS_CONFIG = {
     FISS: {
@@ -202,8 +202,8 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_multi",
                 label: "¿A cuáles actividades o eventos feriales tiene previsto asistir?",
                 opciones: [
-                    "Desfile de Feria", "Feria Ganadera (Asogata)", "Pabellones Colombia-Venezuela",
-                    "Corridas de Toros", "Conciertos / Noches de Feria", "Elección de la Reina"
+                    "Desfile de Feria", "Feria Ganadera Asogata", "Pabellones Colombia y Venezuela",
+                    "Corridas de Toros", "Conciertos y Noches de Feria", "Elección de la Reina"
                 ]
             }
         ]
@@ -218,8 +218,8 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_single",
                 label: "¿Qué atractivo o circuito turístico visita principalmente?",
                 opciones: [
-                    "Ruta de Montaña y Páramos", "Aguas Termales (Ureña/San Cristóbal)",
-                    "Balnearios y Ríos", "Pueblos Típicos (Peribeca / San Pedro)"
+                    "Ruta de Montaña y Páramos", "Aguas Termales de Ureña y San Cristóbal",
+                    "Balnearios y Ríos", "Pueblos Típicos: Peribeca y San Pedro del Río"
                 ]
             }
         ]
@@ -234,7 +234,7 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_single",
                 label: "¿Cuál es la actividad principal de su visita?",
                 opciones: [
-                    "Peregrinación y Ruta de los 7 Templos", "Turismo de Naturaleza / Páramos",
+                    "Peregrinación y Ruta de los 7 Templos", "Turismo de Naturaleza y Páramos",
                     "Descanso y Convivencia Familiar", "Tradiciones Gastronómicas"
                 ]
             }
@@ -250,7 +250,7 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_single",
                 label: "¿Cómo realiza la peregrinación hacia La Grita?",
                 opciones: [
-                    "Caminata a pie (Peregrino)", "En Bicicleta", "Vehículo Particular", "Excursión en Autobús"
+                    "Peregrinación a pie", "En Bicicleta", "Vehículo Particular", "Excursión en Autobús"
                 ]
             },
             {
@@ -258,7 +258,7 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_single",
                 label: "¿Es su primera peregrinación o es una tradición anual?",
                 opciones: [
-                    "Es mi primera vez", "Tradición de todos los años", "Visita ocasional"
+                    "Es mi primera visita", "Tradición anual", "Visita ocasional"
                 ]
             }
         ]
@@ -273,7 +273,7 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_single",
                 label: "¿Participa en la peregrinación hacia la Basílica de Táriba?",
                 opciones: [
-                    "Sí, caminata desde San Cristóbal", "En vehículo / transporte", "Visita turística general"
+                    "Sí, caminata desde San Cristóbal", "En vehículo o transporte público", "Visita turística general"
                 ]
             }
         ]
@@ -318,14 +318,14 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_single",
                 label: "¿Qué motivo describe mejor su estadía decembrina?",
                 opciones: [
-                    "Reencuentro familiar / Navidades", "Turismo y clima andino", "Ruta de pesebres y tradiciones"
+                    "Reencuentro familiar y celebraciones navideñas", "Turismo y clima andino", "Ruta de pesebres y tradiciones"
                 ]
             }
         ]
     },
     EVENTO_ESPECIAL: {
         codigo: "EVENTO_ESPECIAL",
-        titulo: "Evento Especial / Deportivo / Concierto",
+        titulo: "Evento Cultural o Deportivo",
         badge: "⭐ Evento Especial",
         preguntas: [
             {
@@ -333,7 +333,7 @@ export const TEMPORADAS_CONFIG = {
                 tipo: "chips_single",
                 label: "¿Vino al Estado Táchira exclusivamente por este evento?",
                 opciones: [
-                    "Sí, vine únicamente por el evento", "No, aproveché para hacer turismo también"
+                    "Sí, vine únicamente por el evento", "No, aproveché para realizar turismo"
                 ]
             }
         ]

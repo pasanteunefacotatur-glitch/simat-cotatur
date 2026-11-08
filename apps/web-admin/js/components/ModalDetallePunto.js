@@ -65,7 +65,7 @@ export function getModalDetallePuntoHtml() {
                             <div>
                                 <h4 class="font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                     <span>👥</span>
-                                    <span>Asignación de Personal (Izquierda: Asignados / Derecha: Sin Asignar)</span>
+                                    <span>Asignación de Personal de Campo</span>
                                 </h4>
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400">
                                     Un mismo funcionario puede estar asignado simultáneamente a varios puntos de encuesta activos.
@@ -88,7 +88,7 @@ export function getModalDetallePuntoHtml() {
                 <div class="px-5 py-3 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex justify-end">
                     <button type="button" id="btn-cerrar-detalle-footer"
                         class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow transition-colors">
-                        Listo / Cerrar Ficha
+                        Cerrar Ficha
                     </button>
                 </div>
 

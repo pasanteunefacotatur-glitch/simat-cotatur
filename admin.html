@@ -67,7 +67,7 @@
             </form>
 
             <a href="./index.html" class="inline-block text-xs text-slate-400 hover:text-amber-500 transition-colors">
-                ← Volver a la encuesta pública
+                ← Ir a la Encuesta del Visitante
             </a>
         </div>
     </div>
@@ -79,9 +79,9 @@
         <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border-2 border-amber-500/40 p-6 space-y-4">
             <div class="text-center space-y-1">
                 <span class="text-2xl">🎉</span>
-                <h3 class="text-base font-black text-slate-900 dark:text-white">Activación de Cuenta de Funcionario</h3>
+                <h3 class="text-base font-black text-slate-900 dark:text-white">Activación de Cuenta Institucional</h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Es tu primer ingreso. Por favor define tu contraseña personal y completa tus datos.
+                    Bienvenido al sistema. Por favor establezca su contraseña personal y verifique sus datos de contacto.
                 </p>
                 <div id="activar-cedula-badge" class="inline-block bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 font-mono text-xs px-3 py-1 rounded-full font-bold">
                     Cédula: ---
@@ -92,12 +92,12 @@
             <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
                 <div class="text-xs">
                     <span class="font-bold text-slate-800 dark:text-slate-200 block">Vincular con Google:</span>
-                    <span class="text-[11px] text-slate-500">Obtén tu correo para recuperación de clave.</span>
+                    <span class="text-[11px] text-slate-500">Permite registrar su correo para recuperación de clave.</span>
                 </div>
                 <button type="button" id="btn-activar-google"
                     class="px-3 py-1.5 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-bold rounded-lg border border-slate-300 dark:border-slate-600 text-xs shadow-sm flex items-center space-x-1.5">
                     <span>🌐</span>
-                    <span>Google Mail</span>
+                    <span>Vincular Cuenta</span>
                 </button>
             </div>
 
@@ -110,7 +110,7 @@
 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Teléfono:</label>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Teléfono Móvil:</label>
                         <input type="text" id="activar-telefono" placeholder="0414-1234567"
                             class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white outline-none" />
                     </div>
@@ -129,14 +129,14 @@
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Confirmar Contraseña: <span class="text-red-500">*</span></label>
-                        <input type="password" id="activar-confirmar-clave" required placeholder="Repetir clave"
+                        <input type="password" id="activar-confirmar-clave" required placeholder="Repita la contraseña"
                             class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white outline-none" />
                     </div>
                 </div>
 
                 <button type="submit"
                     class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 mt-2">
-                    Activar Cuenta y Entrar
+                    Completar Registro e Ingresar
                 </button>
             </form>
         </div>
@@ -181,27 +181,27 @@
                     <button type="button" data-target="tab-prensa"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-amber-500 text-amber-500 font-bold flex items-center space-x-1.5 whitespace-nowrap">
                         <span>🎙️</span>
-                        <span>Rueda de Prensa Gobernador</span>
+                        <span>Rueda de Prensa</span>
                     </button>
                     <button type="button" data-target="tab-calendario"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📅</span>
-                        <span>Calendario y Asuetos</span>
+                        <span>Calendario Turístico</span>
                     </button>
                     <button type="button" data-target="tab-puntos"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📍</span>
-                        <span>Puntos de Encuesta y Equipos</span>
+                        <span>Puntos de Control</span>
                     </button>
                     <button type="button" data-target="tab-personal"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>👥</span>
-                        <span>Personal y Nómina</span>
+                        <span>Equipo de Encuestadores</span>
                     </button>
                     <button type="button" data-target="tab-qr"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📱</span>
-                        <span>Generador QR y Afiches</span>
+                        <span>Material Promocional y QR</span>
                     </button>
                     <button type="button" data-target="tab-perfil"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">

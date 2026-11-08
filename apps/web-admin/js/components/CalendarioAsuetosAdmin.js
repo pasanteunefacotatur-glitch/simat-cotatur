@@ -198,20 +198,20 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
 
         const bannerEstadoEncuesta = activosHoy.length === 0
             ? `<div class="p-3 bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs flex items-center justify-between">
-                   <span>📌 <b>Estado hoy en la Encuesta (${hoyStr}):</b> Sin asuetos activos en esta fecha. La encuesta se fija automáticamente en <b>Temporada Regular</b> (sin selector).</span>
+                   <span>📌 <b>Estado de la encuesta para hoy, ${hoyStr}:</b> No hay asuetos programados para esta fecha. La encuesta opera en modalidad <b>Temporada Regular</b>.</span>
                </div>`
             : activosHoy.length === 1
                 ? `<div class="p-3 bg-emerald-500/15 border border-emerald-500/40 rounded-2xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                       <span>🎯 <b>Asueto único activo hoy (${hoyStr}):</b> La encuesta selecciona automáticamente <b>"${activosHoy[0].nombre}"</b> sin mostrar lista de otros eventos.</span>
+                       <span>🎯 <b>Asueto vigente para hoy, ${hoyStr}:</b> La encuesta activa automáticamente el formulario de <b>"${activosHoy[0].nombre}"</b>.</span>
                    </div>`
                 : `<div class="p-3 bg-amber-500/15 border border-amber-500/40 rounded-2xl text-xs text-amber-900 dark:text-amber-300 flex items-center justify-between">
-                       <span>⚡ <b>${activosHoy.length} Asuetos coinciden hoy (${hoyStr}):</b> La encuesta muestra el selector únicamente con: <b>${activosHoy.map(x => x.nombre).join(" / ")}</b>.</span>
+                       <span>⚡ <b>Eventos simultáneos para hoy, ${hoyStr}:</b> Se encuentran disponibles los cuestionarios de: <b>${activosHoy.map(x => x.nombre).join(" y ")}</b>.</span>
                    </div>`;
 
         const cardsHTML = asuetosList.map(a => {
             const isEnCurso = a.activo && hoyStr >= a.fecha_inicio && hoyStr <= a.fecha_fin;
             const badgeEnCurso = isEnCurso
-                ? `<span class="px-2 py-0.5 text-[10px] bg-emerald-500 text-white font-extrabold rounded-full animate-pulse">ACTIVO EN ENCUESTA HOY</span>`
+                ? `<span class="px-2 py-0.5 text-[10px] bg-emerald-500 text-white font-extrabold rounded-full animate-pulse">ACTIVO HOY</span>`
                 : "";
 
             return `
@@ -270,7 +270,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                     <div class="flex items-center space-x-3">
                         <label for="select-cal-year" class="text-xs font-semibold text-slate-600 dark:text-slate-300">Año:</label>
                         <select id="select-cal-year" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none">
-                            <option value="2026" ${selectedYear === 2026 ? "selected" : ""}>2026 (En Curso)</option>
+                            <option value="2026" ${selectedYear === 2026 ? "selected" : ""}>Año 2026 — En Curso</option>
                             <option value="2027" ${selectedYear === 2027 ? "selected" : ""}>2027</option>
                             <option value="2028" ${selectedYear === 2028 ? "selected" : ""}>2028</option>
                             <option value="2029" ${selectedYear === 2029 ? "selected" : ""}>2029</option>

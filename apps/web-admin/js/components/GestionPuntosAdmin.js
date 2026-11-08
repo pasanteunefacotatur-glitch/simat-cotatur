@@ -44,13 +44,13 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                         <span>Puntos de Control Turístico y Equipos Asignados</span>
                     </h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                        Haz clic en cualquier punto para ver o gestionar sus funcionarios en 2 columnas (Asignados / Sin Asignar).
+                        Seleccione un punto de control para consultar sus detalles y gestionar las asignaciones del personal de campo.
                     </p>
                 </div>
                 <button type="button" id="btn-toggle-nuevo-punto"
                     class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow transition-all flex items-center space-x-1.5 active:scale-95">
                     <span>➕</span>
-                    <span id="label-toggle-nuevo-punto">Nuevo Punto con Mapa</span>
+                    <span id="label-toggle-nuevo-punto">Registrar Punto de Control</span>
                 </button>
             </div>
 
@@ -59,10 +59,10 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 <div class="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
                     <div>
                         <h4 class="text-sm font-extrabold text-slate-900 dark:text-white">
-                            📍 Registro de Nuevo Punto de Control y Equipo de Campo
+                            📍 Registro de Punto de Control Turístico
                         </h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400">
-                            Ubica el pin en el mapa dentro del Estado Táchira para detectar automáticamente el municipio y asigna el personal participante.
+                            Ubique el marcador en el mapa dentro del Estado Táchira para detectar el municipio y asigne los encuestadores correspondientes.
                         </p>
                     </div>
                     <button type="button" id="btn-cancelar-crear-punto" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold">
@@ -85,17 +85,17 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                             Tipo de Punto <span class="text-red-500">*</span>
                         </label>
                         <select id="nuevo-punto-tipo" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none">
-                            <option value="PEAJE">PEAJE (Vial)</option>
-                            <option value="TERMINAL">TERMINAL (Terrestre / Aéreo)</option>
-                            <option value="FRONTERA">FRONTERA (Puente Internacional)</option>
-                            <option value="ATRACCION">ATRACCIÓN / SITIO TURÍSTICO</option>
-                            <option value="EVENTO">EVENTO ESPECIAL / FERIA</option>
+                            <option value="PEAJE">Peaje Vial</option>
+                            <option value="TERMINAL">Terminal Terrestre o Aeropuerto</option>
+                            <option value="FRONTERA">Paso Fronterizo o Puente Internacional</option>
+                            <option value="ATRACCION">Sitio o Atractivo Turístico</option>
+                            <option value="EVENTO">Feria o Evento Especial</option>
                         </select>
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            Municipio del Táchira (Autodetectado por Mapa) <span class="text-red-500">*</span>
+                            Municipio del Estado Táchira <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="nuevo-punto-municipio" readonly placeholder="Mueve el pin en el mapa..."
                             class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-900 dark:text-white outline-none" />
@@ -106,7 +106,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 <div class="space-y-2">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
                         <span class="font-bold text-slate-700 dark:text-slate-300">
-                            1. Fijar ubicación exacta en el mapa del Estado Táchira:
+                            1. Ubicación geográfica en el mapa del Estado Táchira:
                         </span>
                         <div id="map-coords-status" class="flex items-center text-[11px] text-emerald-600 dark:text-emerald-400">
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
@@ -120,7 +120,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                     <div>
                         <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                            2. Asignación de Personal al Punto (Izquierda: Asignados / Derecha: Sin Asignar):
+                            2. Asignación de personal encuestador a este punto:
                         </span>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400">
                             Los funcionarios pueden tener varios puntos de encuesta activos simultáneamente.
@@ -134,7 +134,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     <button type="button" id="btn-guardar-punto-mapa"
                         class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition-all text-xs flex items-center space-x-1.5 active:scale-95">
                         <span>💾</span>
-                        <span>Guardar Punto y Asignar Personal</span>
+                        <span>Guardar Registro</span>
                     </button>
                 </div>
             </div>
@@ -143,7 +143,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Puntos Operativos (Haz clic para gestionar equipo en 2 columnas)
+                        Puntos de Control Operativos
                     </span>
                     <button type="button" id="btn-recargar-puntos" class="text-xs text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
                         <span>🔄</span>
@@ -156,7 +156,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                         <thead class="bg-slate-50 dark:bg-slate-800 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                             <tr>
                                 <th class="p-3">Código</th>
-                                <th class="p-3">Nombre Oficial (Clic para detalle)</th>
+                                <th class="p-3">Nombre del Punto</th>
                                 <th class="p-3">Tipo</th>
                                 <th class="p-3">Municipio</th>
                                 <th class="p-3 text-center">Estado</th>

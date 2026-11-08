@@ -171,20 +171,20 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                         <select id="select-filtro-temporada-prensa"
                             class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none">
                             <option value="TODAS" ${filtroTemporada === "TODAS" ? "selected" : ""}>Toda la Temporada</option>
-                            <option value="FISS" ${filtroTemporada === "FISS" ? "selected" : ""}>FISS (San Sebastián)</option>
+                            <option value="FISS" ${filtroTemporada === "FISS" ? "selected" : ""}>Feria Internacional de San Sebastián</option>
                             <option value="CARNAVALES" ${filtroTemporada === "CARNAVALES" ? "selected" : ""}>Carnavales Turísticos</option>
                             <option value="SEMANA_SANTA" ${filtroTemporada === "SEMANA_SANTA" ? "selected" : ""}>Semana Santa</option>
                             <option value="SANTO_CRISTO" ${filtroTemporada === "SANTO_CRISTO" ? "selected" : ""}>Santo Cristo de La Grita</option>
                             <option value="CONSOLACION_TARIBA" ${filtroTemporada === "CONSOLACION_TARIBA" ? "selected" : ""}>Consolación de Táriba</option>
                             <option value="VACACIONES_ESCOLARES" ${filtroTemporada === "VACACIONES_ESCOLARES" ? "selected" : ""}>Vacaciones Escolares</option>
-                            <option value="FIN_DE_ANO" ${filtroTemporada === "FIN_DE_ANO" ? "selected" : ""}>Diciembre / Fin de Año</option>
+                            <option value="FIN_DE_ANO" ${filtroTemporada === "FIN_DE_ANO" ? "selected" : ""}>Temporada Decembrina y Año Nuevo</option>
                         </select>
 
                         <!-- Botón Propuesta 1: Diapositiva 16:9 -->
                         <button type="button" id="btn-abrir-diapositiva-16-9"
                             class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl text-xs flex items-center space-x-1.5 shadow transition-all active:scale-95">
                             <span>🖥️</span>
-                            <span>Diapositiva 16:9 (Pantalla LED)</span>
+                            <span>Modo Presentación 16:9</span>
                         </button>
 
                         <button type="button" id="btn-print-prensa"
@@ -271,10 +271,10 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                                 ⛶ Pantalla Completa
                             </button>
                             <button type="button" id="btn-slide-print" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold">
-                                🖨️ Imprimir Diapositiva
+                                🖨️ Imprimir Lámina
                             </button>
                             <button type="button" id="btn-slide-close" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded-lg text-xs font-bold">
-                                ✕ Cerrar
+                                ✕ Cerrar Presentación
                             </button>
                         </div>
                     </div>
@@ -399,7 +399,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                 pct_internacionales: 18.5
             },
             top_origenes: [
-                { origen: "Colombia (Norte de Santander / Bogotá)", encuestas: 590, pct: 18.5 },
+                { origen: "Colombia: Norte de Santander y Bogotá", encuestas: 590, pct: 18.5 },
                 { origen: "Zulia", encuestas: 680, pct: 21.2 },
                 { origen: "Barinas", encuestas: 510, pct: 15.9 },
                 { origen: "Mérida", encuestas: 420, pct: 13.1 },

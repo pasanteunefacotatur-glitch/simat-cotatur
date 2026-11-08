@@ -206,8 +206,8 @@ export function renderSelectorPersonalDobleColumna({
                         </div>
                         <button type="button" data-remove-id="${escapeHtml(f.id)}"
                             class="btn-col-quitar shrink-0 px-2.5 py-1 bg-red-500/15 hover:bg-red-500/25 text-red-600 dark:text-red-400 border border-red-500/30 rounded-lg text-[11px] font-bold transition-colors"
-                            title="Quitar de este punto y pasar a Sin Asignar">
-                            Quitar ➔
+                            title="Quitar de este punto y pasar a disponibles">
+                            Quitar
                         </button>
                     </div>
                 `;
@@ -230,7 +230,7 @@ export function renderSelectorPersonalDobleColumna({
                         <button type="button" data-add-id="${escapeHtml(f.id)}"
                             class="btn-col-agregar shrink-0 px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-[11px] font-bold shadow-sm transition-colors"
                             title="Asignar a este punto">
-                            ⬅ Asignar
+                            Asignar
                         </button>
                         <div class="min-w-0 flex-1 text-right sm:text-left">
                             <div class="text-xs font-bold text-slate-900 dark:text-white truncate">
@@ -257,7 +257,7 @@ export function renderSelectorPersonalDobleColumna({
                             </h5>
                         </div>
                         <span class="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-                            ${asignadosList.length} asignado(s)
+                            ${asignadosList.length} asignados
                         </span>
                     </div>
                     <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -265,17 +265,17 @@ export function renderSelectorPersonalDobleColumna({
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: PERSONAL SIN ASIGNAR A ESTE PUNTO -->
+                <!-- COLUMNA DERECHA: PERSONAL DISPONIBLE -->
                 <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-2xl p-3.5 flex flex-col space-y-2.5">
                     <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
                         <div class="flex items-center space-x-1.5">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
                             <h5 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
-                                Personal Sin Asignar (Disponibles)
+                                Personal Disponible
                             </h5>
                         </div>
                         <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                            ${sinAsignarList.length} disponible(s)
+                            ${sinAsignarList.length} disponibles
                         </span>
                     </div>
                     <div class="space-y-2 max-h-60 overflow-y-auto pr-1">

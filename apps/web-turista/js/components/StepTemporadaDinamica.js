@@ -91,7 +91,7 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
             <div class="p-3 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/70 rounded-xl flex items-center justify-between gap-2">
                 <div>
                     <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">
-                        Calendario Oficial COTATUR (Asignado Automáticamente Hoy)
+                        Calendario Oficial COTATUR • Temporada Activa
                     </span>
                     <span class="text-xs font-extrabold text-gray-900 dark:text-white">
                         📅 ${asuetoActualObj.nombre || config.titulo}
@@ -111,7 +111,7 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
         cabeceraAsuetoHtml = `
             <div>
                 <label for="select-temporada-activa" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-                    Seleccione el operativo o asueto vigente hoy (${cachedAsuetosHoy.length} disponibles en calendario): <span class="text-red-500">*</span>
+                    Seleccione el evento o festividad correspondiente a su visita: <span class="text-red-500">*</span>
                 </label>
                 <select id="select-temporada-activa"
                     class="w-full bg-white dark:bg-slate-800 border-2 border-amber-500 rounded-lg px-3 py-2 text-sm font-bold text-gray-900 dark:text-white focus:border-amber-500 outline-none">
@@ -126,10 +126,10 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
             <div class="flex items-center justify-between border-b border-gray-200 dark:border-slate-800 pb-2.5">
                 <div>
                     <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
-                        III. Operativo / Asueto en Curso
+                        III. Evento o Temporada Activa
                     </h2>
                     <p class="text-[11px] text-gray-500 dark:text-slate-400">
-                        Activado automáticamente según la fecha del Calendario Oficial de COTATUR.
+                        Formulario ajustado automáticamente según la fecha del Calendario Oficial de COTATUR.
                     </p>
                 </div>
                 <span class="text-xs font-extrabold px-2.5 py-1 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-400 border border-amber-300 dark:border-amber-800 rounded-full">

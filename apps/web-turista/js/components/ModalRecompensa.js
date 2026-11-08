@@ -36,11 +36,11 @@ export function renderModalRecompensa(containerId) {
                             Guía de Rutas Turísticas y Alojamientos
                         </h4>
                         <p class="text-gray-600 mt-1 text-[11px]">
-                            Documento informativo con circuitos principales (Ruta de la Montaña, Chorro El Indio, Peribeca y Páramo El Zumbador).
+                            Documento informativo con circuitos turísticos principales como la Ruta de la Montaña, Chorro El Indio, Peribeca y Páramo El Zumbador.
                         </p>
                         <button type="button" id="btn-descarga-mapa"
-                            class="mt-2.5 inline-block px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded text-xs transition-colors">
-                            Descargar Guía en PDF
+                            class="mt-2.5 inline-block px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded text-xs transition-colors">
+                            Descargar Guía Turística
                         </button>
                     </div>
 
@@ -61,7 +61,7 @@ export function renderModalRecompensa(containerId) {
                 <div class="px-5 py-3 bg-gray-100 border-t border-gray-200 flex justify-end">
                     <button type="button" id="btn-cerrar-modal-recompensa"
                         class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold text-xs rounded transition-colors">
-                        Cerrar y finalizar
+                        Finalizar y Cerrar
                     </button>
                 </div>
 
