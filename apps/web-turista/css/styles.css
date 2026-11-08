@@ -1,50 +1,167 @@
 /**
  * ==============================================================================
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
- * ARCHIVO: styles.css
- * DESCRIPCIÓN: Estilos base, compatibilidad con muescas (Notch / Safe Areas),
- *              pantallas curvas, prevención de auto-zoom en iOS Safari
- *              y reglas de impresión en Hoja Carta (8.5" x 11" / Letter).
+ * ARCHIVO: apps/web-turista/css/styles.css
+ * DESCRIPCIÓN: Estilos base con soporte de 3 temas:
+ *              1. Modo Claro (Light): Alto contraste para luz solar exterior en peajes.
+ *              2. Modo Oscuro LCD (Dark): Reducción de fatiga visual nocturna.
+ *              3. Modo AMOLED (Pure Black): Negro 100% (#000000) que apaga píxeles
+ *                 en pantallas OLED/AMOLED ahorrando batería en campo.
+ *              Incluye reglas de impresión oficial en Hoja Carta (8.5" x 11").
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Tipografía institucional oficial de COTATUR (tachiraesturismo.com.ve) */
+/* --- 1. Variables de Tema (CSS Custom Properties) --- */
+:root, [data-theme="light"] {
+    --bg-page: #f1f5f9;
+    --bg-surface: #ffffff;
+    --bg-surface-subtle: #f8fafc;
+    --border-color: #cbd5e1;
+    --border-subtle: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --input-bg: #ffffff;
+    --input-border: #94a3b8;
+    --header-bg: #1c1c1c;
+    --accent-gold: #d97706;
+}
+
+[data-theme="dark"] {
+    --bg-page: #0f172a;
+    --bg-surface: #1e293b;
+    --bg-surface-subtle: #111827;
+    --border-color: #334155;
+    --border-subtle: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --input-bg: #1e293b;
+    --input-border: #475569;
+    --header-bg: #0b1120;
+    --accent-gold: #f59e0b;
+}
+
+/* Modo AMOLED (Negro Absoluto #000000 - Máximo ahorro de batería en móviles OLED) */
+[data-theme="amoled"] {
+    --bg-page: #000000;
+    --bg-surface: #0a0a0a;
+    --bg-surface-subtle: #000000;
+    --border-color: #27272a;
+    --border-subtle: #18181b;
+    --text-primary: #ffffff;
+    --text-secondary: #e4e4e7;
+    --text-muted: #71717a;
+    --input-bg: #09090b;
+    --input-border: #27272a;
+    --header-bg: #000000;
+    --accent-gold: #fbbf24;
+}
+
+/* --- 2. Tipografía y Comportamiento Base --- */
 body {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 h1, h2, h3, h4, h5, h6, .font-heading {
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Compatibilidad con muescas de cámaras y barras de navegación móviles */
+/* Compatibilidad con muescas (Notch / Safe Area) */
 .pt-safe {
     padding-top: max(0.75rem, env(safe-area-inset-top));
 }
-
 .pb-safe {
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
 }
-
 .px-safe {
     padding-left: max(1rem, env(safe-area-inset-left));
     padding-right: max(1rem, env(safe-area-inset-right));
 }
 
-/* Regla crítica para iPhone / iOS Safari: Previene zoom involuntario en inputs */
+/* Prevenir auto-zoom molesto en inputs de iOS Safari */
 input, select, textarea {
     font-size: 16px !important;
 }
 
-/* ==============================================================================
- * REGLAS DE IMPRESIÓN OFICIAL EN HOJA TIPO CARTA (8.5" x 11" / Letter Portrait)
- * ============================================================================== */
+/* --- 3. Sobrescrituras para Modo Oscuro y AMOLED en Componentes --- */
+[data-theme="dark"] .bg-white,
+[data-theme="amoled"] .bg-white {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .bg-gray-100,
+[data-theme="amoled"] .bg-gray-100 {
+    background-color: var(--bg-page) !important;
+}
+
+[data-theme="dark"] .bg-gray-50,
+[data-theme="amoled"] .bg-gray-50 {
+    background-color: var(--bg-surface-subtle) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .text-gray-900,
+[data-theme="amoled"] .text-gray-900 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-gray-800,
+[data-theme="dark"] .text-gray-700,
+[data-theme="amoled"] .text-gray-800,
+[data-theme="amoled"] .text-gray-700 {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-gray-600,
+[data-theme="dark"] .text-gray-500,
+[data-theme="amoled"] .text-gray-600,
+[data-theme="amoled"] .text-gray-500 {
+    color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .border-gray-200,
+[data-theme="dark"] .border-gray-300,
+[data-theme="amoled"] .border-gray-200,
+[data-theme="amoled"] .border-gray-300 {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea,
+[data-theme="amoled"] input,
+[data-theme="amoled"] select,
+[data-theme="amoled"] textarea {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Autocomplete lista desplegable en temas oscuros */
+[data-theme="dark"] .autocomplete-list,
+[data-theme="amoled"] .autocomplete-list {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .autocomplete-item:hover,
+[data-theme="amoled"] .autocomplete-item:hover {
+    background-color: var(--border-color) !important;
+}
+
+/* --- 4. REGLAS DE IMPRESIÓN OFICIAL EN HOJA TIPO CARTA (8.5" x 11" / Letter) --- */
 @media print {
     @page {
         size: letter portrait;
@@ -61,30 +178,18 @@ input, select, textarea {
     body > header,
     body > main,
     #modal-mount,
-    #modal-admin-overlay,
-    .bg-slate-900,
-    .bg-slate-50,
+    .no-print,
     button {
         display: none !important;
     }
 
     /* Mostrar exclusivamente el contenedor del cartel carta */
-    #modal-qr-overlay {
+    #cartel-hoja-carta,
+    .cartel-imprimible-root {
         display: block !important;
         position: static !important;
-        background: transparent !important;
-        padding: 0 !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }
-
-    #modal-qr-overlay > div {
-        max-width: 100% !important;
-        box-shadow: none !important;
-        border: none !important;
-    }
-
-    #cartel-hoja-carta {
+        background: #ffffff !important;
+        color: #000000 !important;
         max-width: 100% !important;
         width: 100% !important;
         border: 2px solid #0f172a !important;
@@ -92,5 +197,14 @@ input, select, textarea {
         padding: 10mm 12mm !important;
         margin: 0 auto !important;
         page-break-inside: avoid !important;
+    }
+
+    #cartel-hoja-carta * {
+        color: #000000 !important;
+    }
+
+    #cartel-hoja-carta .bg-slate-900 {
+        background-color: #0f172a !important;
+        color: #ffffff !important;
     }
 }

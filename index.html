@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-gray-100">
+<html lang="es" class="h-full" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#1c1c1c">
-    <title>COTATUR • Encuesta de Perfil del Visitante</title>
+    <title>COTATUR • Encuesta Oficial de Perfil del Visitante</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Estilos base y tipografía oficial (tachiraesturismo.com.ve) -->
+    <!-- Estilos base, compatibilidad de pantallas y temas (Claro / Oscuro LCD / AMOLED) -->
     <link rel="stylesheet" href="./apps/web-turista/css/styles.css">
 </head>
-<body class="min-h-full flex flex-col text-gray-900 bg-gray-100 antialiased font-['Poppins',sans-serif]">
+<body class="min-h-full flex flex-col antialiased font-['Poppins',sans-serif]">
 
-    <!-- 1. Encabezado Institucional con Logos Oficiales -->
+    <!-- 1. Encabezado Institucional con Logos Oficiales y Selector de Tema -->
     <div id="header-mount"></div>
 
-    <!-- 2. Cuerpo del Formulario -->
+    <!-- 2. Cuerpo del Formulario de Encuesta Turística -->
     <main class="flex-1 max-w-xl w-full mx-auto px-4 py-5 space-y-4 px-safe pb-safe">
         <form id="form-encuesta-turistica" class="space-y-4">
             
@@ -40,9 +40,9 @@
 
         </form>
 
-        <!-- Pie de página oficial COTATUR -->
-        <footer class="text-center text-[11px] text-gray-500 py-4 border-t border-gray-200 mt-6 space-y-1">
-            <p class="font-bold text-gray-700">Corporación Tachirense de Turismo (COTATUR)</p>
+        <!-- Pie de página oficial de COTATUR -->
+        <footer class="text-center text-[11px] py-4 border-t border-gray-300/40 mt-6 space-y-1">
+            <p class="font-bold text-gray-700 dark:text-gray-300">Corporación Tachirense de Turismo (COTATUR)</p>
             <p class="text-[10px] text-gray-500">
                 Av. España cruce con Av. Carabobo, Edif. COTATUR. San Cristóbal, Edo. Táchira.<br/>
                 Teléfono: 0424-7388849 • cotatur@tachiraesturismo.com
@@ -51,10 +51,8 @@
         </footer>
     </main>
 
-    <!-- 3. Ventanas Modales: Recompensa, Generador de Cartel Carta y Gestión de Usuarios -->
+    <!-- 3. Modal de Recompensa al Turista (Guía y Contactos de Emergencia) -->
     <div id="modal-mount"></div>
-    <div id="qr-modal-mount"></div>
-    <div id="admin-modal-mount"></div>
 
     <!-- 4. Inicialización Modular -->
     <script type="module" src="./apps/web-turista/js/app.js"></script>
