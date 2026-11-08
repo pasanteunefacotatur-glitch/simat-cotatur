@@ -83,9 +83,9 @@ export function renderHeader(containerId, activePointName = "Peaje Vega de Tári
 
 /**
  * Muestra un aviso pasivo (no bloqueante) basado en el GPS del dispositivo:
- * - Si coincide con el punto del formulario actual: muestra confirmación pasiva en verde.
- * - Si el GPS detecta que está físicamente en otro punto de encuesta registrado:
- *   muestra aviso pasivo sugiriendo cambiar con un toque al formulario correcto.
+ * - Si coincide con el punto del formulario actual: NO emite ningún aviso para mantener la interfaz limpia.
+ * - Si el GPS detecta que está físicamente en otro punto de control activo: muestra aviso pasivo
+ *   sugiriendo cambiar con un solo toque al formulario correspondiente.
  */
 export function updatePassiveGpsIndicator({
     coincidePuntoActual,
@@ -94,41 +94,37 @@ export function updatePassiveGpsIndicator({
     onSwitchPointCallback
 }) {
     const banner = document.getElementById("header-gps-passive-banner");
-    if (!banner || !puntoCercano) return;
+    if (!banner) return;
+
+    // Regla estricta: Si está en el punto correcto, mantener la barra oculta y limpia sin avisos
+    if (coincidePuntoActual || !puntoCercano) {
+        banner.classList.add("hidden");
+        banner.innerHTML = "";
+        return;
+    }
 
     banner.classList.remove("hidden");
     const distTexto = distanciaKm < 1
         ? `${Math.round(distanciaKm * 1000)} m`
         : `${distanciaKm.toFixed(1)} km`;
 
-    if (coincidePuntoActual) {
-        banner.innerHTML = `
-            <div class="flex items-center justify-between text-[11px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 px-2.5 py-1.5 rounded-lg">
-                <span class="flex items-center gap-1.5">
-                    <span>📍</span>
-                    <span><b>Ubicación GPS verificada:</b> Estás en el formulario del punto correcto (${escapeHtml(puntoCercano.nombre)} • a ${distTexto}).</span>
-                </span>
-            </div>
-        `;
-    } else {
-        banner.innerHTML = `
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] bg-amber-500/20 border border-amber-400/40 text-amber-200 px-3 py-2 rounded-lg">
-                <span class="flex items-center gap-1.5">
-                    <span>📡</span>
-                    <span><b>Aviso GPS pasivo:</b> Tu ubicación actual está más cerca de <b>"${escapeHtml(puntoCercano.nombre)}"</b> (${distTexto}).</span>
-                </span>
-                <button type="button" id="btn-switch-gps-point"
-                    class="shrink-0 px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold rounded-md text-[10px] uppercase tracking-wider shadow transition-colors">
-                    Cambiar a ese formulario
-                </button>
-            </div>
-        `;
+    banner.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] bg-amber-500/20 border border-amber-400/40 text-amber-200 px-3 py-2 rounded-lg">
+            <span class="flex items-center gap-1.5">
+                <span>📡</span>
+                <span><b>Aviso GPS:</b> Tu ubicación física está en <b>"${escapeHtml(puntoCercano.nombre)}"</b> (a ${distTexto}).</span>
+            </span>
+            <button type="button" id="btn-switch-gps-point"
+                class="shrink-0 px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold rounded-md text-[10px] uppercase tracking-wider shadow transition-colors">
+                Cambiar a ese punto
+            </button>
+        </div>
+    `;
 
-        const btnSwitch = document.getElementById("btn-switch-gps-point");
-        if (btnSwitch && typeof onSwitchPointCallback === "function") {
-            btnSwitch.addEventListener("click", () => {
-                onSwitchPointCallback(puntoCercano);
-            });
-        }
+    const btnSwitch = document.getElementById("btn-switch-gps-point");
+    if (btnSwitch && typeof onSwitchPointCallback === "function") {
+        btnSwitch.addEventListener("click", () => {
+            onSwitchPointCallback(puntoCercano);
+        });
     }
 }

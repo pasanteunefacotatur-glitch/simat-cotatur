@@ -243,32 +243,55 @@ function verificarUbicacionGpsPasiva() {
                 }
             }
 
-            // Solo mostrar indicador pasivo si el usuario está en el Estado Táchira (<= 25 km de algún punto)
-            if (puntoMasCercano && minDist <= 25) {
-                const coincide = puntoMasCercano.id === activePoint.id || puntoMasCercano.codigo === activePoint.codigo;
+            // 1. Calcular distancia al punto que tiene actualmente cargado el formulario
+            let distPuntoActual = Infinity;
+            if (typeof activePoint.lat === "number" && typeof activePoint.lng === "number") {
+                distPuntoActual = calcularDistanciaKm(userLat, userLng, activePoint.lat, activePoint.lng);
+            }
+
+            // Radio de tolerancia operativa (1.5 km): Si está dentro de 1.5 km del pin,
+            // se confirma que está en el punto y NO se muestra ningún aviso (pantalla limpia).
+            if (distPuntoActual <= 1.5) {
+                updatePassiveGpsIndicator({ coincidePuntoActual: true });
+                return;
+            }
+
+            // 2. Si está lejos del punto actual (> 2 km), buscar si se encuentra físicamente en otro punto registrado
+            let otroPuntoCercano = null;
+            let minDistOtro = Infinity;
+
+            for (const p of catalogPointsLive) {
+                if (p.id !== activePoint.id && p.codigo !== activePoint.codigo && typeof p.lat === "number" && typeof p.lng === "number") {
+                    const dist = calcularDistanciaKm(userLat, userLng, p.lat, p.lng);
+                    if (dist < minDistOtro) {
+                        minDistOtro = dist;
+                        otroPuntoCercano = p;
+                    }
+                }
+            }
+
+            // Solo mostrar aviso pasivo si está dentro del radio de acción (<= 1.5 km) de OTRO punto
+            if (otroPuntoCercano && minDistOtro <= 1.5) {
                 updatePassiveGpsIndicator({
-                    coincidePuntoActual: coincide,
-                    puntoCercano: puntoMasCercano,
-                    distanciaKm: minDist,
+                    coincidePuntoActual: false,
+                    puntoCercano: otroPuntoCercano,
+                    distanciaKm: minDistOtro,
                     onSwitchPointCallback: (nuevoPunto) => {
                         activePoint = nuevoPunto;
                         const headerPointEl = document.getElementById("header-point-name");
                         if (headerPointEl) headerPointEl.textContent = activePoint.nombre;
 
-                        // Actualizar parámetro ?p= en la barra de direcciones sin recargar ni reiniciar el cronómetro
                         if (window.history && window.history.replaceState && nuevoPunto.codigo) {
                             const newUrl = `${window.location.pathname}?p=${encodeURIComponent(nuevoPunto.codigo)}`;
                             window.history.replaceState({ path: newUrl }, "", newUrl);
                         }
 
-                        updatePassiveGpsIndicator({
-                            coincidePuntoActual: true,
-                            puntoCercano: nuevoPunto,
-                            distanciaKm: minDist,
-                            onSwitchPointCallback: null
-                        });
+                        // Al cambiar al nuevo punto, queda en el formulario correcto y se oculta el aviso
+                        updatePassiveGpsIndicator({ coincidePuntoActual: true });
                     }
                 });
+            } else {
+                updatePassiveGpsIndicator({ coincidePuntoActual: true });
             }
         },
         () => {
