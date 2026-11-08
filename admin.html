@@ -9,17 +9,17 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Leaflet Map CSS y JS (100% Gratuito y de Código Abierto) -->
+    <!-- Leaflet Map CSS y JS (100% Libre y de Código Abierto) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Estilos base y compatibilidad de temas (Claro / Oscuro LCD / AMOLED) -->
+    <!-- Estilos base, compatibilidad de pantallas y temas -->
     <link rel="stylesheet" href="./apps/web-turista/css/styles.css">
 </head>
 <body class="min-h-full flex flex-col antialiased font-['Poppins',sans-serif]">
 
     <!-- =========================================================================
-         1. MODAL DE AUTENTICACIÓN POR PIN DE SUPERVISIÓN
+         1. MODAL DE AUTENTICACIÓN POR CÉDULA Y CONTRASEÑA
          ========================================================================= -->
     <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4">
@@ -34,22 +34,30 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporación Tachirense de Turismo (COTATUR)</p>
             </div>
 
-            <form id="form-admin-auth" class="space-y-3">
-                <div class="text-left">
-                    <label for="input-admin-pin" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        PIN de Acceso de Supervisor:
+            <form id="form-admin-auth" class="space-y-3 text-left">
+                <div>
+                    <label for="input-admin-cedula" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Cédula de Identidad:
                     </label>
-                    <input type="password" id="input-admin-pin" placeholder="Ingresa el PIN de seguridad" required autofocus
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-3 text-center text-lg font-mono tracking-widest text-slate-900 dark:text-white outline-none focus:border-amber-500" />
+                    <input type="text" id="input-admin-cedula" placeholder="Ej: V-18452120 o 00000000" required autofocus
+                        class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono text-slate-900 dark:text-white outline-none focus:border-amber-500" />
+                </div>
+
+                <div>
+                    <label for="input-admin-clave" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Contraseña (o PIN maestro):
+                    </label>
+                    <input type="password" id="input-admin-clave" placeholder="Ingresa tu contraseña" required
+                        class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-amber-500" />
                 </div>
 
                 <p id="admin-auth-error" class="hidden text-xs text-red-500 font-bold">
-                    ⚠️ PIN no autorizado. Verifica e intenta de nuevo.
+                    ⚠️ Credenciales incorrectas.
                 </p>
 
                 <button type="submit"
                     class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform active:scale-95">
-                    Desbloquear Panel
+                    Ingresar al Panel
                 </button>
             </form>
 
@@ -60,7 +68,77 @@
     </div>
 
     <!-- =========================================================================
-         2. PANEL PRINCIPAL DE ADMINISTRACIÓN (DASHBOARD)
+         2. MODAL DE PRIMER INGRESO (ACTIVACIÓN Y CAMBIO DE CONTRASEÑA)
+         ========================================================================= -->
+    <div id="modal-primer-ingreso" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border-2 border-amber-500/40 p-6 space-y-4">
+            <div class="text-center space-y-1">
+                <span class="text-2xl">🎉</span>
+                <h3 class="text-base font-black text-slate-900 dark:text-white">Activación de Cuenta de Funcionario</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Es tu primer ingreso. Por seguridad, debes definir una contraseña personal y completar tus datos.
+                </p>
+                <div id="activar-cedula-badge" class="inline-block bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 font-mono text-xs px-3 py-1 rounded-full font-bold">
+                    Cédula: ---
+                </div>
+            </div>
+
+            <!-- Botón de Vinculación con Google para Correo -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
+                <div class="text-xs">
+                    <span class="font-bold text-slate-800 dark:text-slate-200 block">Vincular con Google:</span>
+                    <span class="text-[11px] text-slate-500">Obtén tu correo para recuperación de clave.</span>
+                </div>
+                <button type="button" id="btn-activar-google"
+                    class="px-3 py-1.5 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-bold rounded-lg border border-slate-300 dark:border-slate-600 text-xs shadow-sm flex items-center space-x-1.5">
+                    <span>🌐</span>
+                    <span>Google Mail</span>
+                </button>
+            </div>
+
+            <form id="form-primer-ingreso" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nombre Completo: <span class="text-red-500">*</span></label>
+                    <input type="text" id="activar-nombre" required placeholder="Nombres y Apellidos"
+                        class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white outline-none" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Teléfono:</label>
+                        <input type="text" id="activar-telefono" placeholder="0414-1234567"
+                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white outline-none" />
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico:</label>
+                        <input type="email" id="activar-email" placeholder="usuario@gmail.com"
+                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white outline-none" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200 dark:border-slate-800">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nueva Contraseña: <span class="text-red-500">*</span></label>
+                        <input type="password" id="activar-nueva-clave" required placeholder="Mínimo 4 caracteres"
+                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white outline-none" />
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Confirmar Contraseña: <span class="text-red-500">*</span></label>
+                        <input type="password" id="activar-confirmar-clave" required placeholder="Repetir clave"
+                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white outline-none" />
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 mt-2">
+                    Activar Cuenta y Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         3. PANEL PRINCIPAL DE ADMINISTRACIÓN (DASHBOARD)
          ========================================================================= -->
     <div id="admin-dashboard-root" class="hidden flex-1 flex flex-col">
         
@@ -72,8 +150,8 @@
                     <div class="h-6 w-[1px] bg-white/20"></div>
                     <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo Logo" class="h-7 w-auto object-contain drop-shadow" />
                     <div>
-                        <span class="text-[9px] uppercase tracking-widest text-amber-400 font-bold block">
-                            Área de Supervisión y Operaciones
+                        <span class="text-[9px] uppercase tracking-widest text-amber-400 font-bold block" id="admin-current-user-badge">
+                            Supervisor General COTATUR
                         </span>
                         <h1 class="text-sm font-extrabold text-white leading-tight">
                             SIMAT • Control Maestro
@@ -81,7 +159,7 @@
                     </div>
                 </div>
 
-                <!-- Selector de Tema + Botón Salir -->
+                <!-- Dropdown de Tema (Sistema/Claro/LCD/AMOLED) + Salir -->
                 <div class="flex items-center space-x-2">
                     <div id="admin-theme-btn-mount"></div>
                     <button type="button" id="btn-admin-logout"
@@ -105,10 +183,10 @@
                         <span>📍</span>
                         <span>Puntos y Mapa Interactivo</span>
                     </button>
-                    <button type="button" data-target="tab-funcionarios"
+                    <button type="button" data-target="tab-personal"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>👥</span>
-                        <span>Personal Encuestador</span>
+                        <span>Personal y Ajustes de Campo</span>
                     </button>
                     <button type="button" data-target="tab-sync"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
@@ -132,75 +210,9 @@
                 <div id="tab-puntos-mount"></div>
             </section>
 
-            <!-- PESTAÑA 3: PERSONAL ENCUESTADOR Y REVOCACIÓN REMOTA -->
-            <section id="tab-funcionarios" class="admin-tab-content hidden space-y-6">
-                <!-- Formulario Nuevo Funcionario -->
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                        <span>➕</span>
-                        <span>Registrar Nuevo Funcionario o Encuestador</span>
-                    </h3>
-                    
-                    <form id="form-crear-funcionario" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Cédula:</label>
-                            <input type="text" id="func-cedula" required placeholder="V-12345678"
-                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none" />
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nombre Completo:</label>
-                            <input type="text" id="func-nombre" required placeholder="Nombres y Apellidos"
-                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Cargo:</label>
-                            <input type="text" id="func-cargo" value="Encuestador de Campo"
-                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none" />
-                        </div>
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Teléfono:</label>
-                            <input type="text" id="func-telefono" placeholder="0414-1234567"
-                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none" />
-                        </div>
-                        <div class="flex items-end">
-                            <button type="submit"
-                                class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs transition-colors">
-                                Guardar Funcionario
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Tabla de Personal -->
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-                    <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            Personal Habilitado (Web y APK)
-                        </span>
-                        <button type="button" id="btn-refrescar-funcionarios" class="text-xs text-amber-500 hover:text-amber-400 font-bold">
-                            🔄 Actualizar
-                        </button>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                            <thead class="bg-slate-50 dark:bg-slate-800 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                                <tr>
-                                    <th class="p-3">Nombre Completo</th>
-                                    <th class="p-3">Cédula</th>
-                                    <th class="p-3">Cargo</th>
-                                    <th class="p-3 text-center">Estado</th>
-                                    <th class="p-3 text-right">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-funcionarios-body" class="divide-y divide-slate-200 dark:divide-slate-800 font-medium">
-                                <tr>
-                                    <td colspan="5" class="p-6 text-center text-slate-400">Cargando personal...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <!-- PESTAÑA 3: PERSONAL ENCUESTADOR Y AJUSTE GLOBAL DE PUNTO -->
+            <section id="tab-personal" class="admin-tab-content hidden space-y-6">
+                <div id="tab-personal-mount"></div>
             </section>
 
             <!-- PESTAÑA 4: GOOGLE SHEETS & DRIVE SYNC -->

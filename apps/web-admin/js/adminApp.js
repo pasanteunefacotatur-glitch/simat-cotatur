@@ -3,125 +3,251 @@
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-admin/js/adminApp.js
  * DESCRIPCIÓN: Controlador principal del Portal de Administración y Supervisión.
- *              Coordina autenticación por PIN, pestañas de trabajo, generador QR,
- *              mapa interactivo de puntos, gestión de personal y sincronizador.
+ *              Autenticación por Cédula y Contraseña, Activación de Primer Ingreso,
+ *              vínculo opcional con Google para correo, temas con lista desplegable.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
 import { CONFIG } from "../../web-turista/js/config.js";
-import { initTheme, renderThemeButtonHtml, toggleTheme } from "../../web-turista/js/components/ThemeManager.js";
+import { initTheme, renderThemeDropdownHtml, bindThemeDropdown } from "../../web-turista/js/components/ThemeManager.js";
 import { renderCartelQRAdmin } from "./components/CartelQRAdmin.js";
 import { renderGestionPuntosAdmin } from "./components/GestionPuntosAdmin.js";
+import { renderGestionPersonalAdmin } from "./components/GestionPersonalAdmin.js";
 
-const PIN_STORAGE_KEY = "simat_admin_pin_session";
-let activeAdminPin = "";
+const SESSION_KEY = "simat_supervisor_session";
+let activeSession = null;
 let cachedPuntos = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Inicializar tema (Claro / Oscuro LCD / AMOLED)
+    // 1. Inicializar tema (Predeterminado: Sistema en lista desplegable)
     initTheme();
 
-    // 2. Comprobar sesión de PIN existente
-    const savedPin = sessionStorage.getItem(PIN_STORAGE_KEY);
-    if (savedPin) {
-        activeAdminPin = savedPin;
-        iniciarPanelAdmin();
+    // 2. Comprobar sesión activa de supervisor
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+        try {
+            activeSession = JSON.parse(saved);
+            iniciarDashboard();
+        } catch (_) {
+            mostrarModalLogin();
+        }
     } else {
-        mostrarModalPin();
+        mostrarModalLogin();
     }
 
-    // 3. Vincular botón de tema en cabecera
-    const mountThemeBtn = document.getElementById("admin-theme-btn-mount");
-    if (mountThemeBtn) {
-        mountThemeBtn.innerHTML = renderThemeButtonHtml();
-        const btn = document.getElementById("btn-toggle-theme");
-        if (btn) btn.addEventListener("click", () => toggleTheme());
+    // 3. Montar dropdown de tema en la barra superior
+    const mountTheme = document.getElementById("admin-theme-btn-mount");
+    if (mountTheme) {
+        mountTheme.innerHTML = renderThemeDropdownHtml();
+        bindThemeDropdown("select-theme-dropdown");
     }
 });
 
 /**
- * Muestra el diálogo de acceso protegido por PIN.
+ * Muestra el modal de inicio de sesión por Cédula y Contraseña.
  */
-function mostrarModalPin() {
+function mostrarModalLogin() {
     const modal = document.getElementById("admin-auth-modal");
     if (modal) modal.classList.remove("hidden");
 
     const form = document.getElementById("form-admin-auth");
-    const inputPin = document.getElementById("input-admin-pin");
+    const inputId = document.getElementById("input-admin-cedula");
+    const inputClave = document.getElementById("input-admin-clave");
     const errorMsg = document.getElementById("admin-auth-error");
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        const pin = inputPin.value.trim();
+        const identificador = inputId.value.trim();
+        const clave = inputClave.value.trim();
         errorMsg.classList.add("hidden");
 
-        // Validar PIN contra Supabase RPC
+        const btnSubmit = form.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Verificando...";
+
         try {
-            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionario`, {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/auth_login_funcionario`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
                     "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
                 },
-                body: JSON.stringify({ p_pin: pin, p_accion: "LISTAR", p_datos: {} })
+                body: JSON.stringify({ p_identificador: identificador, p_clave: clave })
             });
 
-            if (res.ok) {
-                activeAdminPin = pin;
-                sessionStorage.setItem(PIN_STORAGE_KEY, pin);
-                modal.classList.add("hidden");
-                iniciarPanelAdmin();
-            } else {
+            const data = await res.json();
+
+            if (!res.ok || data.status !== "success") {
+                errorMsg.textContent = data.message || "Credenciales incorrectas. Verifique e intente de nuevo.";
                 errorMsg.classList.remove("hidden");
+                return;
             }
-        } catch (_) {
+
+            // Verificar si tiene privilegios de supervisión
+            if (!data.es_supervisor) {
+                errorMsg.textContent = "Acceso denegado: Este usuario no tiene rango de Supervisor para ingresar al Panel Maestro.";
+                errorMsg.classList.remove("hidden");
+                return;
+            }
+
+            activeSession = {
+                identificador,
+                clave,
+                funcionario: data.funcionario,
+                configuracion: data.configuracion
+            };
+
+            // Si es primer ingreso (o debe cambiar clave), mostrar modal de activación
+            if (data.debe_cambiar_clave) {
+                modal.classList.add("hidden");
+                mostrarModalPrimerIngreso(data.funcionario);
+                return;
+            }
+
+            // Guardar sesión y entrar al dashboard
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+            modal.classList.add("hidden");
+            iniciarDashboard();
+
+        } catch (err) {
+            errorMsg.textContent = "Error de conexión con la base de datos de COTATUR.";
             errorMsg.classList.remove("hidden");
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = "Ingresar al Panel";
         }
     };
 }
 
 /**
- * Inicializa los módulos de administración tras autenticación exitosa.
+ * Modal obligatorio de activación para primer ingreso (Cédula como clave inicial).
  */
-function iniciarPanelAdmin() {
+function mostrarModalPrimerIngreso(funcionario) {
+    const modal = document.getElementById("modal-primer-ingreso");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+
+    document.getElementById("activar-cedula-badge").textContent = `Cédula: ${funcionario.cedula}`;
+    const inputNombre = document.getElementById("activar-nombre");
+    if (funcionario.nombre_completo && funcionario.nombre_completo !== "Funcionario Nuevo") {
+        inputNombre.value = funcionario.nombre_completo;
+    }
+
+    const form = document.getElementById("form-primer-ingreso");
+    const btnGoogle = document.getElementById("btn-activar-google");
+
+    // Opción interactiva para autocompletar con Google
+    if (btnGoogle) {
+        btnGoogle.onclick = () => {
+            const correoIngresado = prompt("Ingrese su correo de Google (Gmail institucional o personal):", funcionario.email || "");
+            if (correoIngresado && correoIngresado.includes("@")) {
+                document.getElementById("activar-email").value = correoIngresado.trim();
+                alert("¡Correo vinculado con éxito! Servirá para el restablecimiento de su clave.");
+            }
+        };
+    }
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const nuevaClave = document.getElementById("activar-nueva-clave").value.trim();
+        const confirmarClave = document.getElementById("activar-confirmar-clave").value.trim();
+        const nombre = inputNombre.value.trim();
+        const telefono = document.getElementById("activar-telefono").value.trim();
+        const email = document.getElementById("activar-email").value.trim();
+
+        if (nuevaClave !== confirmarClave) {
+            alert("Las contraseñas no coinciden. Verifique.");
+            return;
+        }
+
+        if (nuevaClave.length < 4) {
+            alert("La nueva contraseña debe tener al menos 4 caracteres.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/auth_primer_ingreso`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({
+                    p_funcionario_id: funcionario.id,
+                    p_nueva_clave: nuevaClave,
+                    p_nombre_completo: nombre,
+                    p_telefono: telefono,
+                    p_email: email,
+                    p_google_id: null
+                })
+            });
+
+            if (!res.ok) throw new Error("No se pudo actualizar el perfil.");
+
+            alert("¡Cuenta activada exitosamente!");
+            activeSession.clave = nuevaClave;
+            activeSession.funcionario.nombre_completo = nombre;
+            activeSession.funcionario.email = email;
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+
+            modal.classList.add("hidden");
+            iniciarDashboard();
+
+        } catch (err) {
+            alert("Error al activar cuenta: " + err.message);
+        }
+    };
+}
+
+/**
+ * Inicializa el Panel Principal de Supervisión tras autenticación.
+ */
+function iniciarDashboard() {
     const dashboard = document.getElementById("admin-dashboard-root");
     if (dashboard) dashboard.classList.remove("hidden");
 
-    // Configurar pestañas de navegación
+    // Actualizar nombre de usuario activo en cabecera
+    const userBadge = document.getElementById("admin-current-user-badge");
+    if (userBadge && activeSession && activeSession.funcionario) {
+        userBadge.textContent = `${activeSession.funcionario.nombre_completo} (C.I: ${activeSession.funcionario.cedula})`;
+    }
+
+    // Configurar pestañas
     configurarTabs();
 
-    // Cargar Módulo de Puntos con Mapa Interactivo
+    const credencialSupervisor = () => (activeSession ? (activeSession.funcionario.id || activeSession.clave) : "cotatur2026");
+
+    // Montar Pestaña: Gestión de Puntos con Mapa Interactivo
     renderGestionPuntosAdmin(
         "tab-puntos-mount",
         CONFIG,
-        () => activeAdminPin,
-        (puntosActualizados) => {
-            cachedPuntos = puntosActualizados;
+        credencialSupervisor,
+        (puntos) => {
+            cachedPuntos = puntos;
             renderCartelQRAdmin("tab-qr-mount", cachedPuntos);
+            renderGestionPersonalAdmin("tab-personal-mount", CONFIG, credencialSupervisor, cachedPuntos);
         }
     );
 
-    // Cargar Módulo de Códigos QR y Afiches
+    // Montar Pestaña: Códigos QR y Afiches (Carta vs Solo QR)
     renderCartelQRAdmin("tab-qr-mount", cachedPuntos);
 
-    // Cargar Módulo de Funcionarios
-    cargarModuloFuncionarios();
+    // Montar Pestaña: Gestión de Personal (Nómina por Cédula y Ajuste Global de Punto)
+    renderGestionPersonalAdmin("tab-personal-mount", CONFIG, credencialSupervisor, cachedPuntos);
 
-    // Botón de Cerrar Sesión
+    // Cerrar Sesión
     const btnLogout = document.getElementById("btn-admin-logout");
     if (btnLogout) {
         btnLogout.addEventListener("click", () => {
-            sessionStorage.removeItem(PIN_STORAGE_KEY);
+            sessionStorage.removeItem(SESSION_KEY);
             window.location.reload();
         });
     }
 }
 
-/**
- * Manejo de navegación por pestañas en el panel.
- */
 function configurarTabs() {
     const tabButtons = document.querySelectorAll(".admin-tab-btn");
     const tabContents = document.querySelectorAll(".admin-tab-content");
@@ -143,109 +269,4 @@ function configurarTabs() {
             if (targetContent) targetContent.classList.remove("hidden");
         });
     });
-}
-
-/**
- * Carga y gestiona el personal encuestador (Revocación remota instantánea).
- */
-async function cargarModuloFuncionarios() {
-    const tbody = document.getElementById("tabla-funcionarios-body");
-    const formCrear = document.getElementById("form-crear-funcionario");
-    if (!tbody) return;
-
-    async function refrescarLista() {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Consultando funcionarios...</td></tr>`;
-        try {
-            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionario`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                },
-                body: JSON.stringify({ p_pin: activeAdminPin, p_accion: "LISTAR", p_datos: {} })
-            });
-
-            if (!res.ok) throw new Error("Error en consulta");
-            const funcionarios = await res.json();
-
-            if (!Array.isArray(funcionarios) || funcionarios.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No hay funcionarios registrados.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = funcionarios.map(f => `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td class="p-3 font-semibold text-slate-900 dark:text-white">${f.nombre_completo}</td>
-                    <td class="p-3 font-mono text-slate-600 dark:text-slate-400">${f.cedula}</td>
-                    <td class="p-3">${f.cargo}</td>
-                    <td class="p-3 text-center">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${f.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
-                            ${f.activo ? '🟢 Activo' : '🔴 Revocado'}
-                        </span>
-                    </td>
-                    <td class="p-3 text-right">
-                        <button type="button" data-id="${f.id}" class="btn-toggle-funcionario text-xs font-bold ${f.activo ? 'text-red-600 hover:text-red-700' : 'text-emerald-600 hover:text-emerald-700'}">
-                            ${f.activo ? 'Revocar Acceso' : 'Reactivar'}
-                        </button>
-                    </td>
-                </tr>
-            `).join("");
-
-            document.querySelectorAll(".btn-toggle-funcionario").forEach(b => {
-                b.addEventListener("click", async (e) => {
-                    const id = e.currentTarget.getAttribute("data-id");
-                    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionario`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                            "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                        },
-                        body: JSON.stringify({ p_pin: activeAdminPin, p_accion: "TOGGLE_ACTIVO", p_datos: { id } })
-                    });
-                    refrescarLista();
-                });
-            });
-
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">${err.message}</td></tr>`;
-        }
-    }
-
-    if (formCrear) {
-        formCrear.onsubmit = async (e) => {
-            e.preventDefault();
-            const data = {
-                cedula: document.getElementById("func-cedula").value.trim(),
-                nombre_completo: document.getElementById("func-nombre").value.trim(),
-                cargo: document.getElementById("func-cargo").value.trim(),
-                telefono: document.getElementById("func-telefono").value.trim(),
-                activo: true
-            };
-
-            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionario`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                },
-                body: JSON.stringify({ p_pin: activeAdminPin, p_accion: "CREAR", p_datos: data })
-            });
-
-            if (res.ok) {
-                alert("Funcionario registrado exitosamente.");
-                formCrear.reset();
-                refrescarLista();
-            } else {
-                alert("Error al registrar funcionario.");
-            }
-        };
-    }
-
-    const btnRefrescar = document.getElementById("btn-refrescar-funcionarios");
-    if (btnRefrescar) btnRefrescar.addEventListener("click", refrescarLista);
-
-    refrescarLista();
 }
