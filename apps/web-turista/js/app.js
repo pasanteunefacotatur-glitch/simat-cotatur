@@ -24,11 +24,17 @@ import { initTheme } from "./components/ThemeManager.js";
 import { renderHeader } from "./components/Header.js";
 import { renderStepProcedencia } from "./components/StepProcedencia.js";
 import { renderStepDestinoPerfil } from "./components/StepDestinoPerfil.js";
+import {
+    renderStepTemporadaDinamica,
+    getRespuestasTemporada,
+    getTemporadaCodigoActual
+} from "./components/StepTemporadaDinamica.js";
 import { renderStepCalificacion } from "./components/StepCalificacion.js";
 import { renderModalRecompensa, abrirModalRecompensa } from "./components/ModalRecompensa.js";
 
-// Estado activo del punto de control
+// Estado activo del punto de control y temporada
 let activePoint = PUNTOS_CONTROL_QR.PEAJE_TARIBA;
+let activeSeasonCode = "REGULAR";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Inicializar tema (Claro / Oscuro LCD / AMOLED según dispositivo)
@@ -50,13 +56,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderHeader("header-mount", activePoint.nombre);
     renderStepProcedencia("step-1-mount");
     renderStepDestinoPerfil("step-2-mount");
+    renderStepTemporadaDinamica("step-temporada-mount", activeSeasonCode);
     renderStepCalificacion("step-3-mount");
     renderModalRecompensa("modal-mount");
 
-    // 5. Sincronización en vivo del punto si Supabase está accesible
+    // 5. Sincronización en vivo del punto y temporada si Supabase está accesible
     if (navigator.onLine) {
         try {
-            const res = await fetch(
+            // Sincronizar punto
+            const resPunto = await fetch(
                 `${CONFIG.SUPABASE_URL}/rest/v1/puntos_captura?select=id,codigo,nombre&codigo=eq.${encodeURIComponent(codigoPunto)}&activo=eq.true`,
                 {
                     headers: {
@@ -65,14 +73,35 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
             );
-            if (res.ok) {
-                const rows = await res.json();
+            if (resPunto.ok) {
+                const rows = await resPunto.json();
                 if (Array.isArray(rows) && rows.length > 0) {
                     activePoint = { id: rows[0].id, nombre: rows[0].nombre };
                     const headerPointEl = document.getElementById("header-point-name");
                     if (headerPointEl) headerPointEl.textContent = activePoint.nombre;
                 }
             }
+
+            // Sincronizar temporada activa oficial
+            const resTemp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/obtener_temporada_activa`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                }
+            });
+            if (resTemp.ok) {
+                const dataTemp = await resTemp.json();
+                if (dataTemp && dataTemp.temporada_codigo) {
+                    activeSeasonCode = dataTemp.temporada_codigo;
+                    renderStepTemporadaDinamica("step-temporada-mount", activeSeasonCode);
+                }
+            }
+        } catch (_) {
+            // Usa el catálogo local como respaldo resiliente
+        }
+    }
         } catch (_) {
             // Usa el catálogo local como respaldo resiliente
         }
@@ -130,6 +159,17 @@ async function handleSubmitEncuesta(event) {
         const motivoBtn = document.querySelector("#group-motivo-viaje button[data-selected='true']");
         const motivoViaje = motivoBtn ? motivoBtn.getAttribute("data-motivo") : "TURISMO_RECREACION";
 
+        // Tipología del visitante (¿Con quién viaja? y Rango de Edad)
+        const compBtn = document.querySelector("#group-composicion-viaje button[data-selected='true']");
+        const composicionGrupo = compBtn ? compBtn.getAttribute("data-composicion") : "GRUPO_FAMILIAR";
+
+        const edadBtn = document.querySelector("#group-rango-edad button[data-selected='true']");
+        const rangoEdad = edadBtn ? edadBtn.getAttribute("data-edad") : "30_49";
+
+        // Operativo / Temporada y Respuestas Específicas
+        const temporadaCodigo = getTemporadaCodigoActual("step-temporada-mount");
+        const respuestasTemporada = getRespuestasTemporada("step-temporada-mount");
+
         const grupoEl = document.getElementById("input-grupo-tamano");
         const diasEl = document.getElementById("input-dias-estadia");
         const grupoTamano = Math.min(50, Math.max(1, parseInt(grupoEl ? grupoEl.value : "1", 10) || 1));
@@ -153,6 +193,9 @@ async function handleSubmitEncuesta(event) {
         const califServicios = getRating("servicios");
 
         // 4. Validaciones obligatorias de integridad
+        // NOTA: Si falta algún dato obligatorio, se detiene el envío SIN reiniciar
+        // el cronómetro (startSurveyTimer no se invoca aquí) para que el tiempo total
+        // refleje fielmente toda la sesión de llenado hasta su finalización real.
         if (esNacional && !estadoOrigen) {
             alert("Por favor seleccione su estado de residencia habitual.");
             return;
@@ -188,6 +231,10 @@ async function handleSubmitEncuesta(event) {
             tipo_alojamiento: tipoAlojamiento,
             grupo_tamano: grupoTamano,
             dias_estadia: diasEstadia,
+            composicion_grupo: composicionGrupo,
+            rango_edad: rangoEdad,
+            temporada_codigo: temporadaCodigo,
+            respuestas_temporada: respuestasTemporada,
             calif_vialidad: califVialidad,
             calif_seguridad: califSeguridad,
             calif_hospitalidad: califHospitalidad,
@@ -218,8 +265,8 @@ async function handleSubmitEncuesta(event) {
             savePendingSurveyLocally(surveyPayload);
         }
 
-        // 7. Reiniciar cronómetro y campos para permitir un nuevo registro limpio
-        startSurveyTimer();
+        // 7. Reiniciar cronómetro (forceReset = true) ÚNICAMENTE tras finalizar y guardar con éxito
+        startSurveyTimer(true);
         if (muniEl) {
             muniEl.value = "";
             muniEl.removeAttribute("data-valid-selection");

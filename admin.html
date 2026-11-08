@@ -171,22 +171,32 @@
             </div>
 
             <!-- Flujo Ordenado de Pestañas de Navegación -->
-            <div class="bg-black/30 border-t border-white/10">
+            <div class="bg-black/30 border-t border-white/10 no-print">
                 <div class="max-w-6xl mx-auto px-4 flex space-x-1 overflow-x-auto text-xs">
-                    <button type="button" data-target="tab-puntos"
+                    <button type="button" data-target="tab-prensa"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-amber-500 text-amber-500 font-bold flex items-center space-x-1.5 whitespace-nowrap">
+                        <span>🎙️</span>
+                        <span>Rueda de Prensa Gobernador</span>
+                    </button>
+                    <button type="button" data-target="tab-calendario"
+                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        <span>📅</span>
+                        <span>Calendario y Asuetos</span>
+                    </button>
+                    <button type="button" data-target="tab-puntos"
+                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📍</span>
                         <span>Puntos de Encuesta y Equipos</span>
-                    </button>
-                    <button type="button" data-target="tab-qr"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
-                        <span>📱</span>
-                        <span>Generador QR y Afiches</span>
                     </button>
                     <button type="button" data-target="tab-personal"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>👥</span>
                         <span>Personal y Nómina</span>
+                    </button>
+                    <button type="button" data-target="tab-qr"
+                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        <span>📱</span>
+                        <span>Generador QR y Afiches</span>
                     </button>
                     <button type="button" data-target="tab-perfil"
                         class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
@@ -200,22 +210,32 @@
         <!-- Contenedor Principal de Pestañas -->
         <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
             
-            <!-- PESTAÑA 1: PUNTOS DE CONTROL, MAPA Y EQUIPOS ASIGNADOS -->
-            <section id="tab-puntos" class="admin-tab-content">
+            <!-- PESTAÑA 1: RUEDA DE PRENSA Y REPORTES PARA EL GOBERNADOR -->
+            <section id="tab-prensa" class="admin-tab-content">
+                <div id="tab-prensa-mount"></div>
+            </section>
+
+            <!-- PESTAÑA 2: CALENDARIO DE ASUETOS Y PROGRAMACIÓN DE EVENTOS -->
+            <section id="tab-calendario" class="admin-tab-content hidden">
+                <div id="tab-calendario-mount"></div>
+            </section>
+
+            <!-- PESTAÑA 3: PUNTOS DE CONTROL, MAPA Y EQUIPOS ASIGNADOS -->
+            <section id="tab-puntos" class="admin-tab-content hidden">
                 <div id="tab-puntos-mount"></div>
             </section>
 
-            <!-- PESTAÑA 2: GENERADOR QR Y AFICHES (Hoja Carta vs Solo QR Publicidad) -->
-            <section id="tab-qr" class="admin-tab-content hidden">
-                <div id="tab-qr-mount"></div>
-            </section>
-
-            <!-- PESTAÑA 3: PERSONAL ENCUESTADOR Y AJUSTES DE CAMPO -->
+            <!-- PESTAÑA 4: PERSONAL ENCUESTADOR Y AJUSTES DE CAMPO -->
             <section id="tab-personal" class="admin-tab-content hidden space-y-6">
                 <div id="tab-personal-mount"></div>
             </section>
 
-            <!-- PESTAÑA 4: MI PERFIL (Datos y Cambio de Clave) -->
+            <!-- PESTAÑA 5: GENERADOR QR Y AFICHES (Hoja Carta vs Solo QR Publicidad) -->
+            <section id="tab-qr" class="admin-tab-content hidden">
+                <div id="tab-qr-mount"></div>
+            </section>
+
+            <!-- PESTAÑA 6: MI PERFIL (Datos y Cambio de Clave) -->
             <section id="tab-perfil" class="admin-tab-content hidden space-y-6">
                 <div id="tab-perfil-mount"></div>
             </section>

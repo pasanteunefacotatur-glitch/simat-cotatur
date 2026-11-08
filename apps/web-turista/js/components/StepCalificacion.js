@@ -32,17 +32,17 @@ export function renderStepCalificacion(containerId) {
     `).join("");
 
     container.innerHTML = `
-        <section class="bg-white rounded border border-gray-300 p-5 shadow-sm space-y-3">
-            <div class="border-b border-gray-200 pb-2.5">
-                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                    III. Evaluación de Servicios
+        <section class="bg-white dark:bg-slate-900 rounded border border-gray-300 dark:border-slate-800 p-5 shadow-sm space-y-3">
+            <div class="border-b border-gray-200 dark:border-slate-800 pb-2.5">
+                <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
+                    IV. Evaluación de Servicios
                 </h2>
-                <p class="text-[11px] text-gray-500 mt-0.5">
+                <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">
                     Califique en escala del 1 (Deficiente) al 5 (Excelente).
                 </p>
             </div>
 
-            <div class="divide-y divide-gray-200">
+            <div class="divide-y divide-gray-200 dark:divide-slate-800">
                 ${criteriosHTML}
             </div>
         </section>

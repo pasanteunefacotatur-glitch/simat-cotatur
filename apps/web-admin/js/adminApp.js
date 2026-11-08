@@ -14,6 +14,8 @@ import { renderCartelQRAdmin } from "./components/CartelQRAdmin.js";
 import { renderGestionPuntosAdmin } from "./components/GestionPuntosAdmin.js";
 import { renderGestionPersonalAdmin } from "./components/GestionPersonalAdmin.js";
 import { renderMiPerfilAdmin } from "./components/MiPerfilAdmin.js";
+import { renderRuedaPrensaAdmin } from "./components/RuedaPrensaAdmin.js";
+import { renderCalendarioAsuetosAdmin } from "./components/CalendarioAsuetosAdmin.js";
 
 const SESSION_KEY = "simat_supervisor_session";
 let activeSession = null;
@@ -207,7 +209,13 @@ function iniciarDashboard() {
 
     const credencialSupervisor = () => (activeSession ? (activeSession.funcionario.id || activeSession.clave) : "cotatur2026");
 
-    // 1. Puntos de Control y Equipos Asignados (Pestaña Principal)
+    // 1. Rueda de Prensa del Gobernador (Pestaña Principal Ejecutiva)
+    renderRuedaPrensaAdmin("tab-prensa-mount", activeSession?.funcionario);
+
+    // 2. Calendario de Asuetos y Programación de Fiestas Turísticas
+    renderCalendarioAsuetosAdmin("tab-calendario-mount", activeSession?.funcionario);
+
+    // 3. Puntos de Control y Equipos Asignados
     renderGestionPuntosAdmin(
         "tab-puntos-mount",
         CONFIG,
@@ -219,13 +227,13 @@ function iniciarDashboard() {
         }
     );
 
-    // 2. Generador de Códigos QR y Afiches
+    // 4. Generador de Códigos QR y Afiches
     renderCartelQRAdmin("tab-qr-mount", cachedPuntos);
 
-    // 3. Nómina de Personal y Ajuste Global de Punto
+    // 5. Nómina de Personal y Ajuste Global de Punto
     renderGestionPersonalAdmin("tab-personal-mount", CONFIG, credencialSupervisor, cachedPuntos);
 
-    // 4. Mi Perfil
+    // 6. Mi Perfil
     renderMiPerfilAdmin(
         "tab-perfil-mount",
         CONFIG,

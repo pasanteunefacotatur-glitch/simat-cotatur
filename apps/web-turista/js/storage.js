@@ -36,8 +36,15 @@ export function getOrCreateVisitorId() {
 
 /**
  * Inicia el registro de tiempo de llenado de la encuesta.
+ * Si forceReset es false y ya existe un cronómetro en curso en la sesión,
+ * conserva el instante original para que validaciones fallidas o recargas
+ * accidentales no reinicien el conteo a pocos segundos.
  */
-export function startSurveyTimer() {
+export function startSurveyTimer(forceReset = false) {
+    const existing = sessionStorage.getItem(STORAGE_KEYS.START_TIME);
+    if (!forceReset && existing) {
+        return parseInt(existing, 10);
+    }
     const startTime = Date.now();
     sessionStorage.setItem(STORAGE_KEYS.START_TIME, startTime.toString());
     return startTime;

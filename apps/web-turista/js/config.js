@@ -148,3 +148,181 @@ export const CRITERIOS_EVALUACION = [
     { id: "hospitalidad", label: "Atención al visitante", default: 5 },
     { id: "servicios", label: "Servicios públicos y estaciones", default: 4 }
 ];
+
+/**
+ * Catálogo de Tipología de Viaje (¿Con quién viaja?)
+ */
+export const COMPOSICION_GRUPO = [
+    { codigo: "GRUPO_FAMILIAR", etiqueta: "👨‍👩‍👧‍👦 Familia (con niños / adultos mayores)" },
+    { codigo: "PAREJA", etiqueta: "👫 En Pareja" },
+    { codigo: "AMIGOS_COMPANEROS", etiqueta: "👥 Amigos / Compañeros" },
+    { codigo: "SOLO_INDIVIDUAL", etiqueta: "🎒 Solo / Individual" },
+    { codigo: "EXCURSION_ORGANIZADA", etiqueta: "🚌 Excursión Organizada" }
+];
+
+/**
+ * Rangos de edad predominante del responsable o grupo
+ */
+export const RANGOS_EDAD = [
+    { codigo: "18_29", etiqueta: "18 a 29 años (Jóvenes)" },
+    { codigo: "30_49", etiqueta: "30 a 49 años (Adultos)" },
+    { codigo: "50_MAS", etiqueta: "50 años o más (Adultos mayores)" }
+];
+
+/**
+ * Configuración de Preguntas Específicas por Temporada / Asueto
+ */
+export const TEMPORADAS_CONFIG = {
+    FISS: {
+        codigo: "FISS",
+        titulo: "Feria Internacional de San Sebastián",
+        badge: "🎉 Temporada Ferial FISS",
+        preguntas: [
+            {
+                id: "fiss_eventos",
+                tipo: "chips_multi",
+                label: "¿A cuáles actividades o eventos feriales tiene previsto asistir?",
+                opciones: [
+                    "Desfile de Feria", "Feria Ganadera (Asogata)", "Pabellones Colombia-Venezuela",
+                    "Corridas de Toros", "Conciertos / Noches de Feria", "Elección de la Reina"
+                ]
+            }
+        ]
+    },
+    CARNAVALES: {
+        codigo: "CARNAVALES",
+        titulo: "Carnavales Turísticos del Táchira",
+        badge: "🎭 Carnavales",
+        preguntas: [
+            {
+                id: "carnaval_atractivo",
+                tipo: "chips_single",
+                label: "¿Qué atractivo o circuito turístico visita principalmente?",
+                opciones: [
+                    "Ruta de Montaña y Páramos", "Aguas Termales (Ureña/San Cristóbal)",
+                    "Balnearios y Ríos", "Pueblos Típicos (Peribeca / San Pedro)"
+                ]
+            }
+        ]
+    },
+    SEMANA_SANTA: {
+        codigo: "SEMANA_SANTA",
+        titulo: "Semana Santa Mayor en Táchira",
+        badge: "🕊️ Semana Santa",
+        preguntas: [
+            {
+                id: "semana_santa_visita",
+                tipo: "chips_single",
+                label: "¿Cuál es la actividad principal de su visita?",
+                opciones: [
+                    "Peregrinación y Ruta de los 7 Templos", "Turismo de Naturaleza / Páramos",
+                    "Descanso y Convivencia Familiar", "Tradiciones Gastronómicas"
+                ]
+            }
+        ]
+    },
+    SANTO_CRISTO: {
+        codigo: "SANTO_CRISTO",
+        titulo: "Peregrinación del Santo Cristo de La Grita",
+        badge: "✝️ Peregrinación Santo Cristo",
+        preguntas: [
+            {
+                id: "santocristo_modo",
+                tipo: "chips_single",
+                label: "¿Cómo realiza la peregrinación hacia La Grita?",
+                opciones: [
+                    "Caminata a pie (Peregrino)", "En Bicicleta", "Vehículo Particular", "Excursión en Autobús"
+                ]
+            },
+            {
+                id: "santocristo_frecuencia",
+                tipo: "chips_single",
+                label: "¿Es su primera peregrinación o es una tradición anual?",
+                opciones: [
+                    "Es mi primera vez", "Tradición de todos los años", "Visita ocasional"
+                ]
+            }
+        ]
+    },
+    CONSOLACION_TARIBA: {
+        codigo: "CONSOLACION_TARIBA",
+        titulo: "Fiestas de la Virgen de la Consolación de Táriba",
+        badge: "🙏 Virgen de la Consolación",
+        preguntas: [
+            {
+                id: "consolacion_modo",
+                tipo: "chips_single",
+                label: "¿Participa en la peregrinación hacia la Basílica de Táriba?",
+                opciones: [
+                    "Sí, caminata desde San Cristóbal", "En vehículo / transporte", "Visita turística general"
+                ]
+            }
+        ]
+    },
+    FERIAS_MUNICIPALES: {
+        codigo: "FERIAS_MUNICIPALES",
+        titulo: "Ferias Tradicionales Municipales",
+        badge: "🎪 Ferias Municipales",
+        preguntas: [
+            {
+                id: "feria_atractivo",
+                tipo: "chips_single",
+                label: "¿Qué destaca de las ferias del municipio visitado?",
+                opciones: [
+                    "Eventos culturales y reinado", "Gastronomía típica", "Clima y paisajes", "Reencuentro familiar"
+                ]
+            }
+        ]
+    },
+    VACACIONES_ESCOLARES: {
+        codigo: "VACACIONES_ESCOLARES",
+        titulo: "Temporada de Vacaciones Escolares",
+        badge: "☀️ Vacaciones",
+        preguntas: [
+            {
+                id: "vacaciones_circuito",
+                tipo: "chips_single",
+                label: "¿Cuál es el principal atractivo de su itinerario?",
+                opciones: [
+                    "Clima de montaña y páramos", "Parques y recreación infantil", "Compras y gastronomía", "Rutas agrícolas"
+                ]
+            }
+        ]
+    },
+    FIN_DE_ANO: {
+        codigo: "FIN_DE_ANO",
+        titulo: "Temporada Decembrina y Año Nuevo",
+        badge: "🎄 Fin de Año en Táchira",
+        preguntas: [
+            {
+                id: "diciembre_motivo",
+                tipo: "chips_single",
+                label: "¿Qué motivo describe mejor su estadía decembrina?",
+                opciones: [
+                    "Reencuentro familiar / Navidades", "Turismo y clima andino", "Ruta de pesebres y tradiciones"
+                ]
+            }
+        ]
+    },
+    EVENTO_ESPECIAL: {
+        codigo: "EVENTO_ESPECIAL",
+        titulo: "Evento Especial / Deportivo / Concierto",
+        badge: "⭐ Evento Especial",
+        preguntas: [
+            {
+                id: "evento_exclusivo",
+                tipo: "chips_single",
+                label: "¿Vino al Estado Táchira exclusivamente por este evento?",
+                opciones: [
+                    "Sí, vine únicamente por el evento", "No, aproveché para hacer turismo también"
+                ]
+            }
+        ]
+    },
+    REGULAR: {
+        codigo: "REGULAR",
+        titulo: "Temporada Regular",
+        badge: "🏞️ Turismo Táchira",
+        preguntas: []
+    }
+};

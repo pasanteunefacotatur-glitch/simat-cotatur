@@ -192,7 +192,7 @@ input, select, textarea {
 @media print {
     @page {
         size: letter portrait;
-        margin: 6mm;
+        margin: 8mm;
     }
 
     body {
@@ -202,25 +202,21 @@ input, select, textarea {
         margin: 0 !important;
     }
 
-    /* Ocultar absolutamente todos los elementos ajenos al cartel */
-    body * {
-        visibility: hidden !important;
+    .no-print,
+    header,
+    nav,
+    #admin-auth-modal,
+    #btn-admin-logout,
+    .admin-tab-btn {
+        display: none !important;
     }
 
-    /* Hacer visible únicamente la lámina del cartel y sus hijos */
-    #tab-qr {
+    .print-only {
         display: block !important;
     }
 
-    #cartel-hoja-carta,
-    #cartel-hoja-carta * {
-        visibility: visible !important;
-    }
-
+    /* Soporte dual: Cartel QR o Reporte de Rueda de Prensa */
     #cartel-hoja-carta {
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
         background: #ffffff !important;
         color: #000000 !important;
         max-width: 100% !important;
@@ -230,5 +226,19 @@ input, select, textarea {
         padding: 10mm 12mm !important;
         margin: 0 auto !important;
         page-break-inside: avoid !important;
+    }
+
+    #reporte-rueda-prensa-print {
+        background: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #reporte-rueda-prensa-print * {
+        color: #09090b !important;
+        border-color: #cbd5e1 !important;
+        background-color: transparent !important;
     }
 }
