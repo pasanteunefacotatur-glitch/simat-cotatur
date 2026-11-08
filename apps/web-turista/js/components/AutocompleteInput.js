@@ -5,9 +5,23 @@
  * DESCRIPCIÓN: Componente reutilizable de autocompletado instantáneo (0 ms).
  *              Permite buscar sin tildes por Municipio, Capital o Localidad,
  *              y despliega las opciones en orden de los más utilizados.
+ *              Incluye escape HTML estricto contra inyección DOM XSS.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
+
+/**
+ * Escapa caracteres especiales HTML para prevenir DOM XSS al renderizar en innerHTML.
+ */
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
 /**
  * Normaliza una cadena eliminando tildes/diacríticos y convirtiendo a minúsculas.
@@ -23,15 +37,6 @@ export function normalizarBusqueda(texto) {
 
 /**
  * Inicializa un campo de autocompletado sobre un contenedor DOM.
- * @param {Object} options
- * @param {string} options.mountId - ID del contenedor donde se montará el buscador.
- * @param {string} options.inputId - ID del input de valor seleccionado.
- * @param {string} options.placeholder - Texto guía del buscador.
- * @param {Array}  options.items - Lista de objetos ordenada por mayor uso.
- * @param {Function} options.getLabel - Devuelve el texto principal a guardar/mostrar.
- * @param {Function} options.getSubLabel - Devuelve el texto secundario (ej. Capital).
- * @param {Function} options.getSearchString - Devuelve todas las palabras clave buscables.
- * @param {boolean} options.allowCustom - Permite texto libre si no coincide con la lista.
  */
 export function createAutocomplete({
     mountId,
@@ -50,7 +55,7 @@ export function createAutocomplete({
         <div class="relative" id="${inputId}-container">
             <div class="relative flex items-center">
                 <input type="text" id="${inputId}" autocomplete="off"
-                    placeholder="${placeholder}"
+                    placeholder="${escapeHtml(placeholder)}"
                     class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 pr-16 text-sm text-gray-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none" />
                 <button type="button" id="${inputId}-clear"
                     class="hidden absolute right-2 text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">
@@ -58,7 +63,7 @@ export function createAutocomplete({
                 </button>
             </div>
             <div id="${inputId}-dropdown"
-                class="hidden absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-gray-300 rounded shadow-lg z-30 divide-y divide-gray-100">
+                class="autocomplete-list hidden absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-gray-300 rounded shadow-lg z-30 divide-y divide-gray-100">
             </div>
         </div>
     `;
@@ -74,17 +79,19 @@ export function createAutocomplete({
             ? items
             : items.filter(item => normalizarBusqueda(getSearchString(item)).includes(q));
 
+        const safeValue = escapeHtml(inputEl.value.trim());
+
         if (filtered.length === 0) {
             if (allowCustom && q.length > 1) {
                 dropdownEl.innerHTML = `
                     <div class="px-3 py-2.5 text-xs text-gray-600 bg-gray-50">
-                        Se registrará: <b class="text-gray-900">${inputEl.value.trim()}</b>
+                        Se registrará: <b class="text-gray-900">${safeValue}</b>
                     </div>
                 `;
             } else {
                 dropdownEl.innerHTML = `
                     <div class="px-3 py-2.5 text-xs text-gray-500">
-                        No se encontraron coincidencias para "${inputEl.value}".
+                        No se encontraron coincidencias para "${safeValue}".
                     </div>
                 `;
             }
@@ -101,8 +108,8 @@ export function createAutocomplete({
                </div>`;
 
         const rowsHTML = filtered.map((item, idx) => {
-            const label = getLabel(item);
-            const subLabel = getSubLabel ? getSubLabel(item) : "";
+            const label = escapeHtml(getLabel(item));
+            const subLabel = getSubLabel ? escapeHtml(getSubLabel(item)) : "";
             const badgeFrecuente = !q && idx < 6
                 ? `<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-200">Frecuente</span>`
                 : "";
@@ -155,7 +162,6 @@ export function createAutocomplete({
     inputEl.addEventListener("blur", () => {
         setTimeout(() => {
             dropdownEl.classList.add("hidden");
-            // Si el usuario escribió un texto parcial y no hizo clic, autoseleccionar la primera coincidencia exacta/parcial
             const currentVal = inputEl.value.trim();
             if (currentVal && !inputEl.getAttribute("data-valid-selection")) {
                 const q = normalizarBusqueda(currentVal);

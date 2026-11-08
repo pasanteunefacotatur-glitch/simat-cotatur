@@ -84,7 +84,7 @@ BEGIN
     ELSE
         SELECT (rol = 'SUPERVISOR' AND activo = TRUE) INTO v_es_supervisor
         FROM public.perfiles_funcionarios
-        WHERE id = NULLIF(TRIM(p_credencial), '')::UUID 
+        WHERE id::TEXT = TRIM(p_credencial)
            OR UPPER(TRIM(cedula)) = UPPER(TRIM(p_credencial));
     END IF;
 

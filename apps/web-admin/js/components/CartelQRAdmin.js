@@ -80,7 +80,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                         Este código QR aislado es el que se envía a la empresa de publicidad para insertar en vallas, pendones o calcomanías:
                     </p>
                     
-                    <div class="p-3 bg-white rounded-xl shadow border border-slate-200 inline-block">
+                    <div class="qr-white-box p-3 bg-white rounded-xl shadow border border-slate-200 inline-block">
                         <img id="preview-raw-qr" src="" alt="Solo Código QR" class="w-44 h-44 object-contain" />
                     </div>
 
@@ -131,7 +131,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
 
                         <!-- Código QR Central -->
                         <div class="my-1.5 flex flex-col items-center justify-center">
-                            <div class="p-2.5 bg-white border-4 border-slate-900 rounded-xl shadow inline-block">
+                            <div class="qr-white-box p-2.5 bg-white border-4 border-slate-900 rounded-xl shadow inline-block">
                                 <img id="cartel-full-qr-img" src="" alt="Código QR Turístico" class="w-44 h-44 object-contain" />
                             </div>
                             <div class="mt-1.5 text-center">

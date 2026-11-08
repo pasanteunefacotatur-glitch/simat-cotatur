@@ -23,10 +23,10 @@ ALTER TABLE public.perfiles_funcionarios
     ADD COLUMN IF NOT EXISTS ultimo_ingreso TIMESTAMPTZ;
 
 -- Crear supervisor inicial por defecto (Cédula: 00000000, clave inicial: cotatur2026)
-INSERT INTO public.perfiles_funcionarios (cedula, nombre_completo, cargo, rol, activo, debe_cambiar_clave, password_hash)
-VALUES ('00000000', 'Supervisor General COTATUR', 'Supervisión de Operativo', 'SUPERVISOR', TRUE, FALSE, crypt('cotatur2026', gen_salt('bf')))
+INSERT INTO public.perfiles_funcionarios (id, cedula, nombre_completo, cargo, rol, activo, debe_cambiar_clave, password_hash)
+VALUES ('00000000-0000-0000-0000-000000000000', '00000000', 'Supervisor General COTATUR', 'Supervisión de Operativo', 'SUPERVISOR', TRUE, FALSE, crypt('cotatur2026', gen_salt('bf')))
 ON CONFLICT (cedula) DO UPDATE 
-SET rol = 'SUPERVISOR', activo = TRUE, password_hash = crypt('cotatur2026', gen_salt('bf'));
+SET id = '00000000-0000-0000-0000-000000000000', rol = 'SUPERVISOR', activo = TRUE, password_hash = crypt('cotatur2026', gen_salt('bf'));
 
 -- 2. TABLA DE CONFIGURACIÓN GLOBAL DEL SISTEMA
 CREATE TABLE IF NOT EXISTS public.configuracion_global (
@@ -217,7 +217,7 @@ BEGIN
     ELSE
         SELECT (rol = 'SUPERVISOR' AND activo = TRUE) INTO v_es_supervisor
         FROM public.perfiles_funcionarios
-        WHERE id = NULLIF(TRIM(p_credencial), '')::UUID 
+        WHERE id::TEXT = TRIM(p_credencial)
            OR UPPER(TRIM(cedula)) = UPPER(TRIM(p_credencial));
     END IF;
 

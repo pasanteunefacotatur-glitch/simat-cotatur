@@ -4,7 +4,8 @@
  * ARCHIVO: apps/web-turista/js/app.js
  * DESCRIPCIÓN: Controlador principal de la encuesta pública para turistas.
  *              Coordina montaje de módulos, resolución de punto por URL (?p=),
- *              soporte de temas (Claro/Oscuro/AMOLED), validación y cola offline.
+ *              soporte de temas (Claro/Oscuro/AMOLED), validación estricta de
+ *              campos DOM, sanitización anti-XSS/CSV y cola offline resiliente.
  *              Las funciones administrativas están aisladas en admin.html.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
@@ -30,7 +31,7 @@ import { renderModalRecompensa, abrirModalRecompensa } from "./components/ModalR
 let activePoint = PUNTOS_CONTROL_QR.PEAJE_TARIBA;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Inicializar tema (Claro / Oscuro LCD / AMOLED)
+    // 1. Inicializar tema (Claro / Oscuro LCD / AMOLED según dispositivo)
     initTheme();
 
     // 2. Iniciar métricas de sesión anónima y cronómetro
@@ -96,47 +97,105 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /**
- * Valida y procesa el registro de la encuesta turística.
+ * Extrae, valida, sanitiza y transmite los datos reales de la encuesta turística.
  */
-async function handleSubmitEncuesta(e) {
-    e.preventDefault();
+async function handleSubmitEncuesta(event) {
+    event.preventDefault();
 
     const submitBtn = document.getElementById("btn-submit-encuesta");
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-            <span class="inline-block animate-spin mr-2">⏳</span>
-            Procesando registro seguro...
-        `;
-    }
+    const originalText = submitBtn ? submitBtn.textContent : "Registrar encuesta y descargar guía";
 
     try {
-        const formData = new FormData(e.target);
-        const procedenciaTipo = formData.get("procedencia_tipo") || "NACIONAL";
-        const estadoOrigen = procedenciaTipo === "NACIONAL" ? formData.get("estado_origen") : null;
-        const paisOrigen = procedenciaTipo === "INTERNACIONAL" ? formData.get("pais_origen") : "Venezuela";
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Procesando registro seguro...";
+        }
 
-        const surveyPayload = {
-            id: crypto.randomUUID ? crypto.randomUUID() : `web-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            canal: "WEB",
-            punto_captura_id: activePoint.id || "00000000-0000-0000-0000-000000000001",
-            visitor_client_id: getOrCreateVisitorId(),
-            captured_at: new Date().toISOString(),
-            duracion_llenado_seg: getElapsedFillingSeconds(),
-            procedencia_tipo: procedenciaTipo,
-            estado_origen: estadoOrigen,
-            pais_origen: paisOrigen,
-            municipio_destino: formData.get("municipio_destino") || "San Cristóbal",
-            motivo_viaje: formData.get("motivo_viaje") || "Vacaciones y Recreación",
-            tipo_alojamiento: formData.get("tipo_alojamiento") || "Posada Turística",
-            grupo_tamano: parseInt(formData.get("grupo_tamano"), 10) || 1,
-            dias_estadia: parseInt(formData.get("dias_estadia"), 10) || 1,
-            calif_vialidad: parseInt(formData.get("calif_vialidad"), 10) || 5,
-            calif_seguridad: parseInt(formData.get("calif_seguridad"), 10) || 5,
-            calif_hospitalidad: parseInt(formData.get("calif_hospitalidad"), 10) || 5,
-            calif_servicios_publicos: parseInt(formData.get("calif_servicios_publicos"), 10) || 5
+        // 1. Lectura de Procedencia (Nacional vs Internacional)
+        const wrapNacional = document.getElementById("wrapper-origen-nacional");
+        const esNacional = wrapNacional && !wrapNacional.classList.contains("hidden");
+        const estadoEl = document.getElementById("select-estado-origen");
+        const paisEl = document.getElementById("input-pais-origen");
+
+        const estadoOrigen = esNacional && estadoEl ? sanitizeText(estadoEl.value) : null;
+        const rawPais = !esNacional && paisEl ? paisEl.value : "Venezuela";
+        const paisOrigen = sanitizeText(rawPais) || "Venezuela";
+
+        // 2. Lectura de Destino, Motivo, Grupo y Estadía
+        const muniEl = document.getElementById("select-municipio-destino");
+        const rawMunicipio = muniEl ? sanitizeText(muniEl.value) : "";
+        // Truncar a 50 caracteres para respetar VARCHAR(50) en PostgreSQL
+        const municipioDestino = rawMunicipio.slice(0, 50);
+
+        const motivoBtn = document.querySelector("#group-motivo-viaje button[data-selected='true']");
+        const motivoViaje = motivoBtn ? motivoBtn.getAttribute("data-motivo") : "TURISMO_RECREACION";
+
+        const grupoEl = document.getElementById("input-grupo-tamano");
+        const diasEl = document.getElementById("input-dias-estadia");
+        const grupoTamano = Math.min(50, Math.max(1, parseInt(grupoEl ? grupoEl.value : "1", 10) || 1));
+        const diasEstadia = Math.min(90, Math.max(0, parseInt(diasEl ? diasEl.value : "0", 10) || 0));
+
+        const tipoAlojamientoEl = document.getElementById("select-tipo-alojamiento");
+        const tipoAlojamiento = diasEstadia === 0
+            ? "SIN_PERNOCTA"
+            : (tipoAlojamientoEl ? tipoAlojamientoEl.value : "POSADA");
+
+        // 3. Lectura de Calificaciones de Servicios (Escala 1 a 5)
+        const getRating = (group) => {
+            const el = document.querySelector(`[data-rating-group='${group}']`);
+            const val = parseInt(el ? el.getAttribute("data-current") : "5", 10);
+            return Math.min(5, Math.max(1, val || 5));
         };
 
+        const califVialidad = getRating("vialidad");
+        const califSeguridad = getRating("seguridad");
+        const califHospitalidad = getRating("hospitalidad");
+        const califServicios = getRating("servicios");
+
+        // 4. Validaciones obligatorias de integridad
+        if (esNacional && !estadoOrigen) {
+            alert("Por favor seleccione su estado de residencia habitual.");
+            return;
+        }
+
+        if (!esNacional && !rawPais.trim()) {
+            alert("Por favor indique su país de residencia habitual.");
+            return;
+        }
+
+        if (!municipioDestino) {
+            alert("Por favor seleccione el municipio o capital de destino en el Táchira.");
+            return;
+        }
+
+        // 5. Construcción del payload normalizado
+        const surveyPayload = {
+            id: typeof crypto !== "undefined" && crypto.randomUUID
+                ? crypto.randomUUID()
+                : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+                    const r = (Math.random() * 16) | 0;
+                    const v = c === "x" ? r : (r & 0x3) | 0x8;
+                    return v.toString(16);
+                }),
+            punto_captura_id: activePoint && activePoint.id ? activePoint.id : PUNTOS_CONTROL_QR.PEAJE_TARIBA.id,
+            visitor_client_id: getOrCreateVisitorId(),
+            duracion_llenado_seg: getElapsedFillingSeconds(),
+            procedencia_tipo: esNacional ? "NACIONAL" : "INTERNACIONAL",
+            estado_origen: estadoOrigen,
+            pais_origen: paisOrigen,
+            municipio_destino: municipioDestino,
+            motivo_viaje: motivoViaje,
+            tipo_alojamiento: tipoAlojamiento,
+            grupo_tamano: grupoTamano,
+            dias_estadia: diasEstadia,
+            calif_vialidad: califVialidad,
+            calif_seguridad: califSeguridad,
+            calif_hospitalidad: califHospitalidad,
+            calif_servicios_publicos: califServicios,
+            gasto_promedio_diario_usd: null
+        };
+
+        // 6. Envío a Supabase con respaldo automático en cola local offline
         if (navigator.onLine) {
             try {
                 const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/registrar_encuesta_web`, {
@@ -159,16 +218,25 @@ async function handleSubmitEncuesta(e) {
             savePendingSurveyLocally(surveyPayload);
         }
 
+        // 7. Reiniciar cronómetro y campos para permitir un nuevo registro limpio
+        startSurveyTimer();
+        if (muniEl) {
+            muniEl.value = "";
+            muniEl.removeAttribute("data-valid-selection");
+        }
+        if (paisEl) {
+            paisEl.value = "";
+            paisEl.removeAttribute("data-valid-selection");
+        }
         abrirModalRecompensa();
-        e.target.reset();
 
     } catch (err) {
-        alert("Aviso: Su respuesta ha sido guardada en la memoria local y se transmitirá automáticamente cuando recupere señal.");
+        console.error("[SIMAT] Error procesando encuesta:", err);
         abrirModalRecompensa();
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = "Registrar encuesta y descargar guía";
+            submitBtn.textContent = originalText;
         }
     }
 }

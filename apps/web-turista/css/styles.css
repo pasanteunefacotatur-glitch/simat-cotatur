@@ -7,7 +7,7 @@
  *              2. Modo Oscuro LCD (Dark): Reducción de fatiga visual nocturna.
  *              3. Modo AMOLED (Pure Black): Negro 100% (#000000) que apaga píxeles
  *                 en pantallas OLED/AMOLED ahorrando batería en campo.
- *              Incluye reglas de impresión oficial en Hoja Carta (8.5" x 11").
+ *              Incluye aislamiento del Cartel Carta y reglas @media print exactas.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
@@ -94,8 +94,8 @@ input, select, textarea {
 }
 
 /* --- 3. Sobrescrituras para Modo Oscuro y AMOLED en Componentes --- */
-[data-theme="dark"] .bg-white,
-[data-theme="amoled"] .bg-white {
+[data-theme="dark"] .bg-white:not(#cartel-hoja-carta):not(.qr-white-box),
+[data-theme="amoled"] .bg-white:not(#cartel-hoja-carta):not(.qr-white-box) {
     background-color: var(--bg-surface) !important;
     border-color: var(--border-color) !important;
 }
@@ -105,36 +105,56 @@ input, select, textarea {
     background-color: var(--bg-page) !important;
 }
 
-[data-theme="dark"] .bg-gray-50,
-[data-theme="amoled"] .bg-gray-50 {
+[data-theme="dark"] .bg-gray-50:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .bg-gray-50:not(#cartel-hoja-carta *),
+[data-theme="dark"] .bg-slate-50:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .bg-slate-50:not(#cartel-hoja-carta *) {
     background-color: var(--bg-surface-subtle) !important;
     border-color: var(--border-color) !important;
 }
 
-[data-theme="dark"] .text-gray-900,
-[data-theme="amoled"] .text-gray-900 {
+[data-theme="dark"] .text-gray-900:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-gray-900:not(#cartel-hoja-carta *),
+[data-theme="dark"] .text-slate-900:not(#cartel-hoja-carta):not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-slate-900:not(#cartel-hoja-carta):not(#cartel-hoja-carta *) {
     color: var(--text-primary) !important;
 }
 
-[data-theme="dark"] .text-gray-800,
-[data-theme="dark"] .text-gray-700,
-[data-theme="amoled"] .text-gray-800,
-[data-theme="amoled"] .text-gray-700 {
+[data-theme="dark"] .text-gray-800:not(#cartel-hoja-carta *),
+[data-theme="dark"] .text-gray-700:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-gray-800:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-gray-700:not(#cartel-hoja-carta *),
+[data-theme="dark"] .text-slate-800:not(#cartel-hoja-carta *),
+[data-theme="dark"] .text-slate-700:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-slate-800:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-slate-700:not(#cartel-hoja-carta *) {
     color: var(--text-secondary) !important;
 }
 
-[data-theme="dark"] .text-gray-600,
-[data-theme="dark"] .text-gray-500,
-[data-theme="amoled"] .text-gray-600,
-[data-theme="amoled"] .text-gray-500 {
+[data-theme="dark"] .text-gray-600:not(#cartel-hoja-carta *),
+[data-theme="dark"] .text-gray-500:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-gray-600:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .text-gray-500:not(#cartel-hoja-carta *) {
     color: var(--text-muted) !important;
 }
 
-[data-theme="dark"] .border-gray-200,
-[data-theme="dark"] .border-gray-300,
-[data-theme="amoled"] .border-gray-200,
-[data-theme="amoled"] .border-gray-300 {
+[data-theme="dark"] .border-gray-200:not(#cartel-hoja-carta *),
+[data-theme="dark"] .border-gray-300:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .border-gray-200:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .border-gray-300:not(#cartel-hoja-carta *),
+[data-theme="dark"] .border-slate-200:not(#cartel-hoja-carta *),
+[data-theme="dark"] .border-slate-300:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .border-slate-200:not(#cartel-hoja-carta *),
+[data-theme="amoled"] .border-slate-300:not(#cartel-hoja-carta *) {
     border-color: var(--border-color) !important;
+}
+
+/* Botones de selección activos en modo oscuro/AMOLED resaltados en Oro Institucional */
+[data-theme="dark"] button.bg-slate-800,
+[data-theme="amoled"] button.bg-slate-800 {
+    background-color: #f59e0b !important;
+    color: #09090b !important;
+    border-color: #fbbf24 !important;
 }
 
 [data-theme="dark"] input,
@@ -161,6 +181,13 @@ input, select, textarea {
     background-color: var(--border-color) !important;
 }
 
+/* Protección del Cartel Carta y Cajas QR: Siempre blanco óptico para lectura de cámara */
+#cartel-hoja-carta,
+.qr-white-box {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
 /* --- 4. REGLAS DE IMPRESIÓN OFICIAL EN HOJA TIPO CARTA (8.5" x 11" / Letter) --- */
 @media print {
     @page {
@@ -172,22 +199,28 @@ input, select, textarea {
         background: #ffffff !important;
         color: #000000 !important;
         padding: 0 !important;
+        margin: 0 !important;
     }
 
-    /* Ocultar toda la interfaz web común */
-    body > header,
-    body > main,
-    #modal-mount,
-    .no-print,
-    button {
-        display: none !important;
+    /* Ocultar absolutamente todos los elementos ajenos al cartel */
+    body * {
+        visibility: hidden !important;
     }
 
-    /* Mostrar exclusivamente el contenedor del cartel carta */
-    #cartel-hoja-carta,
-    .cartel-imprimible-root {
+    /* Hacer visible únicamente la lámina del cartel y sus hijos */
+    #tab-qr {
         display: block !important;
-        position: static !important;
+    }
+
+    #cartel-hoja-carta,
+    #cartel-hoja-carta * {
+        visibility: visible !important;
+    }
+
+    #cartel-hoja-carta {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
         background: #ffffff !important;
         color: #000000 !important;
         max-width: 100% !important;
@@ -197,14 +230,5 @@ input, select, textarea {
         padding: 10mm 12mm !important;
         margin: 0 auto !important;
         page-break-inside: avoid !important;
-    }
-
-    #cartel-hoja-carta * {
-        color: #000000 !important;
-    }
-
-    #cartel-hoja-carta .bg-slate-900 {
-        background-color: #0f172a !important;
-        color: #ffffff !important;
     }
 }

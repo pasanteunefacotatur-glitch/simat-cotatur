@@ -40,6 +40,7 @@ export function applyTheme(theme) {
     if (!THEMES.includes(theme)) theme = "light";
 
     document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.toggle("dark", theme === "dark" || theme === "amoled");
     if (document.body) {
         document.body.setAttribute("data-theme", theme);
     }

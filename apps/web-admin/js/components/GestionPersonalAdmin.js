@@ -11,12 +11,22 @@
  * ==============================================================================
  */
 
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdminCredencialCallback, puntosList = []) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const puntosOptions = puntosList.map(p => `
-        <option value="${p.id}">${p.nombre}</option>
+        <option value="${escapeHtml(p.id)}">${escapeHtml(p.nombre)}</option>
     `).join("");
 
     container.innerHTML = `
@@ -211,38 +221,38 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
 
             tablaBody.innerHTML = lista.map(f => `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td class="p-3 font-mono font-bold text-slate-900 dark:text-white">${f.cedula}</td>
+                    <td class="p-3 font-mono font-bold text-slate-900 dark:text-white">${escapeHtml(f.cedula)}</td>
                     <td class="p-3">
-                        <div class="font-semibold text-slate-900 dark:text-white">${f.nombre_completo}</div>
+                        <div class="font-semibold text-slate-900 dark:text-white">${escapeHtml(f.nombre_completo)}</div>
                         <div class="text-[10px] text-slate-400">
-                            ${f.debe_cambiar_clave ? '⚠️ Pendiente de activación (clave inicial)' : (f.email || 'Activo')}
+                            ${f.debe_cambiar_clave ? '⚠️ Pendiente de activación (clave inicial)' : escapeHtml(f.email || 'Activo')}
                         </div>
                     </td>
                     <td class="p-3">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${f.rol === 'SUPERVISOR' ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}">
-                            ${f.rol}
+                            ${escapeHtml(f.rol)}
                         </span>
                     </td>
-                    <td class="p-3">${f.punto_nombre}</td>
+                    <td class="p-3">${escapeHtml(f.punto_nombre)}</td>
                     <td class="p-3 text-center">
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${f.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
                             ${f.activo ? '🟢 Activo' : '🔴 Inactivo'}
                         </span>
                     </td>
                     <td class="p-3 text-right space-x-2">
-                        <button type="button" data-id="${f.id}" data-action="toggle"
+                        <button type="button" data-id="${escapeHtml(f.id)}" data-action="toggle"
                             class="btn-action-func text-xs font-bold ${f.activo ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'}"
                             title="${f.activo ? 'Desactivar usuario' : 'Activar usuario'}">
                             ${f.activo ? 'Desactivar' : 'Reactivar'}
                         </button>
 
-                        <button type="button" data-id="${f.id}" data-action="reset" data-cedula="${f.cedula}"
+                        <button type="button" data-id="${escapeHtml(f.id)}" data-action="reset" data-cedula="${escapeHtml(f.cedula)}"
                             class="btn-action-func text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
                             title="Restablece la clave al número de cédula">
                             Restablecer Clave
                         </button>
 
-                        <button type="button" data-id="${f.id}" data-action="delete"
+                        <button type="button" data-id="${escapeHtml(f.id)}" data-action="delete"
                             class="btn-action-func text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
                             title="Eliminar usuario definitivamente">
                             Eliminar
