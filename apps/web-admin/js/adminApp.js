@@ -21,7 +21,7 @@ const SESSION_KEY = "simat_supervisor_session";
 let activeSession = null;
 let cachedPuntos = [];
 
-document.addEventListener("DOMContentLoaded", () => {
+function initAdminApp() {
     // 1. Inicializar tema (Detecta ajuste del dispositivo por defecto)
     initTheme();
 
@@ -51,7 +51,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const btn = document.getElementById("btn-toggle-theme");
         if (btn) btn.addEventListener("click", () => toggleTheme());
     }
-});
+}
+
+// Inicialización universal segura (ejecuta de inmediato si el DOM ya está listo)
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAdminApp);
+} else {
+    initAdminApp();
+}
 
 /**
  * Modal de inicio de sesión por Cédula y Contraseña.

@@ -10,7 +10,7 @@
  * ==============================================================================
  */
 
-import { CONFIG } from "../../web-turista/js/config.js";
+import { CONFIG } from "../../../web-turista/js/config.js";
 
 /**
  * Renderiza el módulo de Rueda de Prensa del Gobernador

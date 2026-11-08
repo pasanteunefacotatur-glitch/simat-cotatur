@@ -10,7 +10,7 @@
  * ==============================================================================
  */
 
-import { CONFIG, TEMPORADAS_CONFIG } from "../../web-turista/js/config.js";
+import { CONFIG, TEMPORADAS_CONFIG } from "../../../web-turista/js/config.js";
 
 /**
  * Algoritmo astronómico Meeus/Jones/Butcher para calcular Domingo de Pascua

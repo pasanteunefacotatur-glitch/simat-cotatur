@@ -36,7 +36,10 @@ import { renderModalRecompensa, abrirModalRecompensa } from "./components/ModalR
 let activePoint = PUNTOS_CONTROL_QR.PEAJE_TARIBA;
 let activeSeasonCode = "REGULAR";
 
-document.addEventListener("DOMContentLoaded", async () => {
+/**
+ * Inicialización inmediata y resiliente de la encuesta turística.
+ */
+function initApp() {
     // 1. Inicializar tema (Claro / Oscuro LCD / AMOLED según dispositivo)
     initTheme();
 
@@ -52,7 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         activePoint = PUNTOS_CONTROL_QR[codigoPunto];
     }
 
-    // 4. Renderizar componentes públicos de la encuesta
+    // 4. Renderizar componentes públicos de la encuesta INMEDIATAMENTE
     renderHeader("header-mount", activePoint.nombre);
     renderStepProcedencia("step-1-mount");
     renderStepDestinoPerfil("step-2-mount");
@@ -60,54 +63,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderStepCalificacion("step-3-mount");
     renderModalRecompensa("modal-mount");
 
-    // 5. Sincronización en vivo del punto y temporada si Supabase está accesible
+    // 5. Enlazar envío de encuesta
+    const form = document.getElementById("form-encuesta-turistica");
+    if (form) {
+        form.addEventListener("submit", handleSubmitEncuesta);
+    }
+
+    // 6. Sincronización en vivo del punto y temporada en segundo plano
     if (navigator.onLine) {
-        try {
-            // Sincronizar punto
-            const resPunto = await fetch(
-                `${CONFIG.SUPABASE_URL}/rest/v1/puntos_captura?select=id,codigo,nombre&codigo=eq.${encodeURIComponent(codigoPunto)}&activo=eq.true`,
-                {
-                    headers: {
-                        "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                        "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                    }
-                }
-            );
-            if (resPunto.ok) {
-                const rows = await resPunto.json();
-                if (Array.isArray(rows) && rows.length > 0) {
-                    activePoint = { id: rows[0].id, nombre: rows[0].nombre };
-                    const headerPointEl = document.getElementById("header-point-name");
-                    if (headerPointEl) headerPointEl.textContent = activePoint.nombre;
-                }
-            }
-
-            // Sincronizar temporada activa oficial
-            const resTemp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/obtener_temporada_activa`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                }
-            });
-            if (resTemp.ok) {
-                const dataTemp = await resTemp.json();
-                if (dataTemp && dataTemp.temporada_codigo) {
-                    activeSeasonCode = dataTemp.temporada_codigo;
-                    renderStepTemporadaDinamica("step-temporada-mount", activeSeasonCode);
-                }
-            }
-        } catch (_) {
-            // Usa el catálogo local como respaldo resiliente
-        }
-    }
-        } catch (_) {
-            // Usa el catálogo local como respaldo resiliente
-        }
+        syncLiveConfig(codigoPunto);
     }
 
-    // 6. Cola offline y sincronización automática
+    // 7. Cola offline y sincronización automática
     flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
     window.addEventListener("online", () => {
         flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
@@ -117,13 +84,59 @@ document.addEventListener("DOMContentLoaded", async () => {
             flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
         }
     });
+}
 
-    // 7. Enlazar envío de encuesta
-    const form = document.getElementById("form-encuesta-turistica");
-    if (form) {
-        form.addEventListener("submit", handleSubmitEncuesta);
+/**
+ * Sincroniza nombre del punto y temporada activa sin bloquear el renderizado inicial.
+ */
+async function syncLiveConfig(codigoPunto) {
+    try {
+        // Sincronizar punto
+        const resPunto = await fetch(
+            `${CONFIG.SUPABASE_URL}/rest/v1/puntos_captura?select=id,codigo,nombre&codigo=eq.${encodeURIComponent(codigoPunto)}&activo=eq.true`,
+            {
+                headers: {
+                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                }
+            }
+        );
+        if (resPunto.ok) {
+            const rows = await resPunto.json();
+            if (Array.isArray(rows) && rows.length > 0) {
+                activePoint = { id: rows[0].id, nombre: rows[0].nombre };
+                const headerPointEl = document.getElementById("header-point-name");
+                if (headerPointEl) headerPointEl.textContent = activePoint.nombre;
+            }
+        }
+
+        // Sincronizar temporada activa oficial
+        const resTemp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/obtener_temporada_activa`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+            }
+        });
+        if (resTemp.ok) {
+            const dataTemp = await resTemp.json();
+            if (dataTemp && dataTemp.temporada_codigo) {
+                activeSeasonCode = dataTemp.temporada_codigo;
+                renderStepTemporadaDinamica("step-temporada-mount", activeSeasonCode);
+            }
+        }
+    } catch (_) {
+        // Usa el catálogo local como respaldo resiliente
     }
-});
+}
+
+// Inicialización universal segura (si el DOM ya cargó, ejecuta de inmediato)
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initApp);
+} else {
+    initApp();
+}
 
 /**
  * Extrae, valida, sanitiza y transmite los datos reales de la encuesta turística.
