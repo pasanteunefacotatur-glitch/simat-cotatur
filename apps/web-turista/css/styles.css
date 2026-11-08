@@ -3,17 +3,33 @@
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: styles.css
  * DESCRIPCIÓN: Estilos base, compatibilidad con muescas (Notch / Safe Areas),
- *              pantallas curvas y prevención de zoom automático en iOS Safari.
+ *              pantallas curvas, prevención de auto-zoom en iOS Safari
+ *              y reglas de impresión en Hoja Carta (8.5" x 11" / Letter).
+ *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Tipografía institucional oficial de COTATUR (tachiraesturismo.com.ve) */
+body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 /* Compatibilidad con muescas de cámaras y barras de navegación móviles */
 .pt-safe {
-    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-top: max(0.75rem, env(safe-area-inset-top));
 }
 
 .pb-safe {
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
 }
 
 .px-safe {
@@ -26,16 +42,55 @@ input, select, textarea {
     font-size: 16px !important;
 }
 
-/* Suavizado de fuentes y transiciones táctiles */
-body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    touch-action: manipulation;
-}
+/* ==============================================================================
+ * REGLAS DE IMPRESIÓN OFICIAL EN HOJA TIPO CARTA (8.5" x 11" / Letter Portrait)
+ * ============================================================================== */
+@media print {
+    @page {
+        size: letter portrait;
+        margin: 6mm;
+    }
 
-/* Animación sutil de estrellas */
-.star-btn {
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+    }
+
+    /* Ocultar toda la interfaz web común */
+    body > header,
+    body > main,
+    #modal-mount,
+    #modal-admin-overlay,
+    .bg-slate-900,
+    .bg-slate-50,
+    button {
+        display: none !important;
+    }
+
+    /* Mostrar exclusivamente el contenedor del cartel carta */
+    #modal-qr-overlay {
+        display: block !important;
+        position: static !important;
+        background: transparent !important;
+        padding: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    #modal-qr-overlay > div {
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    #cartel-hoja-carta {
+        max-width: 100% !important;
+        width: 100% !important;
+        border: 2px solid #0f172a !important;
+        box-shadow: none !important;
+        padding: 10mm 12mm !important;
+        margin: 0 auto !important;
+        page-break-inside: avoid !important;
+    }
 }

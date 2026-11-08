@@ -1,10 +1,11 @@
 /**
  * ==============================================================================
- * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
+ * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: app.js
  * DESCRIPCIÓN: Controlador principal del formulario web. Coordina el montaje
  *              de módulos, resolución de punto por URL (?p=) contra Supabase,
- *              sanitización, cola de contingencia offline y envío RPC.
+ *              sanitización, cola offline, generador de carteles QR y módulo admin.
+ *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
 
@@ -22,6 +23,8 @@ import { renderStepProcedencia } from "./components/StepProcedencia.js";
 import { renderStepDestinoPerfil } from "./components/StepDestinoPerfil.js";
 import { renderStepCalificacion } from "./components/StepCalificacion.js";
 import { renderModalRecompensa, abrirModalRecompensa } from "./components/ModalRecompensa.js";
+import { renderGeneradorQRModal, abrirGeneradorQR } from "./components/GeneradorQRModal.js";
+import { renderAdminUsuariosModal, abrirAdminUsuarios } from "./components/AdminUsuariosModal.js";
 
 // Estado activo del punto de control
 let activePoint = PUNTOS_CONTROL_QR.PEAJE_TARIBA;
@@ -44,8 +47,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderStepDestinoPerfil("step-2-mount");
     renderStepCalificacion("step-3-mount");
     renderModalRecompensa("modal-mount");
+    renderGeneradorQRModal("qr-modal-mount");
+    renderAdminUsuariosModal("admin-modal-mount");
 
-    // 3. Si COTATUR agregó un punto nuevo en Supabase, sincronizar su nombre e ID en vivo
+    // 3. Vincular botones del encabezado para el Cartel Carta y el Panel Admin
+    const btnQrGen = document.getElementById("btn-open-qr-gen");
+    if (btnQrGen) btnQrGen.addEventListener("click", abrirGeneradorQR);
+
+    const btnAdmin = document.getElementById("btn-open-admin-users");
+    if (btnAdmin) btnAdmin.addEventListener("click", abrirAdminUsuarios);
+
+    // 4. Si COTATUR agregó un punto nuevo en Supabase, sincronizar su nombre e ID en vivo
     if (navigator.onLine) {
         try {
             const res = await fetch(
@@ -70,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // 4. Eventos de sincronización automática de la cola offline
+    // 5. Eventos de sincronización automática de la cola offline
     flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
     window.addEventListener("online", () => {
         flushPendingSurveys(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_PUBLISHABLE_KEY);
@@ -81,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // 5. Vincular evento de envío
+    // 6. Vincular evento de envío de formulario
     const form = document.getElementById("form-encuesta-turistica");
     if (form) {
         form.addEventListener("submit", handleSubmitEncuesta);

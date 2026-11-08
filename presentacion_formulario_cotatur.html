@@ -3,36 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0f172a">
-    <title>COTATUR - Encuesta de Perfil del Visitante (Borrador)</title>
+    <meta name="theme-color" content="#1c1c1c">
+    <title>COTATUR • Sistema de Medición y Estadística Turística</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./apps/web-turista/css/styles.css">
     <style>
         input, select { font-size: 16px !important; }
+        @media print {
+            body * { visibility: hidden !important; }
+            #print-area, #print-area * { visibility: visible !important; }
+            #print-area { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; }
+            @page { size: letter portrait; margin: 8mm; }
+        }
     </style>
 </head>
-<body class="min-h-full flex flex-col text-gray-900 bg-gray-100 antialiased font-sans">
+<body class="min-h-full flex flex-col text-gray-900 bg-gray-100 antialiased font-['Poppins',sans-serif]">
 
-    <!-- Encabezado Institucional -->
-    <header class="bg-slate-900 text-white border-b-4 border-slate-700">
-        <div class="max-w-xl mx-auto px-4 py-4">
-            <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-3">
-                <div>
-                    <p class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">
-                        Corporación Tachirense de Turismo (COTATUR)
-                    </p>
-                    <h1 class="text-base font-bold text-white mt-0.5">
-                        Encuesta de Perfil del Visitante
-                    </h1>
+    <!-- Encabezado Institucional con Logos Oficiales (tachiraesturismo.com.ve) -->
+    <header class="bg-[#1c1c1c] text-white border-b-4 border-amber-500 pt-safe shadow-md font-['Montserrat',sans-serif]">
+        <div class="max-w-xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
+                <div class="flex items-center space-x-3">
+                    <img src="./assets/img/logo_cotatur.png" alt="COTATUR" class="h-10 w-auto object-contain drop-shadow" />
+                    <div class="h-7 w-[1px] bg-white/20"></div>
+                    <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo" class="h-8 w-auto object-contain drop-shadow" />
                 </div>
-                <span class="text-[11px] bg-slate-800 text-slate-200 px-2.5 py-1 rounded border border-slate-600 font-mono">
-                    BORRADOR v0.2
-                </span>
+                <div class="flex items-center space-x-1.5 text-xs">
+                    <button type="button" id="demo-btn-qr" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-amber-300 font-semibold rounded-lg border border-amber-500/30 text-[11px]">
+                        <span>🖨️ Cartel Carta</span>
+                    </button>
+                    <button type="button" id="demo-btn-admin" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-slate-200 font-semibold rounded-lg border border-white/20 text-[11px]">
+                        <span>🛡️ Admin</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="bg-slate-800/70 rounded px-3 py-2.5 border border-slate-700 text-xs">
-                <div class="flex flex-wrap items-center justify-between gap-1">
-                    <span class="text-slate-400 font-medium">Punto de control asignado:</span>
-                    <span class="font-semibold text-white">Peaje Vega de Táriba - Troncal 1</span>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-1">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest text-amber-400 font-bold">Corporación Tachirense de Turismo</p>
+                    <h1 class="text-sm font-extrabold text-white leading-tight">Encuesta de Perfil del Visitante</h1>
+                </div>
+                <div class="inline-flex items-center bg-white/5 border border-white/15 px-2.5 py-1 rounded-md text-[11px] self-start sm:self-auto">
+                    <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1.5 animate-pulse"></span>
+                    <span class="font-medium text-slate-300 mr-1">Punto:</span>
+                    <span class="font-bold text-white" id="demo-active-point-label">Peaje Vega de Táriba</span>
                 </div>
             </div>
         </div>
@@ -45,30 +60,18 @@
             <!-- I. Lugar de Procedencia -->
             <section class="bg-white rounded border border-gray-300 p-5 shadow-sm">
                 <div class="border-b border-gray-200 pb-2.5 mb-4">
-                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                        I. Lugar de Procedencia
-                    </h2>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">I. Lugar de Procedencia</h2>
                 </div>
-
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold text-gray-700 mb-2">
-                        Tipo de procedencia <span class="text-red-600">*</span>
-                    </label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2">Tipo de procedencia <span class="text-red-600">*</span></label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" id="tab-nac" class="py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors">
-                            Nacional (Venezuela)
-                        </button>
-                        <button type="button" id="tab-int" class="py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors">
-                            Internacional (Otro país)
-                        </button>
+                        <button type="button" id="tab-nac" class="py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors">Nacional (Venezuela)</button>
+                        <button type="button" id="tab-int" class="py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors">Internacional (Otro país)</button>
                     </div>
                 </div>
-
                 <div id="box-nac">
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Estado de residencia habitual <span class="text-red-600">*</span>
-                    </label>
-                    <select class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 outline-none">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Estado de residencia habitual <span class="text-red-600">*</span></label>
+                    <select id="demo-select-estado" class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 outline-none">
                         <option value="" disabled selected>Seleccione un estado (ordenados por frecuencia)...</option>
                         <option value="Zulia">Zulia</option>
                         <option value="Mérida">Mérida</option>
@@ -84,56 +87,30 @@
                         <option value="Otro">Otro estado</option>
                     </select>
                 </div>
-
                 <div id="box-int" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                        País de residencia habitual <span class="text-red-600">*</span>
-                    </label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">País de residencia habitual <span class="text-red-600">*</span></label>
                     <div id="demo-mount-pais"></div>
-                    <p class="text-[11px] text-gray-500 mt-1">
-                        Escriba el país o ciudad para autocompletar, o elija entre los más frecuentes.
-                    </p>
                 </div>
             </section>
 
             <!-- II. Datos del Desplazamiento -->
             <section class="bg-white rounded border border-gray-300 p-5 shadow-sm space-y-4">
                 <div class="border-b border-gray-200 pb-2.5">
-                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                        II. Datos del Desplazamiento y Estadía
-                    </h2>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">II. Datos del Desplazamiento y Estadía</h2>
                 </div>
-
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Municipio o capital de destino <span class="text-red-600">*</span>
-                    </label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Municipio o capital de destino <span class="text-red-600">*</span></label>
                     <div id="demo-mount-municipio"></div>
-                    <p class="text-[11px] text-gray-500 mt-1">
-                        Puede buscar por municipio (ej. Jáuregui, Junín), por su capital (ej. La Grita, Rubio) o localidad (ej. Peribeca).
-                    </p>
                 </div>
-
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Motivo principal del viaje <span class="text-red-600">*</span>
-                    </label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" class="motivo-btn py-2 px-3 border border-slate-800 rounded text-xs font-semibold text-white bg-slate-800 text-left">
-                            Turismo / Recreación
-                        </button>
-                        <button type="button" class="motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left">
-                            Visita a familiares
-                        </button>
-                        <button type="button" class="motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left">
-                            Negocios / Trabajo
-                        </button>
-                        <button type="button" class="motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left">
-                            Religioso / Evento
-                        </button>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Motivo principal del viaje <span class="text-red-600">*</span></label>
+                    <div class="grid grid-cols-2 gap-2" id="demo-motivos">
+                        <button type="button" class="motivo-btn py-2 px-3 border border-slate-800 rounded text-xs font-semibold text-white bg-slate-800 text-left">Turismo / Recreación</button>
+                        <button type="button" class="motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left">Visita a familiares</button>
+                        <button type="button" class="motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left">Negocios / Trabajo</button>
+                        <button type="button" class="motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left">Religioso / Evento</button>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3 pt-1">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Integrantes del grupo</label>
@@ -144,7 +121,6 @@
                         <input type="number" id="demo-dias" min="0" max="90" value="3" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 outline-none" />
                     </div>
                 </div>
-
                 <div id="demo-wrap-alojamiento">
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">Tipo de alojamiento previsto</label>
                     <select class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 outline-none">
@@ -159,14 +135,9 @@
             <!-- III. Evaluación de Servicios -->
             <section class="bg-white rounded border border-gray-300 p-5 shadow-sm space-y-3">
                 <div class="border-b border-gray-200 pb-2.5">
-                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                        III. Evaluación de Servicios
-                    </h2>
-                    <p class="text-[11px] text-gray-500 mt-0.5">
-                        Califique en escala del 1 (Deficiente) al 5 (Excelente).
-                    </p>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">III. Evaluación de Servicios</h2>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Califique en escala del 1 (Deficiente) al 5 (Excelente).</p>
                 </div>
-
                 <div class="divide-y divide-gray-200 text-xs">
                     <div class="py-2.5 flex items-center justify-between">
                         <span class="font-medium text-gray-800">Estado de las vías de acceso</span>
@@ -202,47 +173,126 @@
             </section>
 
             <div class="pt-2">
-                <button type="submit" class="w-full py-3 px-5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded shadow-sm transition-colors">
-                    Registrar encuesta
+                <button type="submit" class="w-full py-3.5 px-5 bg-[#1c1c1c] hover:bg-black text-amber-400 font-bold text-sm uppercase tracking-wide rounded-xl shadow-md border border-amber-500/30 transition-all active:scale-98">
+                    Registrar encuesta y descargar guía
                 </button>
             </div>
         </form>
 
-        <footer class="text-center text-[11px] text-gray-500 py-4 border-t border-gray-200 mt-6">
-            <p class="font-medium text-gray-600">Corporación Tachirense de Turismo (COTATUR)</p>
-            <p class="mt-0.5">Registro estadístico de carácter anónimo.</p>
+        <footer class="text-center text-[11px] text-gray-500 py-4 border-t border-gray-200 mt-6 space-y-1">
+            <p class="font-bold text-gray-700">Corporación Tachirense de Turismo (COTATUR)</p>
+            <p class="text-[10px] text-gray-500">Av. España cruce con Av. Carabobo, Edif. COTATUR. San Cristóbal, Edo. Táchira • WhatsApp: 0424-7388849</p>
         </footer>
     </main>
 
-    <!-- Cuadro de Confirmación -->
+    <!-- Modal 1: Recompensa Oficial -->
     <div id="demo-modal" class="fixed inset-0 z-50 bg-gray-900/75 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-        <div class="bg-white w-full max-w-md rounded border border-gray-300 shadow-xl overflow-hidden">
+        <div class="bg-white w-full max-w-md rounded-xl border border-gray-300 shadow-xl overflow-hidden">
             <div class="bg-slate-900 text-white px-5 py-4 border-b border-slate-700">
-                <p class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">Registro Completado</p>
+                <p class="text-[11px] uppercase tracking-wider text-amber-400 font-semibold">Registro Completado</p>
                 <h3 class="text-base font-bold mt-0.5">Encuesta procesada correctamente</h3>
             </div>
             <div class="p-5 space-y-4 text-xs text-gray-700">
                 <p>Sus respuestas han sido registradas en el sistema estadístico de COTATUR.</p>
-                <div class="p-3.5 rounded border border-gray-300 bg-gray-50">
+                <div class="p-3.5 rounded-lg border border-gray-300 bg-gray-50">
                     <h4 class="font-bold text-gray-900 text-xs">Guía de Rutas Turísticas y Alojamientos</h4>
-                    <p class="text-gray-600 mt-1 text-[11px]">Documento informativo con circuitos principales del estado.</p>
-                    <button type="button" onclick="alert('Descarga iniciada: Guia_Rutas_COTATUR.pdf');" class="mt-2.5 inline-block px-3 py-1.5 bg-slate-800 text-white font-semibold rounded text-xs">
+                    <p class="text-gray-600 mt-1 text-[11px]">Ruta de la Montaña, Chorro El Indio, Peribeca y Zumbador.</p>
+                    <button type="button" onclick="alert('Descargando Guía Turística Oficial (COTATUR)');" class="mt-2.5 inline-block px-3 py-1.5 bg-slate-800 text-white font-semibold rounded text-xs">
                         Descargar Guía en PDF
                     </button>
                 </div>
-                <div class="p-3.5 rounded border border-gray-300 bg-gray-50">
-                    <h4 class="font-bold text-gray-900 text-xs">Directorio de Asistencia Vial</h4>
-                    <p class="mt-1 text-[11px]">• Protección Civil: <b>0800-8224472</b> | Emergencias: <b>911</b></p>
-                </div>
             </div>
             <div class="px-5 py-3 bg-gray-100 border-t border-gray-200 flex justify-end">
-                <button type="button" id="btn-close-demo-modal" class="px-4 py-2 bg-white border border-gray-300 text-gray-800 font-semibold text-xs rounded">
-                    Cerrar y finalizar
-                </button>
+                <button type="button" id="btn-close-demo-modal" class="px-4 py-2 bg-white border border-gray-300 text-gray-800 font-semibold text-xs rounded">Cerrar</button>
             </div>
         </div>
     </div>
 
+    <!-- Modal 2: Generador de Cartel Imprimible Hoja Carta -->
+    <div id="demo-modal-qr" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+            <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between border-b border-slate-700">
+                <span class="text-sm font-bold">🖨️ Cartel Imprimible (Hoja Carta)</span>
+                <button type="button" id="demo-close-qr" class="text-slate-400 hover:text-white font-bold px-2">✕</button>
+            </div>
+            <div class="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2 text-xs">
+                <select id="demo-select-punto-qr" class="bg-white border border-slate-300 rounded p-1.5 text-xs font-semibold text-slate-800">
+                    <option value="PEAJE_TARIBA">Peaje Vega de Táriba (Troncal 1)</option>
+                    <option value="PEAJE_CAMPANA">Peaje La Pedrera / La Campana (Troncal 5)</option>
+                    <option value="TERMINAL_SC">Terminal de Pasajeros San Cristóbal</option>
+                    <option value="PUENTE_ATANASIO">Puente Internacional Atanasio Girardot</option>
+                    <option value="PERIBECA_PUEBLO">Punto Turístico Peribeca</option>
+                    <option value="CHORRO_EL_INDIO">Parque Nacional Chorro El Indio</option>
+                </select>
+                <button type="button" onclick="window.print();" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg shadow text-xs">
+                    Imprimir en Carta
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto bg-slate-200 flex justify-center">
+                <div id="print-area" class="w-full max-w-[460px] bg-white p-6 rounded-xl border-2 border-slate-900 shadow-md text-center">
+                    <div class="flex items-center justify-between border-b-2 border-slate-900 pb-2 mb-3">
+                        <img src="./assets/img/logo_cotatur.png" class="h-10 w-auto object-contain" />
+                        <div class="text-[9px] font-black uppercase text-slate-800 leading-tight">
+                            Corporación Tachirense de Turismo<br/><span class="text-amber-600">COTATUR • Táchira es Turismo</span>
+                        </div>
+                        <img src="./assets/img/logo_tachira.png" class="h-9 w-auto object-contain" />
+                    </div>
+                    <span class="inline-block px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[9px] font-black uppercase border border-amber-300 mb-1">Encuesta Oficial del Visitante</span>
+                    <h2 class="text-xl font-black text-slate-900">¡BIENVENIDO AL TÁCHIRA!</h2>
+                    <p class="text-xs text-slate-600 mt-0.5">Escanea este código QR y califica tu viaje en 1 minuto</p>
+                    <div class="my-3 flex justify-center">
+                        <img id="demo-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=https://pasanteunefacotatur-glitch.github.io/simat-cotatur/?p=PEAJE_TARIBA" class="w-44 h-44 object-contain border-2 border-slate-900 p-2 rounded-xl" />
+                    </div>
+                    <div class="text-[10px] font-bold text-blue-900 underline mb-2" id="demo-qr-url">pasanteunefacotatur-glitch.github.io/simat-cotatur/?p=PEAJE_TARIBA</div>
+                    <div class="bg-slate-50 p-2 rounded-lg text-[10px] text-slate-700 font-bold border border-slate-200">
+                        🎁 Al finalizar descarga el Mapa Oficial de Rutas y Posadas del Táchira
+                    </div>
+                    <div class="mt-3 text-[8px] text-slate-500 border-t pt-2" id="demo-qr-punto-footer">Punto Oficial: Peaje Vega de Táriba (Troncal 1)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Gestión Administrativa de Usuarios / Encuestadores -->
+    <div id="demo-modal-admin" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+            <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between border-b border-slate-700">
+                <span class="text-sm font-bold">🛡️ Panel de Supervisión y Encuestadores</span>
+                <button type="button" id="demo-close-admin" class="text-slate-400 hover:text-white font-bold px-2">✕</button>
+            </div>
+            <div id="demo-admin-pin-box" class="p-6 text-center space-y-3">
+                <div class="text-2xl">🔒</div>
+                <h4 class="text-xs font-bold text-slate-800">Ingrese PIN de Supervisión</h4>
+                <input type="password" id="demo-admin-pin" placeholder="PIN..." class="w-48 mx-auto bg-slate-50 border border-slate-300 rounded-lg p-2 text-center text-xs font-mono outline-none" />
+                <button type="button" id="demo-admin-login-btn" class="block w-48 mx-auto py-2 bg-slate-900 text-white font-bold text-xs rounded-lg shadow">Verificar</button>
+                <p class="text-[10px] text-slate-400 font-mono">PIN Inicial: cotatur2026</p>
+            </div>
+            <div id="demo-admin-panel" class="hidden p-4 overflow-y-auto space-y-3 text-xs">
+                <div class="flex items-center justify-between border-b pb-2">
+                    <span class="font-bold text-slate-800">Encuestadores de Campo</span>
+                    <button type="button" onclick="alert('Formulario de alta habilitado en Supabase');" class="px-2.5 py-1 bg-slate-900 text-white font-bold rounded text-[11px]">+ Nuevo</button>
+                </div>
+                <div class="space-y-2" id="demo-users-list">
+                    <div class="p-2.5 bg-slate-50 border rounded-lg flex items-center justify-between">
+                        <div>
+                            <div class="font-bold text-slate-800">Pedro José Pérez (V-18452120)</div>
+                            <div class="text-[10px] text-slate-500">Peaje Vega de Táriba • Tel: 0414-7253311</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">🟢 ACTIVO</span>
+                    </div>
+                    <div class="p-2.5 bg-slate-50 border rounded-lg flex items-center justify-between">
+                        <div>
+                            <div class="font-bold text-slate-800">María Gómez (V-22194850)</div>
+                            <div class="text-[10px] text-slate-500">Peaje La Campana • Tel: 0424-7388849</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">🟢 ACTIVO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de interactividad -->
     <script>
         const MUNICIPIOS = [
             { m: "San Cristóbal", c: "San Cristóbal", r: "FISS, Pueblo Nuevo, Chorro El Indio" },
@@ -294,9 +344,7 @@
             { n: "Francia", r: "París" }
         ];
 
-        function norm(s) {
-            return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-        }
+        function norm(s) { return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
 
         function initAutocomplete(mountId, placeholder, list, getLabel, getSub, getSearch) {
             const mount = document.getElementById(mountId);
@@ -312,14 +360,13 @@
             function render(q) {
                 const nq = norm(q);
                 const filtered = !nq ? list : list.filter(x => norm(getSearch(x)).includes(nq));
-                const head = `<div class="px-3 py-1.5 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-500">${!nq ? "Ordenados por los más utilizados" : "Coincidencias (" + filtered.length + ")"}</div>`;
-                dd.innerHTML = head + filtered.map((x, i) => `
+                dd.innerHTML = `<div class="px-3 py-1.5 bg-gray-50 text-[10px] font-bold uppercase text-gray-500">${!nq ? "Más utilizados" : "Coincidencias (" + filtered.length + ")"}</div>` + filtered.map((x, i) => `
                     <button type="button" data-val="${getLabel(x)}" class="ac-item w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center justify-between">
                         <div>
                             <div class="text-xs font-semibold text-gray-900">${getLabel(x)}</div>
                             <div class="text-[11px] text-gray-500">${getSub(x)}</div>
                         </div>
-                        ${!nq && i < 6 ? '<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-200">Frecuente</span>' : ''}
+                        ${!nq && i < 6 ? '<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border">Frecuente</span>' : ''}
                     </button>
                 `).join("");
                 dd.classList.remove("hidden");
@@ -332,45 +379,49 @@
                 });
             }
             inp.addEventListener("focus", () => render(""));
-            inp.addEventListener("click", () => render(""));
             inp.addEventListener("input", () => render(inp.value));
             inp.addEventListener("blur", () => setTimeout(() => dd.classList.add("hidden"), 150));
         }
 
-        initAutocomplete(
-            "demo-mount-municipio",
-            "Escriba municipio o capital (ej. San Cristóbal, La Grita, Táriba)...",
-            MUNICIPIOS,
-            x => `${x.m} (Cap. ${x.c})`,
-            x => `Capital: ${x.c} • Ref: ${x.r}`,
-            x => `${x.m} ${x.c} ${x.r}`
-        );
+        initAutocomplete("demo-mount-municipio", "Escriba municipio o capital (ej. San Cristóbal, La Grita)...", MUNICIPIOS, x => `${x.m} (Cap. ${x.c})`, x => `Capital: ${x.c} • Ref: ${x.r}`, x => `${x.m} ${x.c} ${x.r}`);
+        initAutocomplete("demo-mount-pais", "Escriba país (ej. Colombia, España)...", PAISES, x => x.n, x => `Ref: ${x.r}`, x => `${x.n} ${x.r}`);
 
-        initAutocomplete(
-            "demo-mount-pais",
-            "Escriba o seleccione el país (ej. Colombia, España)...",
-            PAISES,
-            x => x.n,
-            x => `Ref: ${x.r}`,
-            x => `${x.n} ${x.r}`
-        );
+        // Modal Triggers
+        document.getElementById("demo-btn-qr").addEventListener("click", () => document.getElementById("demo-modal-qr").classList.remove("opacity-0", "pointer-events-none"));
+        document.getElementById("demo-close-qr").addEventListener("click", () => document.getElementById("demo-modal-qr").classList.add("opacity-0", "pointer-events-none"));
+
+        document.getElementById("demo-btn-admin").addEventListener("click", () => document.getElementById("demo-modal-admin").classList.remove("opacity-0", "pointer-events-none"));
+        document.getElementById("demo-close-admin").addEventListener("click", () => document.getElementById("demo-modal-admin").classList.add("opacity-0", "pointer-events-none"));
+
+        document.getElementById("demo-select-punto-qr").addEventListener("change", (e) => {
+            const p = e.target.value;
+            const text = e.target.options[e.target.selectedIndex].text;
+            const url = `pasanteunefacotatur-glitch.github.io/simat-cotatur/?p=${p}`;
+            document.getElementById("demo-qr-url").textContent = url;
+            document.getElementById("demo-qr-punto-footer").textContent = `Punto Oficial: ${text}`;
+            document.getElementById("demo-qr-img").src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=https://${url}`;
+        });
+
+        document.getElementById("demo-admin-login-btn").addEventListener("click", () => {
+            if (document.getElementById("demo-admin-pin").value === "cotatur2026") {
+                document.getElementById("demo-admin-pin-box").classList.add("hidden");
+                document.getElementById("demo-admin-panel").classList.remove("hidden");
+            } else { alert("PIN incorrecto."); }
+        });
 
         const tabNac = document.getElementById("tab-nac");
         const tabInt = document.getElementById("tab-int");
-        const boxNac = document.getElementById("box-nac");
-        const boxInt = document.getElementById("box-int");
-
         tabNac.addEventListener("click", () => {
-            tabNac.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors";
-            tabInt.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors";
-            boxNac.classList.remove("hidden");
-            boxInt.classList.add("hidden");
+            tabNac.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white";
+            tabInt.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700";
+            document.getElementById("box-nac").classList.remove("hidden");
+            document.getElementById("box-int").classList.add("hidden");
         });
         tabInt.addEventListener("click", () => {
-            tabInt.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors";
-            tabNac.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors";
-            boxInt.classList.remove("hidden");
-            boxNac.classList.add("hidden");
+            tabInt.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white";
+            tabNac.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700";
+            document.getElementById("box-int").classList.remove("hidden");
+            document.getElementById("box-nac").classList.add("hidden");
         });
 
         document.getElementById("demo-dias").addEventListener("input", (e) => {
@@ -381,9 +432,7 @@
 
         document.querySelectorAll(".motivo-btn").forEach(btn => {
             btn.addEventListener("click", () => {
-                document.querySelectorAll(".motivo-btn").forEach(b => {
-                    b.className = "motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 text-left";
-                });
+                document.querySelectorAll(".motivo-btn").forEach(b => b.className = "motivo-btn py-2 px-3 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-gray-50 text-left");
                 btn.className = "motivo-btn py-2 px-3 border border-slate-800 rounded text-xs font-semibold text-white bg-slate-800 text-left";
             });
         });
@@ -398,14 +447,10 @@
             });
         });
 
-        const demoForm = document.getElementById("demo-form");
-        const demoModal = document.getElementById("demo-modal");
-        document.getElementById("btn-close-demo-modal").addEventListener("click", () => {
-            demoModal.classList.add("opacity-0", "pointer-events-none");
-        });
-        demoForm.addEventListener("submit", (e) => {
+        document.getElementById("btn-close-demo-modal").addEventListener("click", () => document.getElementById("demo-modal").classList.add("opacity-0", "pointer-events-none"));
+        document.getElementById("demo-form").addEventListener("submit", (e) => {
             e.preventDefault();
-            demoModal.classList.remove("opacity-0", "pointer-events-none");
+            document.getElementById("demo-modal").classList.remove("opacity-0", "pointer-events-none");
         });
     </script>
 </body>
