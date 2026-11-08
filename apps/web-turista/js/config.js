@@ -20,7 +20,8 @@ export const CONFIG = {
     // Cloudflare Turnstile
     TURNSTILE_SITE_KEY: "0x4AAAAAAFwAvWm1yItma-Eq",
 
-    VERSION: "0.2.0-borrador",
+    VERSION: "0.5.0-alpha",
+    FASE: "Fase Alpha (Consolidación Web & Supervisión)",
     ANIO: 2026
 };
 
