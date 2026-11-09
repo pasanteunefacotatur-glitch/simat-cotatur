@@ -354,3 +354,9 @@ INSERT INTO public.temporadas_turisticas (codigo, nombre, fecha_inicio, fecha_fi
 ('CARNAVALES_2026', 'Carnavales Turísticos del Táchira 2026', '2026-02-14 00:00:00-04', '2026-02-18 23:59:59-04', TRUE),
 ('SEMANA_SANTA_2026', 'Semana Santa 2026 (Ruta de los 7 Templos)', '2026-03-29 00:00:00-04', '2026-04-05 23:59:59-04', TRUE)
 ON CONFLICT (codigo) DO NOTHING;
+
+-- ==============================================================================
+-- 8. CONCESIÓN EXPLÍCITA DE PERMISOS PARA RPCs MÓVILES Y WEB
+-- ==============================================================================
+GRANT EXECUTE ON FUNCTION public.sincronizar_lote_apk(UUID, JSONB) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.registrar_encuesta_web(JSONB) TO anon, authenticated;
