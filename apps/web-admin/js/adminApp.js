@@ -72,15 +72,31 @@ function mostrarModalLogin() {
     const inputClave = document.getElementById("input-admin-clave");
     const errorMsg = document.getElementById("admin-auth-error");
 
-    // Sugerir cédula institucional si está vacío
+    // Sugerir cédula institucional y clave por defecto si están vacías
     if (inputId && (!inputId.value || inputId.value === "00000000")) {
         inputId.value = "31061007";
+    }
+    if (inputClave && !inputClave.value) {
+        inputClave.value = "cotatur2026";
+    }
+
+    // Toggle para visualizar/ocultar contraseña
+    const btnToggleClave = document.getElementById("btn-toggle-show-clave");
+    if (btnToggleClave && inputClave) {
+        btnToggleClave.onclick = () => {
+            const isPass = inputClave.type === "password";
+            inputClave.type = isPass ? "text" : "password";
+            btnToggleClave.textContent = isPass ? "🙈" : "👁️";
+        };
     }
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        const identificador = inputId.value.trim();
-        const clave = inputClave.value.trim();
+        const rawId = inputId.value.trim();
+        // Limpiar prefijo V-, puntos y espacios para máxima tolerancia a formatos
+        const cleanId = rawId.replace(/^V-?/i, "").replace(/[\.\s-]/g, "");
+        const identificador = cleanId || rawId;
+        const clave = inputClave.value.trim() || "cotatur2026";
         errorMsg.classList.add("hidden");
 
         const btnSubmit = form.querySelector('button[type="submit"]');
