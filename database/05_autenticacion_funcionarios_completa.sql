@@ -20,6 +20,8 @@ ALTER TABLE public.perfiles_funcionarios
     ADD COLUMN IF NOT EXISTS email VARCHAR(150),
     ADD COLUMN IF NOT EXISTS debe_cambiar_clave BOOLEAN DEFAULT TRUE,
     ADD COLUMN IF NOT EXISTS google_id VARCHAR(150),
+    ADD COLUMN IF NOT EXISTS sexo VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS avatar_url TEXT,
     ADD COLUMN IF NOT EXISTS ultimo_ingreso TIMESTAMPTZ;
 
 -- Crear supervisores iniciales por defecto (Cédula: 00000000 y 31061007, clave: cotatur2026)
@@ -122,13 +124,18 @@ BEGIN
     END IF;
 
     -- Validar contraseña:
-    -- A) Clave por defecto inicial (la cédula del usuario)
+    -- A) Clave por defecto inicial (la cédula del usuario en cualquier formato)
     -- B) Hash guardado en base de datos
     -- C) PIN maestro institucional de emergencia ('cotatur2026')
     IF p_clave = v_pin_maestro THEN
         v_clave_valida := TRUE;
     ELSIF v_func.password_hash IS NULL OR v_func.debe_cambiar_clave = TRUE THEN
-        v_clave_valida := (TRIM(p_clave) = TRIM(v_func.cedula) OR TRIM(p_clave) = TRIM(REPLACE(v_func.cedula, 'V-', '')));
+        -- Durante primer ingreso o reinicio, la clave es su cédula en CUALQUIER formato (con puntos, V-, espacios o números)
+        v_clave_valida := (
+            TRIM(p_clave) = TRIM(v_func.cedula) 
+            OR UPPER(TRIM(REPLACE(p_clave, 'V-', ''))) = UPPER(TRIM(REPLACE(v_func.cedula, 'V-', '')))
+            OR REGEXP_REPLACE(p_clave, '[^0-9]', '', 'g') = REGEXP_REPLACE(v_func.cedula, '[^0-9]', '', 'g')
+        );
     ELSE
         v_clave_valida := (v_func.password_hash = crypt(p_clave, v_func.password_hash));
     END IF;
@@ -170,7 +177,8 @@ CREATE OR REPLACE FUNCTION public.auth_primer_ingreso(
     p_nombre_completo TEXT,
     p_telefono TEXT DEFAULT NULL,
     p_email TEXT DEFAULT NULL,
-    p_google_id TEXT DEFAULT NULL
+    p_google_id TEXT DEFAULT NULL,
+    p_sexo TEXT DEFAULT NULL
 )
 RETURNS JSONB AS $$
 BEGIN
@@ -184,6 +192,7 @@ BEGIN
         telefono = COALESCE(NULLIF(TRIM(p_telefono), ''), telefono),
         email = COALESCE(NULLIF(TRIM(p_email), ''), email),
         google_id = COALESCE(NULLIF(TRIM(p_google_id), ''), google_id),
+        sexo = COALESCE(NULLIF(TRIM(p_sexo), ''), sexo),
         debe_cambiar_clave = FALSE,
         ultimo_ingreso = NOW()
     WHERE id = p_funcionario_id;
@@ -345,5 +354,5 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 7. CONCEDER PERMISOS EXPLÍCITOS A ANON Y AUTHENTICATED
 GRANT EXECUTE ON FUNCTION public.auth_login_funcionario(TEXT, TEXT) TO anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.auth_primer_ingreso(UUID, TEXT, TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.auth_primer_ingreso(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_gestionar_funcionarios_v2(TEXT, TEXT, JSONB) TO anon, authenticated;
