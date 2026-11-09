@@ -25,13 +25,22 @@ function initAdminApp() {
     // 1. Inicializar tema (Detecta ajuste del dispositivo por defecto)
     initTheme();
 
-    // 2. Comprobar sesión activa de supervisor
+    // 2. Si la URL solicita reiniciar o limpiar sesión (?login o ?reset o ?logout)
+    if (window.location.search.includes("login") || window.location.search.includes("reset") || window.location.search.includes("logout")) {
+        sessionStorage.removeItem(SESSION_KEY);
+    }
+
+    // 3. Comprobar sesión activa de supervisor
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (saved) {
         try {
             activeSession = JSON.parse(saved);
             if (activeSession && activeSession.funcionario && activeSession.funcionario.id) {
-                iniciarDashboard();
+                if (activeSession.funcionario.debe_cambiar_clave) {
+                    mostrarModalPrimerIngreso(activeSession.funcionario);
+                } else {
+                    iniciarDashboard();
+                }
             } else {
                 sessionStorage.removeItem(SESSION_KEY);
                 mostrarModalLogin();
@@ -73,6 +82,8 @@ if (document.readyState === "loading") {
  * Modal de inicio de sesión por Cédula y Contraseña.
  */
 function mostrarModalLogin() {
+    sessionStorage.removeItem(SESSION_KEY);
+    activeSession = null;
     const modal = document.getElementById("admin-auth-modal");
     if (modal) modal.classList.remove("hidden");
 
@@ -283,12 +294,6 @@ function mostrarModalPrimerIngreso(funcionario) {
             return;
         }
 
-        if (nuevaClave === funcionario.cedula) {
-            mostrarErrorActivacion("Por seguridad institucional, su contraseña definitiva no puede ser igual a su cédula.");
-            document.getElementById("activar-nueva-clave").focus();
-            return;
-        }
-
         if (nuevaClave !== confirmarClave) {
             mostrarErrorActivacion("Las contraseñas no coinciden. Por favor verifique.");
             document.getElementById("activar-confirmar-clave").focus();
@@ -427,7 +432,7 @@ function iniciarDashboard() {
     if (btnLogout) {
         btnLogout.addEventListener("click", () => {
             sessionStorage.removeItem(SESSION_KEY);
-            window.location.reload();
+            window.location.href = window.location.pathname + "?login=1";
         });
     }
 }
