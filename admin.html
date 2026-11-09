@@ -47,8 +47,11 @@
                     <label for="input-admin-cedula" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Cédula de Identidad:
                     </label>
-                    <input type="text" id="input-admin-cedula" value="31061007" placeholder="Ej: 31061007" required autofocus
+                    <input type="text" id="input-admin-cedula" placeholder="Ej: 31061007 o V-31061007" required autofocus
                         class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Formato: Número de cédula (con o sin 'V-').
+                    </p>
                 </div>
 
                 <div>
@@ -56,14 +59,14 @@
                         Contraseña:
                     </label>
                     <div class="relative">
-                        <input type="password" id="input-admin-clave" value="cotatur2026" placeholder="Ingresa tu contraseña" required
+                        <input type="password" id="input-admin-clave" placeholder="Ingrese su contraseña" required
                             class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-2.5 pr-10 text-xs text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
                         <button type="button" id="btn-toggle-show-clave" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm" title="Mostrar u ocultar contraseña">
                             👁️
                         </button>
                     </div>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                        💡 Clave institucional: <strong class="text-[#198754]">cotatur2026</strong> o su cédula (<strong class="text-[#198754]">31061007</strong>).
+                        💡 Contraseña inicial: su número de cédula (ej. <strong>31061007</strong>) o su clave personal si ya activó su cuenta.
                     </p>
                 </div>
 

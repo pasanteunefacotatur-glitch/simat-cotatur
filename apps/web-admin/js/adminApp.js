@@ -72,14 +72,6 @@ function mostrarModalLogin() {
     const inputClave = document.getElementById("input-admin-clave");
     const errorMsg = document.getElementById("admin-auth-error");
 
-    // Sugerir cédula institucional y clave por defecto si están vacías
-    if (inputId && (!inputId.value || inputId.value === "00000000")) {
-        inputId.value = "31061007";
-    }
-    if (inputClave && !inputClave.value) {
-        inputClave.value = "cotatur2026";
-    }
-
     // Toggle para visualizar/ocultar contraseña
     const btnToggleClave = document.getElementById("btn-toggle-show-clave");
     if (btnToggleClave && inputClave) {
@@ -96,8 +88,20 @@ function mostrarModalLogin() {
         // Limpiar prefijo V-, puntos y espacios para máxima tolerancia a formatos
         const cleanId = rawId.replace(/^V-?/i, "").replace(/[\.\s-]/g, "");
         const identificador = cleanId || rawId;
-        const clave = inputClave.value.trim() || "cotatur2026";
+        const clave = inputClave.value.trim();
         errorMsg.classList.add("hidden");
+
+        if (!identificador) {
+            errorMsg.textContent = "Por favor ingrese su número de cédula.";
+            errorMsg.classList.remove("hidden");
+            return;
+        }
+
+        if (!clave) {
+            errorMsg.textContent = "Por favor ingrese su contraseña.";
+            errorMsg.classList.remove("hidden");
+            return;
+        }
 
         const btnSubmit = form.querySelector('button[type="submit"]');
         btnSubmit.disabled = true;
@@ -191,6 +195,11 @@ function mostrarModalPrimerIngreso(funcionario) {
         const telefono = document.getElementById("activar-telefono").value.trim();
         const email = document.getElementById("activar-email").value.trim();
 
+        if (nuevaClave.length < 4) {
+            alert("La nueva contraseña debe tener al menos 4 caracteres.");
+            return;
+        }
+
         if (nuevaClave !== confirmarClave) {
             alert("Las contraseñas no coinciden.");
             return;
@@ -214,7 +223,10 @@ function mostrarModalPrimerIngreso(funcionario) {
                 })
             });
 
-            if (!res.ok) throw new Error("No se pudo actualizar el perfil.");
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || "No se pudo actualizar el perfil.");
+            }
 
             alert("¡Cuenta activada exitosamente!");
             activeSession.clave = nuevaClave;
