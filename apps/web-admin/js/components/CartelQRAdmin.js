@@ -4,9 +4,12 @@
  * ARCHIVO: apps/web-admin/js/components/CartelQRAdmin.js
  * DESCRIPCIÓN: Módulo de generación de Códigos QR para supervisión turística:
  *              1. Generación de Afiche Completo en Hoja Carta (8.5" x 11").
- *              2. Descarga de "Solo el Código QR" en PNG Alta Resolución (1024x1024)
- *                 para enviar a imprentas y diseñadores publicitarios sin textos.
- *              3. Copia de enlace directo para difusión digital.
+ *              2. Descarga en Formato Vectorial SVG (.svg) escalable sin pérdida
+ *                 de calidad (para vallas publicitarias, gigantografías y pendones).
+ *              3. Descarga en PNG de Ultra Alta Resolución (2048x2048).
+ *              4. Acortador de Enlaces integrado (is.gd / TinyURL / Alias) para
+ *                 minimizar la densidad de la matriz QR y maximizar la legibilidad
+ *                 a distancia o en movimiento desde vehículos.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
@@ -15,7 +18,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Si la lista de puntos está vacía, usar puntos de contingencia
+    // Puntos de contingencia si no se reciben de Supabase
     const puntos = puntosList.length > 0 ? puntosList : [
         { codigo: "PEAJE_TARIBA", nombre: "Peaje Vega de Táriba (Troncal 1)" },
         { codigo: "PEAJE_CAMPANA", nombre: "Peaje La Pedrera / La Campana (Troncal 5)" },
@@ -24,6 +27,16 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
         { codigo: "PERIBECA_PUEBLO", nombre: "Pueblo Típico de Peribeca" },
         { codigo: "CHORRO_EL_INDIO", nombre: "Parque Nacional Chorro El Indio" }
     ];
+
+    // Mapeo de alias cortos por posición o código
+    const ALIAS_MAP = {
+        "PEAJE_TARIBA": "1",
+        "PEAJE_CAMPANA": "2",
+        "TERMINAL_SC": "3",
+        "PUENTE_ATANASIO": "4",
+        "PERIBECA_PUEBLO": "5",
+        "CHORRO_EL_INDIO": "6"
+    };
 
     const optionsHtml = puntos.map(p => `
         <option value="${p.codigo}">${p.nombre}</option>
@@ -38,25 +51,32 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                     <label for="admin-select-punto-qr" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                         Seleccionar Punto de Control para generar material:
                     </label>
-                    <select id="admin-select-punto-qr" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500">
+                    <select id="admin-select-punto-qr" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-[#198754]">
                         ${optionsHtml}
                     </select>
                 </div>
 
-                <!-- Botones de Acción: Cartel Completo y Código QR -->
+                <!-- Botones de Acción Globales -->
                 <div class="flex flex-wrap items-center gap-2">
                     <button type="button" id="btn-admin-print-afiche"
                         class="px-3.5 py-2.5 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl shadow transition-all flex items-center space-x-1.5 text-xs active:scale-95 tap-target-btn"
-                        title="Imprimir cartel completo oficial en papel tamaño Carta">
+                        title="Imprimir cartel oficial en papel tamaño Carta">
                         <span>🖨️</span>
                         <span>Imprimir Cartel Oficial</span>
                     </button>
 
-                    <button type="button" id="btn-admin-download-qr-only"
-                        class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-xl shadow border border-slate-700 transition-all flex items-center space-x-1.5 text-xs active:scale-95"
-                        title="Descargar archivo PNG del código QR en alta resolución">
-                        <span>📥</span>
-                        <span>Descargar Código QR</span>
+                    <button type="button" id="btn-admin-download-svg"
+                        class="px-3.5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl shadow transition-all flex items-center space-x-1.5 text-xs active:scale-95"
+                        title="Descargar archivo vectorial SVG (Escalable sin pérdida de calidad para vallas)">
+                        <span>📐</span>
+                        <span>Descargar SVG (Vectorial)</span>
+                    </button>
+
+                    <button type="button" id="btn-admin-download-png"
+                        class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow border border-slate-700 transition-all flex items-center space-x-1.5 text-xs active:scale-95"
+                        title="Descargar archivo PNG en Ultra Alta Resolución (2048x2048)">
+                        <span>🖼️</span>
+                        <span>Descargar PNG (2048px)</span>
                     </button>
 
                     <button type="button" id="btn-admin-copy-link"
@@ -68,36 +88,84 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                 </div>
             </div>
 
+            <!-- Panel de Optimización de Densidad y Acortador de Enlaces -->
+            <div class="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-4 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="space-y-0.5">
+                        <span class="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                            <span>⚡</span>
+                            <span>Acortador y Legibilidad del Código QR</span>
+                        </span>
+                        <p class="text-[11px] text-emerald-800 dark:text-emerald-400">
+                            A menor longitud del enlace, <strong>los cuadros del QR son más grandes y gruesos</strong>, permitiendo escanear a mayor distancia y velocidad desde autos en movimiento.
+                        </p>
+                    </div>
+                    <div id="qr-density-badge" class="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-extrabold border">
+                        <!-- Badge dinámico de legibilidad -->
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center gap-2">
+                    <div class="relative flex-1 w-full">
+                        <input type="text" id="input-qr-target-url"
+                            class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#198754]"
+                            placeholder="URL codificada en el código QR" />
+                    </div>
+
+                    <button type="button" id="btn-acortar-url"
+                        class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center space-x-1.5 transition-all shrink-0 active:scale-95"
+                        title="Generar enlace ultracorto con servicio público para máxima legibilidad">
+                        <span>⚡</span>
+                        <span>Acortar con 1 Clic</span>
+                    </button>
+
+                    <button type="button" id="btn-restaurar-url-nativa"
+                        class="w-full sm:w-auto px-3 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors shrink-0"
+                        title="Restaurar enlace institucional corto">
+                        <span>🔄</span>
+                        <span>Nativo Corto</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Vista Previa Dividida: Cartel y QR Aislado -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 
                 <!-- Columna Izquierda (1 Col): Solo el QR Puro para Publicidad -->
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 flex flex-col items-center text-center space-y-3">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                        Código QR de Alta Resolución
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        Código QR Aislado (Alta Calidad)
                     </span>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400">
-                        Código QR aislado para imprentas, vallas publicitarias, pendones o calcomanías:
+                        Para diseñadores publicitarios, vallas, pendones, franelas o calcomanías:
                     </p>
                     
                     <div class="qr-white-box p-3 bg-white rounded-xl shadow border border-slate-200 inline-block">
-                        <img id="preview-raw-qr" src="" alt="Solo Código QR" class="w-44 h-44 object-contain" />
+                        <img id="preview-raw-qr" src="" alt="Solo Código QR" class="w-48 h-48 object-contain" />
                     </div>
 
                     <div class="text-[10px] text-slate-500 break-all font-mono" id="preview-raw-url">
                         <!-- URL destino -->
                     </div>
 
-                    <button type="button" id="btn-quick-download-raw"
-                        class="w-full py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded-lg font-bold text-xs transition-colors">
-                        Descargar Imagen en Alta Resolución
-                    </button>
+                    <div class="w-full grid grid-cols-2 gap-2 pt-1">
+                        <button type="button" id="btn-quick-download-svg"
+                            class="py-2 px-2 bg-[#198754] hover:bg-[#157347] text-white rounded-lg font-bold text-[11px] transition-colors shadow-sm flex items-center justify-center gap-1">
+                            <span>📐</span>
+                            <span>SVG Vector</span>
+                        </button>
+                        <button type="button" id="btn-quick-download-png"
+                            class="py-2 px-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold text-[11px] transition-colors shadow-sm flex items-center justify-center gap-1">
+                            <span>🖼️</span>
+                            <span>PNG 2048px</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Columna Derecha (2 Cols): Lámina Completa de Cartel Oficial -->
                 <div class="lg:col-span-2 flex flex-col items-center">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                        Vista previa del cartel oficial para impresión
+                        Vista previa del cartel oficial para impresión (Hoja Carta)
                     </span>
 
                     <!-- LÁMINA CARTA IMPRIMIBLE -->
@@ -135,11 +203,11 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                         <!-- Código QR Central -->
                         <div class="my-1.5 flex flex-col items-center justify-center">
                             <div class="qr-white-box p-2.5 bg-white border-4 border-slate-900 rounded-xl shadow inline-block">
-                                <img id="cartel-full-qr-img" src="" alt="Código QR Turístico" class="w-44 h-44 object-contain" />
+                                <img id="cartel-full-qr-img" src="" alt="Código QR Turístico" class="w-48 h-48 object-contain" />
                             </div>
                             <div class="mt-1.5 text-center">
                                 <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">O accede escribiendo:</span>
-                                <div id="cartel-url-enlace" class="text-[11px] font-black text-blue-900 underline break-all mt-0.5"></div>
+                                <div id="cartel-url-enlace" class="text-[11px] font-black text-blue-900 underline break-all mt-0.5 font-mono"></div>
                             </div>
                         </div>
 
@@ -177,71 +245,168 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
         </div>
     `;
 
-    // Vincular lógica
+    // Vincular elementos del DOM
     const selectPunto = document.getElementById("admin-select-punto-qr");
     const previewRawQr = document.getElementById("preview-raw-qr");
     const previewRawUrl = document.getElementById("preview-raw-url");
     const cartelFullQrImg = document.getElementById("cartel-full-qr-img");
     const cartelUrlEnlace = document.getElementById("cartel-url-enlace");
     const cartelPuntoTitulo = document.getElementById("cartel-punto-titulo");
+    const inputTargetUrl = document.getElementById("input-qr-target-url");
+    const qrDensityBadge = document.getElementById("qr-density-badge");
 
     const btnPrintAfiche = document.getElementById("btn-admin-print-afiche");
-    const btnDownloadRaw1 = document.getElementById("btn-admin-download-qr-only");
-    const btnDownloadRaw2 = document.getElementById("btn-quick-download-raw");
+    const btnDownloadSvg1 = document.getElementById("btn-admin-download-svg");
+    const btnDownloadSvg2 = document.getElementById("btn-quick-download-svg");
+    const btnDownloadPng1 = document.getElementById("btn-admin-download-png");
+    const btnDownloadPng2 = document.getElementById("btn-quick-download-png");
+    const btnAcortar = document.getElementById("btn-acortar-url");
+    const btnRestaurarNativo = document.getElementById("btn-restaurar-url-nativa");
     const btnCopyLink = document.getElementById("btn-admin-copy-link");
     const copyBtnText = document.getElementById("copy-btn-text");
 
-    let currentTargetUrl = "";
-    let currentRawQrUrl = "";
+    let currentUrl = "";
+    let currentSvgUrl = "";
+    let currentPngUrl = "";
 
-    function actualizarVistas(codigo) {
-        const baseUrl = "https://pasanteunefacotatur-glitch.github.io/simat-cotatur/";
-        currentTargetUrl = `${baseUrl}?p=${encodeURIComponent(codigo)}`;
-        
-        // QR Server API en 1024x1024 para imprenta profesional
-        currentRawQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(currentTargetUrl)}&margin=1`;
-        const previewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(currentTargetUrl)}&margin=1`;
+    function generarUrlNativa(codigo) {
+        const alias = ALIAS_MAP[codigo] || codigo;
+        return `https://pasanteunefacotatur-glitch.github.io/simat-cotatur/?p=${encodeURIComponent(alias)}`;
+    }
+
+    function actualizarGraficosQR(urlDestino) {
+        currentUrl = urlDestino;
+        inputTargetUrl.value = urlDestino;
+
+        // Formatos de alta calidad: SVG vectorial puro y PNG 2048x2048 (con margen mínimo qzone=1)
+        currentSvgUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(urlDestino)}&format=svg&qzone=1`;
+        currentPngUrl = `https://api.qrserver.com/v1/create-qr-code/?size=2048x2048&data=${encodeURIComponent(urlDestino)}&format=png&qzone=1`;
+        const previewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=450x450&data=${encodeURIComponent(urlDestino)}&qzone=1`;
 
         previewRawQr.src = previewUrl;
         cartelFullQrImg.src = previewUrl;
-        previewRawUrl.textContent = currentTargetUrl;
-        cartelUrlEnlace.textContent = currentTargetUrl.replace("https://", "");
+        previewRawUrl.textContent = urlDestino;
+        cartelUrlEnlace.textContent = urlDestino.replace(/^https?:\/\//, "");
+
+        // Actualizar indicador de legibilidad según longitud de la URL
+        const len = urlDestino.length;
+        if (len <= 35) {
+            qrDensityBadge.className = "shrink-0 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700";
+            qrDensityBadge.innerHTML = `🟢 Legibilidad Óptima (${len} car.) • Módulos grandes para escaneo a distancia`;
+        } else if (len <= 65) {
+            qrDensityBadge.className = "shrink-0 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-700";
+            qrDensityBadge.innerHTML = `🔵 Legibilidad Buena (${len} car.) • Apta para papel y pantallas`;
+        } else {
+            qrDensityBadge.className = "shrink-0 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700";
+            qrDensityBadge.innerHTML = `🟡 Densidad Media (${len} car.) • Se recomienda acortar`;
+        }
+    }
+
+    function cambiarPunto(codigo) {
+        const urlNativa = generarUrlNativa(codigo);
+        actualizarGraficosQR(urlNativa);
 
         const pSel = puntos.find(p => p.codigo === codigo);
         cartelPuntoTitulo.textContent = pSel ? `Punto Oficial: ${pSel.nombre}` : `Punto: ${codigo}`;
     }
 
-    async function descargarSoloQR() {
+    async function descargarArchivoSVG() {
         try {
-            const resp = await fetch(currentRawQrUrl);
-            const blob = await resp.blob();
+            const resp = await fetch(currentSvgUrl);
+            const svgContent = await resp.text();
+            const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
             const urlBlob = URL.createObjectURL(blob);
             const a = document.createElement("a");
             const codigo = selectPunto.value || "COTATUR";
             a.href = urlBlob;
-            a.download = `QR_SOLO_PUBLICIDAD_${codigo}_SIMAT_COTATUR.png`;
+            a.download = `QR_VECTORIAL_${codigo}_SIMAT_COTATUR.svg`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(urlBlob);
         } catch (_) {
-            window.open(currentRawQrUrl, "_blank");
+            window.open(currentSvgUrl, "_blank");
         }
     }
 
-    selectPunto.addEventListener("change", (e) => actualizarVistas(e.target.value));
+    async function descargarArchivoPNG() {
+        try {
+            const resp = await fetch(currentPngUrl);
+            const blob = await resp.blob();
+            const urlBlob = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            const codigo = selectPunto.value || "COTATUR";
+            a.href = urlBlob;
+            a.download = `QR_HD_2048x2048_${codigo}_SIMAT_COTATUR.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(urlBlob);
+        } catch (_) {
+            window.open(currentPngUrl, "_blank");
+        }
+    }
+
+    async function ejecutarAcortador() {
+        if (!currentUrl) return;
+        btnAcortar.disabled = true;
+        btnAcortar.innerHTML = `<span>⏳</span><span>Acortando...</span>`;
+
+        try {
+            // Intento 1: is.gd API (retorna JSON directo)
+            const resp = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(currentUrl)}`);
+            const data = await resp.json();
+            if (data && data.shorturl) {
+                actualizarGraficosQR(data.shorturl);
+                return;
+            }
+            throw new Error("No se obtuvo URL de is.gd");
+        } catch (_) {
+            // Fallback: TinyURL API
+            try {
+                const resp2 = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(currentUrl)}`);
+                const shortText = await resp2.text();
+                if (shortText && shortText.startsWith("http")) {
+                    actualizarGraficosQR(shortText.trim());
+                    return;
+                }
+            } catch (e2) {
+                alert("No se pudo conectar con el servicio acortador. Puede ingresar un enlace corto manualmente.");
+            }
+        } finally {
+            btnAcortar.disabled = false;
+            btnAcortar.innerHTML = `<span>⚡</span><span>Acortar con 1 Clic</span>`;
+        }
+    }
+
+    // Event listeners
+    selectPunto.addEventListener("change", (e) => cambiarPunto(e.target.value));
+
+    inputTargetUrl.addEventListener("change", (e) => {
+        const val = e.target.value.trim();
+        if (val) actualizarGraficosQR(val);
+    });
+
+    btnAcortar.addEventListener("click", ejecutarAcortador);
+    btnRestaurarNativo.addEventListener("click", () => cambiarPunto(selectPunto.value));
+
+    btnDownloadSvg1.addEventListener("click", descargarArchivoSVG);
+    btnDownloadSvg2.addEventListener("click", descargarArchivoSVG);
+    btnDownloadPng1.addEventListener("click", descargarArchivoPNG);
+    btnDownloadPng2.addEventListener("click", descargarArchivoPNG);
+
     btnPrintAfiche.addEventListener("click", () => window.print());
-    btnDownloadRaw1.addEventListener("click", descargarSoloQR);
-    btnDownloadRaw2.addEventListener("click", descargarSoloQR);
 
     btnCopyLink.addEventListener("click", () => {
-        navigator.clipboard.writeText(currentTargetUrl).then(() => {
+        if (!currentUrl) return;
+        navigator.clipboard.writeText(currentUrl).then(() => {
             copyBtnText.textContent = "¡Copiado!";
-            setTimeout(() => { copyBtnText.textContent = "Copiar Link"; }, 2000);
+            setTimeout(() => { copyBtnText.textContent = "Copiar Enlace"; }, 2000);
         });
     });
 
+    // Inicializar con el primer punto
     if (puntos.length > 0) {
-        actualizarVistas(puntos[0].codigo);
+        cambiarPunto(puntos[0].codigo);
     }
 }

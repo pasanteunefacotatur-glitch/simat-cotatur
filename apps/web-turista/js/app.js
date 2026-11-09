@@ -110,9 +110,27 @@ function initApp() {
     getOrCreateVisitorId();
     startSurveyTimer();
 
-    // 3. Detectar Punto de Control QR mediante parámetro URL (?p=CODIGO)
+    // 3. Detectar Punto de Control QR mediante parámetro URL (?p=CODIGO o alias numérico corto)
     const params = new URLSearchParams(window.location.search);
-    const codigoPunto = (params.get("p") || "PEAJE_TARIBA").toUpperCase();
+    const rawP = (params.get("p") || "PEAJE_TARIBA").trim().toUpperCase();
+    
+    // Mapeo de alias ultracortos para minimizar densidad y maximizar legibilidad del QR
+    const ALIASES_CORTOS = {
+        "1": "PEAJE_TARIBA",
+        "TARIBA": "PEAJE_TARIBA",
+        "2": "PEAJE_CAMPANA",
+        "CAMPANA": "PEAJE_CAMPANA",
+        "3": "TERMINAL_SC",
+        "TERMINAL": "TERMINAL_SC",
+        "4": "PUENTE_ATANASIO",
+        "ATANASIO": "PUENTE_ATANASIO",
+        "5": "PERIBECA_PUEBLO",
+        "PERIBECA": "PERIBECA_PUEBLO",
+        "6": "CHORRO_EL_INDIO",
+        "CHORRO": "CHORRO_EL_INDIO"
+    };
+
+    const codigoPunto = ALIASES_CORTOS[rawP] || rawP;
 
     if (PUNTOS_CONTROL_QR[codigoPunto]) {
         activePoint = PUNTOS_CONTROL_QR[codigoPunto];
