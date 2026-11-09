@@ -127,10 +127,25 @@ function initApp() {
     renderStepCalificacion("step-3-mount");
     renderModalRecompensa("modal-mount");
 
-    // 5. Enlazar envío de encuesta
+    // 5. Enlazar envío y progreso dinámico de encuesta
     const form = document.getElementById("form-encuesta-turistica");
     if (form) {
         form.addEventListener("submit", handleSubmitEncuesta);
+        const updateProgress = () => {
+            const bar = document.getElementById("survey-progress-bar");
+            if (!bar) return;
+            let score = 25;
+            const estado = document.getElementById("select-estado-origen");
+            const pais = document.getElementById("input-pais-origen");
+            if ((estado && estado.value) || (pais && pais.value)) score += 25;
+            const muni = document.getElementById("select-municipio-destino");
+            if (muni && muni.value) score += 25;
+            const rating = document.querySelector("[data-rating-group='hospitalidad']");
+            if (rating) score += 25;
+            bar.style.width = `${Math.min(100, score)}%`;
+        };
+        form.addEventListener("input", updateProgress);
+        form.addEventListener("click", updateProgress);
     }
 
     // 6. Sincronización en vivo de puntos, calendario de asuetos y verificación pasiva GPS

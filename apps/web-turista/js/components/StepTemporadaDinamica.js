@@ -57,14 +57,11 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
         preguntasMarkup = config.preguntas.map(p => {
             const opcionesBtns = p.opciones.map((op, idx) => {
                 const isSingle = p.tipo === "chips_single";
-                const isSelected = isSingle && idx === 0 ? "data-selected='true'" : "";
-                const activeClasses = isSingle && idx === 0
-                    ? "bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 border-slate-900 dark:border-amber-500 font-bold"
-                    : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200 border-gray-300 dark:border-slate-700 font-medium";
+                const isSelected = isSingle && idx === 0 ? "data-selected='true'" : "data-selected='false'";
 
                 return `
                     <button type="button" data-question-id="${p.id}" data-value="${op}" ${isSelected}
-                        class="btn-temp-option py-2 px-3 border rounded text-xs text-left transition-colors ${activeClasses}">
+                        class="btn-temp-option chip-btn py-3 px-3.5 rounded-xl text-xs font-semibold text-left transition-all tap-target-btn">
                         ${op}
                     </button>
                 `;
@@ -88,16 +85,16 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
     let cabeceraAsuetoHtml = "";
     if (cachedAsuetosHoy.length === 1) {
         cabeceraAsuetoHtml = `
-            <div class="p-3 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/70 rounded-xl flex items-center justify-between gap-2">
+            <div class="p-3.5 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/70 rounded-2xl flex items-center justify-between gap-2 shadow-sm">
                 <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">
-                        Calendario Oficial COTATUR • Temporada Activa
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-400 block">
+                        🎡 Calendario Oficial COTATUR • Temporada en Curso
                     </span>
-                    <span class="text-xs font-extrabold text-gray-900 dark:text-white">
-                        📅 ${asuetoActualObj.nombre || config.titulo}
+                    <span class="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white">
+                        ${asuetoActualObj.nombre || config.titulo}
                     </span>
                 </div>
-                <span class="text-[11px] font-bold px-2.5 py-1 bg-amber-500 text-slate-950 rounded-full shrink-0">
+                <span class="text-[11px] font-bold px-3 py-1 bg-[#198754] text-white rounded-full shrink-0 shadow-sm">
                     Activo Hoy
                 </span>
             </div>
@@ -111,10 +108,10 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
         cabeceraAsuetoHtml = `
             <div>
                 <label for="select-temporada-activa" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-                    Seleccione el evento o festividad correspondiente a su visita: <span class="text-red-500">*</span>
+                    Seleccione la festividad o motivo de su visita: <span class="text-red-500">*</span>
                 </label>
                 <select id="select-temporada-activa"
-                    class="w-full bg-white dark:bg-slate-800 border-2 border-amber-500 rounded-lg px-3 py-2 text-sm font-bold text-gray-900 dark:text-white focus:border-amber-500 outline-none">
+                    class="w-full bg-white dark:bg-slate-800 border-2 border-[#198754] rounded-xl px-3.5 py-3 text-sm font-bold text-gray-900 dark:text-white focus:ring-1 focus:ring-[#198754] outline-none">
                     ${opcionesDisponiblesHoy}
                 </select>
             </div>
@@ -122,18 +119,19 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
     }
 
     container.innerHTML = `
-        <section class="bg-white dark:bg-slate-900 rounded border border-gray-300 dark:border-slate-800 p-5 shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b border-gray-200 dark:border-slate-800 pb-2.5">
+        <section class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm space-y-4 transition-all duration-200">
+            <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
                 <div>
-                    <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
-                        III. Evento o Temporada Activa
+                    <h2 class="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-wide flex items-center gap-1.5">
+                        <span class="text-emerald-600 dark:text-emerald-400">🎡</span>
+                        <span>III. Festividad o Temporada Activa</span>
                     </h2>
-                    <p class="text-[11px] text-gray-500 dark:text-slate-400">
-                        Formulario ajustado automáticamente según la fecha del Calendario Oficial de COTATUR.
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                        Preguntas específicas para el operativo turístico del momento.
                     </p>
                 </div>
-                <span class="text-xs font-extrabold px-2.5 py-1 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-400 border border-amber-300 dark:border-amber-800 rounded-full">
-                    ${config.badge || "Operativo"}
+                <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-300 dark:border-emerald-800">
+                    Paso 3 de 4
                 </span>
             </div>
 
@@ -158,7 +156,7 @@ export function renderStepTemporadaDinamica(containerId, asuetosActivosHoy = [],
 }
 
 /**
- * Configura los eventos táctiles para preguntas de selección única o múltiple.
+ * Configura los eventos táctiles para preguntas de selección única o múltiple de forma reactiva.
  */
 function setupQuestionInteractions(container) {
     const groups = container.querySelectorAll("[data-question-group]");
@@ -169,25 +167,11 @@ function setupQuestionInteractions(container) {
         btns.forEach(btn => {
             btn.addEventListener("click", () => {
                 if (isSingle) {
-                    btns.forEach(b => {
-                        b.classList.remove("bg-slate-900", "dark:bg-amber-500", "text-white", "dark:text-slate-950", "border-slate-900", "dark:border-amber-500", "font-bold");
-                        b.classList.add("bg-gray-50", "dark:bg-slate-800", "text-gray-700", "dark:text-slate-200", "border-gray-300", "dark:border-slate-700", "font-medium");
-                        b.removeAttribute("data-selected");
-                    });
-                    btn.classList.remove("bg-gray-50", "dark:bg-slate-800", "text-gray-700", "dark:text-slate-200", "border-gray-300", "dark:border-slate-700", "font-medium");
-                    btn.classList.add("bg-slate-900", "dark:bg-amber-500", "text-white", "dark:text-slate-950", "border-slate-900", "dark:border-amber-500", "font-bold");
+                    btns.forEach(b => b.setAttribute("data-selected", "false"));
                     btn.setAttribute("data-selected", "true");
                 } else {
                     const isSelected = btn.getAttribute("data-selected") === "true";
-                    if (isSelected) {
-                        btn.removeAttribute("data-selected");
-                        btn.classList.remove("bg-slate-900", "dark:bg-amber-500", "text-white", "dark:text-slate-950", "border-slate-900", "dark:border-amber-500", "font-bold");
-                        btn.classList.add("bg-gray-50", "dark:bg-slate-800", "text-gray-700", "dark:text-slate-200", "border-gray-300", "dark:border-slate-700", "font-medium");
-                    } else {
-                        btn.setAttribute("data-selected", "true");
-                        btn.classList.remove("bg-gray-50", "dark:bg-slate-800", "text-gray-700", "dark:text-slate-200", "border-gray-300", "dark:border-slate-700", "font-medium");
-                        btn.classList.add("bg-slate-900", "dark:bg-amber-500", "text-white", "dark:text-slate-950", "border-slate-900", "dark:border-amber-500", "font-bold");
-                    }
+                    btn.setAttribute("data-selected", isSelected ? "false" : "true");
                 }
             });
         });

@@ -19,11 +19,29 @@
 </head>
 <body class="min-h-full flex flex-col antialiased font-['Poppins',sans-serif]">
 
-    <!-- 1. Encabezado Institucional con Logos Oficiales y Selector de Tema -->
+    <!-- 1. Encabezado Institucional con Trilogía de Logos Oficiales y Selector de Tema -->
     <div id="header-mount"></div>
 
     <!-- 2. Cuerpo del Formulario de Encuesta Turística -->
     <main class="flex-1 max-w-xl w-full mx-auto px-4 py-5 space-y-4 px-safe pb-safe">
+        
+        <!-- Indicador de Avance y Tiempo Estimado -->
+        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-2">
+            <div class="flex items-center justify-between text-xs">
+                <span class="font-extrabold text-gray-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span>📋</span>
+                    <span>Tu Opinión como Visitante</span>
+                </span>
+                <span class="text-[11px] font-bold text-[#198754] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-300/60 dark:border-emerald-800">
+                    ⏱️ ~1 minuto
+                </span>
+            </div>
+            <!-- Barra de Progreso Dinámica -->
+            <div class="w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div id="survey-progress-bar" class="h-full bg-gradient-to-r from-[#198754] to-emerald-400 rounded-full progress-fill" style="width: 25%;"></div>
+            </div>
+        </div>
+
         <form id="form-encuesta-turistica" class="space-y-4">
             
             <!-- Sección I: Procedencia -->
@@ -41,21 +59,26 @@
             <!-- Botón de Envío -->
             <div class="pt-2">
                 <button type="submit" id="btn-submit-encuesta"
-                    class="w-full py-3.5 px-5 bg-[#1c1c1c] hover:bg-black text-amber-400 font-bold text-sm uppercase tracking-wide rounded-xl shadow-md border border-amber-500/30 transition-all active:scale-98">
-                    Registrar Encuesta y Descargar Guía
+                    class="w-full py-4 px-5 bg-[#198754] hover:bg-[#157347] text-white font-extrabold text-sm uppercase tracking-wider rounded-2xl shadow-lg border border-emerald-400/40 transition-all tap-target-btn active:scale-98 flex items-center justify-center gap-2">
+                    <span>✅</span>
+                    <span>Registrar Encuesta y Descargar Guía de Rutas</span>
                 </button>
             </div>
 
         </form>
 
         <!-- Pie de página oficial de COTATUR -->
-        <footer class="text-center text-[11px] py-4 border-t border-gray-300/40 mt-6 space-y-1">
-            <p class="font-bold text-gray-700 dark:text-gray-300">Corporación Tachirense de Turismo (COTATUR)</p>
-            <p class="text-[10px] text-gray-500">
-                Av. España cruce con Av. Carabobo, Edif. COTATUR. San Cristóbal, Edo. Táchira.<br/>
-                Teléfono: 0424-7388849 • cotatur@tachiraesturismo.com
+        <footer class="text-center text-xs py-5 border-t border-gray-200 dark:border-slate-800 mt-6 space-y-2">
+            <p class="font-extrabold text-gray-800 dark:text-slate-200">
+                Corporación Tachirense de Turismo (COTATUR)
             </p>
-            <p class="text-[9px] text-gray-400 mt-1">Registro estadístico anónimo conforme al Art. 28 de la CRBV</p>
+            <p class="text-[11px] text-gray-500 dark:text-slate-400 leading-relaxed">
+                Av. España cruce con Av. Carabobo, Edif. COTATUR. San Cristóbal, Estado Táchira.<br/>
+                Portal Oficial: <a href="https://tachiraesturismo.com.ve" target="_blank" rel="noopener noreferrer" class="text-[#198754] dark:text-emerald-400 font-bold hover:underline">tachiraesturismo.com.ve</a> • Atención al Turista: <a href="tel:04247388849" class="font-bold text-gray-700 dark:text-slate-300">0424-7388849</a>
+            </p>
+            <p class="text-[10px] text-gray-400 dark:text-slate-500">
+                🏔️ Táchira: Tierra de Montañas, Páramos y Cordialidad • Registro estadístico conforme al Art. 28 de la CRBV
+            </p>
         </footer>
     </main>
 

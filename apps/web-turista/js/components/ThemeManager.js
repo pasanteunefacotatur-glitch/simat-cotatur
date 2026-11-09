@@ -95,10 +95,10 @@ export function renderThemeButtonHtml() {
 
     return `
         <button type="button" id="btn-toggle-theme"
-            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-slate-200 border border-white/20 transition-all flex items-center space-x-1 shadow-sm active:scale-95 no-print"
+            class="px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/25 transition-all flex items-center space-x-1.5 shadow-sm tap-target-btn active:scale-90 no-print"
             title="Cambiar tema: Claro (☀️), Oscuro LCD (🌙), AMOLED Puro (⬛)">
             <span id="theme-icon">${info.icon}</span>
-            <span id="theme-label" class="hidden sm:inline">${info.label}</span>
+            <span id="theme-label" class="hidden sm:inline font-extrabold">${info.label}</span>
         </button>
     `;
 }

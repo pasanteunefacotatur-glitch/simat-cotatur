@@ -20,37 +20,48 @@ export function renderStepProcedencia(containerId) {
     ).join("");
 
     container.innerHTML = `
-        <section class="bg-white rounded border border-gray-300 p-5 shadow-sm">
-            <div class="border-b border-gray-200 pb-2.5 mb-4">
-                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                    I. Lugar de Procedencia
-                </h2>
+        <section class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm transition-all duration-200">
+            <div class="border-b border-gray-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-wide flex items-center gap-1.5">
+                        <span class="text-emerald-600 dark:text-emerald-400">📍</span>
+                        <span>I. ¿Desde dónde nos visitas?</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                        Tu lugar de residencia habitual nos ayuda a planificar mejores rutas y servicios.
+                    </p>
+                </div>
+                <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-300 dark:border-emerald-800">
+                    Paso 1 de 4
+                </span>
             </div>
 
             <!-- Selector de tipo de procedencia -->
             <div class="mb-4">
-                <label class="block text-xs font-semibold text-gray-700 mb-2">
-                    Tipo de procedencia <span class="text-red-600">*</span>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-2">
+                    Tipo de procedencia <span class="text-red-500">*</span>
                 </label>
-                <div class="grid grid-cols-2 gap-2">
-                    <button type="button" id="btn-origen-nacional"
-                        class="py-2.5 px-3 text-xs font-semibold rounded-lg border border-slate-800 bg-slate-800 text-white transition-colors">
-                        Procedencia Nacional
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" id="btn-origen-nacional" data-selected="true"
+                        class="chip-btn rounded-xl py-3 px-3 text-xs font-bold flex items-center justify-center gap-1.5 tap-target-btn">
+                        <span>🇻🇪</span>
+                        <span>Desde Venezuela</span>
                     </button>
-                    <button type="button" id="btn-origen-internacional"
-                        class="py-2.5 px-3 text-xs font-semibold rounded-lg border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors">
-                        Procedencia Internacional
+                    <button type="button" id="btn-origen-internacional" data-selected="false"
+                        class="chip-btn rounded-xl py-3 px-3 text-xs font-bold flex items-center justify-center gap-1.5 tap-target-btn">
+                        <span>🌎</span>
+                        <span>Del Extranjero</span>
                     </button>
                 </div>
             </div>
 
             <!-- Selector de Estado de Procedencia Nacional -->
             <div id="wrapper-origen-nacional">
-                <label for="select-estado-origen" class="block text-xs font-semibold text-gray-700 mb-1.5">
-                    Estado de residencia habitual <span class="text-red-600">*</span>
+                <label for="select-estado-origen" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+                    Estado de residencia habitual <span class="text-red-500">*</span>
                 </label>
                 <select id="select-estado-origen" 
-                    class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none">
+                    class="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl px-3.5 py-3 text-sm text-gray-900 dark:text-white focus:border-[#198754] focus:ring-1 focus:ring-[#198754] outline-none transition-all">
                     <option value="" disabled selected>Seleccione el estado de procedencia...</option>
                     ${estadosOptions}
                 </select>
@@ -58,11 +69,11 @@ export function renderStepProcedencia(containerId) {
 
             <!-- Buscador Autocompletable de País (Internacional) -->
             <div id="wrapper-origen-internacional" class="hidden">
-                <label for="input-pais-origen" class="block text-xs font-semibold text-gray-700 mb-1.5">
-                    País de residencia habitual <span class="text-red-600">*</span>
+                <label for="input-pais-origen" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+                    País de procedencia <span class="text-red-500">*</span>
                 </label>
                 <div id="mount-autocomplete-pais"></div>
-                <p class="text-[11px] text-gray-500 mt-1">
+                <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-1">
                     Escriba el nombre del país para autocompletar la selección.
                 </p>
             </div>
@@ -81,22 +92,22 @@ export function renderStepProcedencia(containerId) {
         allowCustom: true
     });
 
-    // Control de alternancia entre Nacional e Internacional
+    // Control de alternancia entre Nacional e Internacional sin destruir clases
     const btnNacional = document.getElementById("btn-origen-nacional");
     const btnInternacional = document.getElementById("btn-origen-internacional");
     const wrapNacional = document.getElementById("wrapper-origen-nacional");
     const wrapInternacional = document.getElementById("wrapper-origen-internacional");
 
     btnNacional.addEventListener("click", () => {
-        btnNacional.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors";
-        btnInternacional.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors";
+        btnNacional.setAttribute("data-selected", "true");
+        btnInternacional.setAttribute("data-selected", "false");
         wrapNacional.classList.remove("hidden");
         wrapInternacional.classList.add("hidden");
     });
 
     btnInternacional.addEventListener("click", () => {
-        btnInternacional.className = "py-2 px-3 text-xs font-semibold rounded border border-slate-800 bg-slate-800 text-white transition-colors";
-        btnNacional.className = "py-2 px-3 text-xs font-semibold rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors";
+        btnInternacional.setAttribute("data-selected", "true");
+        btnNacional.setAttribute("data-selected", "false");
         wrapInternacional.classList.remove("hidden");
         wrapNacional.classList.add("hidden");
     });

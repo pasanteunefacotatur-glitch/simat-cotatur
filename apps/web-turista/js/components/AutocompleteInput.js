@@ -56,14 +56,15 @@ export function createAutocomplete({
             <div class="relative flex items-center">
                 <input type="text" id="${inputId}" autocomplete="off"
                     placeholder="${escapeHtml(placeholder)}"
-                    class="w-full bg-white border border-gray-300 rounded px-3 py-2.5 pr-16 text-sm text-gray-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none" />
+                    class="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl px-4 py-3 pr-14 text-sm text-gray-900 dark:text-white focus:border-[#198754] focus:ring-1 focus:ring-[#198754] outline-none shadow-sm transition-all" />
                 <button type="button" id="${inputId}-clear"
-                    class="hidden absolute right-2 text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">
-                    Limpiar
+                    class="hidden absolute right-2 w-9 h-9 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-500 dark:text-slate-300 flex items-center justify-center text-xs font-bold tap-target-btn transition-colors"
+                    title="Borrar texto">
+                    ✕
                 </button>
             </div>
             <div id="${inputId}-dropdown"
-                class="autocomplete-list hidden absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-gray-300 rounded shadow-lg z-30 divide-y divide-gray-100">
+                class="autocomplete-list hidden absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-xl z-30 divide-y divide-gray-100 dark:divide-slate-800">
             </div>
         </div>
     `;
@@ -84,13 +85,13 @@ export function createAutocomplete({
         if (filtered.length === 0) {
             if (allowCustom && q.length > 1) {
                 dropdownEl.innerHTML = `
-                    <div class="px-3 py-2.5 text-xs text-gray-600 bg-gray-50">
-                        Se registrará: <b class="text-gray-900">${safeValue}</b>
+                    <div class="px-4 py-3 text-xs text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-800/50">
+                        Se registrará: <b class="text-gray-900 dark:text-white">${safeValue}</b>
                     </div>
                 `;
             } else {
                 dropdownEl.innerHTML = `
-                    <div class="px-3 py-2.5 text-xs text-gray-500">
+                    <div class="px-4 py-3 text-xs text-gray-500 dark:text-slate-400">
                         No se encontraron coincidencias para "${safeValue}".
                     </div>
                 `;
@@ -100,10 +101,10 @@ export function createAutocomplete({
         }
 
         const headerHint = !q
-            ? `<div class="px-3 py-1.5 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                   Ordenados por los más utilizados (Escriba para filtrar)
+            ? `<div class="px-4 py-2 bg-gray-50 dark:bg-slate-800/60 text-[10px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+                   Destinos frecuentes del Táchira (Escriba para filtrar)
                </div>`
-            : `<div class="px-3 py-1.5 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            : `<div class="px-4 py-2 bg-gray-50 dark:bg-slate-800/60 text-[10px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                    Resultados encontrados (${filtered.length})
                </div>`;
 
@@ -111,15 +112,15 @@ export function createAutocomplete({
             const label = escapeHtml(getLabel(item));
             const subLabel = getSubLabel ? escapeHtml(getSubLabel(item)) : "";
             const badgeFrecuente = !q && idx < 6
-                ? `<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-200">Frecuente</span>`
+                ? `<span class="text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">Popular</span>`
                 : "";
 
             return `
                 <button type="button" data-value="${label}"
-                    class="autocomplete-item w-full text-left px-3 py-2.5 hover:bg-slate-50 focus:bg-slate-100 transition-colors flex items-center justify-between gap-2">
+                    class="autocomplete-item w-full text-left px-4 py-3 hover:bg-emerald-50/60 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-between gap-2">
                     <div>
-                        <div class="text-xs font-semibold text-gray-900">${label}</div>
-                        ${subLabel ? `<div class="text-[11px] text-gray-500">${subLabel}</div>` : ""}
+                        <div class="text-xs font-bold text-gray-900 dark:text-white">${label}</div>
+                        ${subLabel ? `<div class="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">${subLabel}</div>` : ""}
                     </div>
                     ${badgeFrecuente}
                 </button>

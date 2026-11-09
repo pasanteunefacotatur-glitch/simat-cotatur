@@ -28,36 +28,42 @@ export function renderHeader(containerId, activePointName = "Peaje Vega de Tári
     if (!container) return;
 
     container.innerHTML = `
-        <header class="bg-[#1c1c1c] text-white border-b-4 border-amber-500 pt-safe shadow-md font-['Montserrat',sans-serif]">
-            <div class="max-w-xl mx-auto px-4 py-3">
+        <header class="bg-[#1c1c1c] text-white border-b-4 border-[#198754] pt-safe shadow-lg font-['Montserrat',sans-serif]">
+            <div class="max-w-xl mx-auto px-4 py-3.5">
                 
-                <!-- Barra superior: Logos oficiales e Icono de Tema en la esquina superior derecha -->
-                <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
-                    <!-- Logos oficiales COTATUR + Táchira es Turismo -->
-                    <div class="flex items-center space-x-3">
-                        <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-10 w-auto object-contain drop-shadow" />
-                        <div class="h-7 w-[1px] bg-white/20"></div>
-                        <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo Logo" class="h-8 w-auto object-contain drop-shadow" />
+                <!-- Barra superior: Trilogía de logos oficiales e Icono de Tema -->
+                <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+                    <!-- Pastilla protectora unificada con los 3 logos oficiales de COTATUR y Táchira -->
+                    <div class="flex items-center bg-white/95 backdrop-blur-sm rounded-2xl px-3 py-1.5 shadow-sm space-x-2.5">
+                        <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-8 w-auto object-contain drop-shadow-sm" />
+                        <div class="h-6 w-[1px] bg-slate-300"></div>
+                        <img src="./assets/img/logo_gobernacion.png" alt="Gobernación del Táchira" class="h-7 w-auto object-contain drop-shadow-sm" />
+                        <div class="h-6 w-[1px] bg-slate-300"></div>
+                        <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo Logo" class="h-7 w-auto object-contain drop-shadow-sm" />
                     </div>
 
-                    <!-- Botón con icono de tema en la esquina superior derecha -->
+                    <!-- Botón interactivo de tema -->
                     <div>
                         ${renderThemeButtonHtml()}
                     </div>
                 </div>
 
-                <!-- Título institucional y Punto de Control activo -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-1">
+                <!-- Título cálido de hospitalidad turística y Punto de Control activo -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-amber-400 font-bold">
-                            Corporación Tachirense de Turismo
+                        <p class="text-[10px] uppercase tracking-widest text-[#ffc107] font-extrabold flex items-center gap-1">
+                            <span>🏔️</span>
+                            <span>Gobernación del Estado Táchira • COTATUR</span>
                         </p>
-                        <h1 class="text-sm font-extrabold text-white leading-tight">
-                            Encuesta de Perfil del Visitante
+                        <h1 class="text-sm sm:text-base font-extrabold text-white leading-tight">
+                            ¡Bienvenido a la Tierra de la Cordialidad!
                         </h1>
+                        <p class="text-[11px] text-slate-300 font-medium">
+                            Tu opinión fortalece las rutas y servicios turísticos del estado
+                        </p>
                     </div>
-                    <div class="inline-flex items-center bg-white/5 border border-white/15 px-2.5 py-1 rounded-md text-[11px] self-start sm:self-auto">
-                        <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1.5 animate-pulse"></span>
+                    <div class="inline-flex items-center bg-white/10 border border-white/20 px-3 py-1.5 rounded-xl text-[11px] self-start sm:self-auto shadow-sm">
+                        <span class="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse"></span>
                         <span class="font-medium text-slate-300 mr-1">Punto:</span>
                         <span class="font-bold text-white truncate max-w-[200px]" id="header-point-name">
                             ${escapeHtml(activePointName)}
