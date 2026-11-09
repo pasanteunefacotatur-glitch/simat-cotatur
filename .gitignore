@@ -8,6 +8,9 @@
 *.key
 *.cert
 *.pfx
+*credentials*.json
+client_secret*.json
+google-services.json
 
 # Dependencias y compilación
 node_modules/
