@@ -4,6 +4,27 @@ Todas las modificaciones notables del **Sistema Integrado de Medición y Analít
 
 ---
 
+## [v0.6.0-alpha] - 2026-11-09 (Fase 1 Certificada EGM - Homologación 'Táchira es Turismo' y Auditoría Integral)
+
+### 🛡️ Auditoría y Certificación EGM (Elephant-Goldfish Model)
+- **Certificación Integral Paso 2:** Dictámenes aprobados de `egm-design` (9.5/10) y `egm-codebase-details` (PASS).
+- **Modularidad de Código:** Cumplimiento estricto del 100% de archivos `< 500 líneas` en JavaScript, SQL y Google Apps Script.
+- **Seguridad RLS Supabase:** Incorporación de `SET search_path = public;` en triggers y RPCs. Restricción de columnas sensibles en `perfiles_funcionarios` mediante `REVOKE SELECT` de contraseñas a `anon`.
+- **Replicador Google Sheets:** Mapeo de las 27 columnas completas, auto-chaining aislado del reloj maestro de 12 horas, purga preventiva de disparadores huérfanos y sanitización anti-CSV Injection.
+
+### 🎨 Diseño y Ergonomía "Táchira es Turismo" (`tachiraesturismo.com.ve`)
+- **Trilogía de Logos Oficiales Protegida:** Encabezados web, panel administrativo y afiches tamaño carta unificados con cápsula protectora blanca traslúcida y divisores para los logos de COTATUR, Gobernación del Táchira y Marca Destino.
+- **Paleta Institucional Unificada:** Verde Andino Rector (`#198754`), Ámbar Cálido (`#ffc107`) y Carbón institucional (`#1c1c1c`).
+- **3 Temas Dinámicos Sincronizados:** Modo Claro (solar para peajes), Modo Oscuro (slate nocturno) y Modo AMOLED (0 nits para ahorro de batería).
+- **Ergonomía Táctil (Ley de Fitts $\ge 44$px):** Steppers táctiles `[ − ] [ + ]`, botón de borrado `✕` en autocompletado ampliado a 44px (`w-11 h-11`) y micro-rebote elástico en botones.
+
+### 🏛️ Gobernanza y Supervisión Administrativa
+- **Renombrado Estratégico:** Sustitución formal de "Rueda de Prensa" por **"Indicadores de Gestión Turística (KPI Gobernación)"** y lámina 16:9 de balance ejecutivo.
+- **Autenticación Tolerante a Formatos:** Sanitización regex en frontend para cédula (`31061007`, `V-31.061.007`), clave predeterminada `cotatur2026` y botón visual de alternancia de contraseña (`👁️ / 🙈`).
+- **Actualización Documental Integral:** Actualizados el PRD (v2.0), la Propuesta Ejecutiva Institucional, el Plan Maestro de Implementación (v2.3), los Manuales de Usuario y Operaciones, y el Documento Maestro para el Agente IA de la Licenciatura en Turismo (UNEFA).
+
+---
+
 ## [v0.5.0-alpha] - 2026-11-08 (Fase Alpha - Consolidación Web y Supervisión Maestro)
 
 ### 🚀 Novedades y Características Principales
