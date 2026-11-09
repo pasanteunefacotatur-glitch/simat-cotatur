@@ -17,6 +17,10 @@ export const CONFIG = {
     SUPABASE_URL: "https://njcwdhakkbiabkinsafs.supabase.co",
     SUPABASE_PUBLISHABLE_KEY: "sb_publishable_icIarHUnV_Fvm84XkasTJA_OjsGvtNN",
 
+    // Google OAuth 2.0 Client IDs
+    GOOGLE_WEB_CLIENT_ID: "1054364039678-ekqvi4pfqhuue97sjed68oltkt4mo009.apps.googleusercontent.com",
+    GOOGLE_ANDROID_CLIENT_ID: "1054364039678-66m203vbaskdk06s7k1kocbqodoackps.apps.googleusercontent.com",
+
     // Cloudflare Turnstile
     TURNSTILE_SITE_KEY: "0x4AAAAAAFwAvWm1yItma-Eq",
 

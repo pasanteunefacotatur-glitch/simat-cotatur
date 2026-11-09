@@ -16,6 +16,7 @@ import { renderGestionPersonalAdmin } from "./components/GestionPersonalAdmin.js
 import { renderMiPerfilAdmin } from "./components/MiPerfilAdmin.js";
 import { renderRuedaPrensaAdmin } from "./components/RuedaPrensaAdmin.js";
 import { renderCalendarioAsuetosAdmin } from "./components/CalendarioAsuetosAdmin.js";
+import { mostrarModalPrimerIngreso } from "./components/ModalPrimerIngreso.js";
 
 const SESSION_KEY = "simat_supervisor_session";
 let activeSession = null;
@@ -37,7 +38,20 @@ function initAdminApp() {
             activeSession = JSON.parse(saved);
             if (activeSession && activeSession.funcionario && activeSession.funcionario.id) {
                 if (activeSession.funcionario.debe_cambiar_clave) {
-                    mostrarModalPrimerIngreso(activeSession.funcionario);
+                    mostrarModalPrimerIngreso({
+                        funcionario: activeSession.funcionario,
+                        config: CONFIG,
+                        onSuccess: (datosAct) => {
+                            activeSession.clave = datosAct.nuevaClave;
+                            activeSession.funcionario.nombre_completo = datosAct.nombre;
+                            activeSession.funcionario.email = datosAct.email;
+                            if (datosAct.sexo) activeSession.funcionario.sexo = datosAct.sexo;
+                            if (datosAct.avatar_url) activeSession.funcionario.avatar_url = datosAct.avatar_url;
+                            activeSession.funcionario.debe_cambiar_clave = false;
+                            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+                            iniciarDashboard();
+                        }
+                    });
                 } else {
                     iniciarDashboard();
                 }
@@ -173,7 +187,20 @@ function mostrarModalLogin() {
             // Primer ingreso: requiere cambio obligatorio de contraseña y completar perfil
             if (data.debe_cambiar_clave) {
                 modal.classList.add("hidden");
-                mostrarModalPrimerIngreso(data.funcionario);
+                mostrarModalPrimerIngreso({
+                    funcionario: data.funcionario,
+                    config: CONFIG,
+                    onSuccess: (datosAct) => {
+                        activeSession.clave = datosAct.nuevaClave;
+                        activeSession.funcionario.nombre_completo = datosAct.nombre;
+                        activeSession.funcionario.email = datosAct.email;
+                        if (datosAct.sexo) activeSession.funcionario.sexo = datosAct.sexo;
+                        if (datosAct.avatar_url) activeSession.funcionario.avatar_url = datosAct.avatar_url;
+                        activeSession.funcionario.debe_cambiar_clave = false;
+                        sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+                        iniciarDashboard();
+                    }
+                });
                 return;
             }
 
@@ -187,194 +214,6 @@ function mostrarModalLogin() {
         } finally {
             btnSubmit.disabled = false;
             btnSubmit.textContent = "Ingresar al Panel";
-        }
-    };
-}
-
-/**
- * Modal de activación de primer ingreso para supervisores.
- */
-function mostrarModalPrimerIngreso(funcionario) {
-    const loginModal = document.getElementById("admin-auth-modal");
-    if (loginModal) loginModal.classList.add("hidden");
-
-    const modal = document.getElementById("modal-primer-ingreso");
-    if (!modal) return;
-    modal.classList.remove("hidden");
-
-    const badgeCedula = document.getElementById("activar-cedula-badge");
-    if (badgeCedula) badgeCedula.textContent = `Cédula: ${funcionario.cedula}`;
-
-    const inputNombre = document.getElementById("activar-nombre");
-    if (funcionario.nombre_completo && funcionario.nombre_completo !== "Funcionario Nuevo") {
-        inputNombre.value = funcionario.nombre_completo;
-    }
-
-    const form = document.getElementById("form-primer-ingreso");
-    const btnGoogle = document.getElementById("btn-activar-google");
-    const statusGoogle = document.getElementById("google-sync-status");
-
-    // Opción A: Autocompletar con cuenta de Google
-    if (btnGoogle) {
-        btnGoogle.onclick = () => {
-            const correoIngresado = prompt(
-                "Ingrese su cuenta o correo de Google (Gmail):",
-                funcionario.email || (funcionario.nombre_completo ? `${funcionario.nombre_completo.toLowerCase().replace(/\s+/g, ".")}@gmail.com` : "")
-            );
-            if (correoIngresado && correoIngresado.includes("@")) {
-                const emailLimpio = correoIngresado.trim().toLowerCase();
-                const emailInput = document.getElementById("activar-email");
-                if (emailInput) emailInput.value = emailLimpio;
-
-                // Sugerir nombre a partir del correo si el campo está vacío
-                if (inputNombre && (!inputNombre.value || inputNombre.value === "Funcionario Nuevo")) {
-                    const parteNombre = emailLimpio.split("@")[0].replace(/[\._-]/g, " ");
-                    inputNombre.value = parteNombre.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-                }
-
-                if (statusGoogle) {
-                    statusGoogle.innerHTML = `<span class="text-[#198754] dark:text-emerald-400 font-bold">✓ Sincronizado con Google: ${emailLimpio}</span>`;
-                }
-
-                alert(`¡Datos vinculados con éxito con Google!\n\nCorreo: ${emailLimpio}\nPor favor defina a continuación su contraseña personal para finalizar la activación.`);
-            }
-        };
-    }
-
-    // Alternadores de visibilidad de contraseñas en el modal de activación
-    const toggleP1 = document.getElementById("btn-toggle-activar-clave1");
-    const inputP1 = document.getElementById("activar-nueva-clave");
-    if (toggleP1 && inputP1) {
-        toggleP1.onclick = () => {
-            const isPass = inputP1.type === "password";
-            inputP1.type = isPass ? "text" : "password";
-            toggleP1.textContent = isPass ? "🙈" : "👁️";
-        };
-    }
-    const toggleP2 = document.getElementById("btn-toggle-activar-clave2");
-    const inputP2 = document.getElementById("activar-confirmar-clave");
-    if (toggleP2 && inputP2) {
-        toggleP2.onclick = () => {
-            const isPass = inputP2.type === "password";
-            inputP2.type = isPass ? "text" : "password";
-            toggleP2.textContent = isPass ? "🙈" : "👁️";
-        };
-    }
-
-    // Opción B / Confirmación del formulario manual
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        const nuevaClave = document.getElementById("activar-nueva-clave").value.trim();
-        const confirmarClave = document.getElementById("activar-confirmar-clave").value.trim();
-        const nombre = inputNombre.value.trim();
-        const sexo = document.getElementById("activar-sexo")?.value || "";
-        const telefono = document.getElementById("activar-telefono").value.trim();
-        const email = document.getElementById("activar-email").value.trim();
-        const activarError = document.getElementById("activar-error");
-        if (activarError) activarError.classList.add("hidden");
-
-        function mostrarErrorActivacion(msg) {
-            if (activarError) {
-                activarError.textContent = "⚠️ " + msg;
-                activarError.classList.remove("hidden");
-            } else {
-                alert(msg);
-            }
-        }
-
-        if (!nombre) {
-            mostrarErrorActivacion("Por favor ingrese su Nombre y Apellido.");
-            inputNombre.focus();
-            return;
-        }
-
-        if (nuevaClave.length < 4) {
-            mostrarErrorActivacion("La nueva contraseña debe tener al menos 4 caracteres.");
-            document.getElementById("activar-nueva-clave").focus();
-            return;
-        }
-
-        if (nuevaClave !== confirmarClave) {
-            mostrarErrorActivacion("Las contraseñas no coinciden. Por favor verifique.");
-            document.getElementById("activar-confirmar-clave").focus();
-            return;
-        }
-
-        const btnSubmit = document.getElementById("btn-completar-activacion");
-        if (btnSubmit) {
-            btnSubmit.disabled = true;
-            btnSubmit.textContent = "Activando cuenta...";
-        }
-
-        try {
-            const rpcPayload = {
-                p_funcionario_id: funcionario.id,
-                p_nueva_clave: nuevaClave,
-                p_nombre_completo: nombre,
-                p_telefono: telefono,
-                p_email: email,
-                p_google_id: (email && email.includes("@gmail")) ? email : null
-            };
-            if (sexo) {
-                rpcPayload.p_sexo = sexo;
-            }
-
-            let res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/auth_primer_ingreso`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                },
-                body: JSON.stringify(rpcPayload)
-            });
-
-            // Resiliencia: si la función en Supabase aún no tiene p_sexo (PGRST202), reintentar con 6 parámetros
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                if (errData.code === "PGRST202" && rpcPayload.p_sexo) {
-                    delete rpcPayload.p_sexo;
-                    res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/auth_primer_ingreso`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                            "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                        },
-                        body: JSON.stringify(rpcPayload)
-                    });
-                } else {
-                    throw new Error(errData.message || "No se pudo actualizar el perfil.");
-                }
-            }
-
-            if (!res.ok) {
-                const errData2 = await res.json().catch(() => ({}));
-                throw new Error(errData2.message || "No se pudo actualizar el perfil.");
-            }
-
-            alert("¡Cuenta de Supervisión activada exitosamente!\nBienvenido(a) al Panel Maestro SIMAT-COTATUR.");
-            activeSession.clave = nuevaClave;
-            activeSession.funcionario.nombre_completo = nombre;
-            activeSession.funcionario.email = email;
-            if (sexo) activeSession.funcionario.sexo = sexo;
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
-
-            modal.classList.add("hidden");
-            iniciarDashboard();
-
-        } catch (err) {
-            if (activarError) {
-                activarError.textContent = "⚠️ " + err.message;
-                activarError.classList.remove("hidden");
-            } else {
-                alert("Error al activar cuenta: " + err.message);
-            }
-        } finally {
-            if (btnSubmit) {
-                btnSubmit.disabled = false;
-                btnSubmit.textContent = "Activar Cuenta e Ingresar al Panel";
-            }
         }
     };
 }
