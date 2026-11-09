@@ -58,7 +58,7 @@ export function createAutocomplete({
                     placeholder="${escapeHtml(placeholder)}"
                     class="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl px-4 py-3 pr-14 text-sm text-gray-900 dark:text-white focus:border-[#198754] focus:ring-1 focus:ring-[#198754] outline-none shadow-sm transition-all" />
                 <button type="button" id="${inputId}-clear"
-                    class="hidden absolute right-2 w-9 h-9 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-500 dark:text-slate-300 flex items-center justify-center text-xs font-bold tap-target-btn transition-colors"
+                    class="hidden absolute right-1.5 w-11 h-11 rounded-xl bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-500 dark:text-slate-300 flex items-center justify-center text-sm font-bold tap-target-btn transition-colors"
                     title="Borrar texto">
                     ✕
                 </button>

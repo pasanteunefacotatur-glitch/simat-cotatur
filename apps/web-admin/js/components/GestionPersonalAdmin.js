@@ -255,7 +255,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     </td>
                     <td class="p-3 text-right space-x-2">
                         <button type="button" data-id="${escapeHtml(f.id)}" data-action="toggle"
-                            class="btn-action-func text-xs font-bold ${f.activo ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'}"
+                            class="btn-action-func text-xs font-bold ${f.activo ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700' : 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700'}"
                             title="${f.activo ? 'Desactivar usuario' : 'Activar usuario'}">
                             ${f.activo ? 'Desactivar' : 'Reactivar'}
                         </button>

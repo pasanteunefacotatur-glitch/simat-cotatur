@@ -11,11 +11,16 @@
 -- 1. POLÍTICAS RLS PARA LECTURA Y ADMINISTRACIÓN DE FUNCIONARIOS
 ALTER TABLE public.perfiles_funcionarios ENABLE ROW LEVEL SECURITY;
 
--- Permitir lectura pública de funcionarios activos (para login en APK y asignaciones)
+-- Permitir lectura de funcionarios activos protegiendo password_hash
 DROP POLICY IF EXISTS "Permitir lectura publica de funcionarios activos" ON public.perfiles_funcionarios;
 CREATE POLICY "Permitir lectura publica de funcionarios activos"
 ON public.perfiles_funcionarios FOR SELECT
 USING (activo = TRUE);
+
+-- Blindar columnas sensibles contra lectura anónima
+REVOKE SELECT ON public.perfiles_funcionarios FROM anon;
+GRANT SELECT (id, cedula, nombre_completo, cargo, rol, punto_asignado_id, activo, email, telefono) 
+ON public.perfiles_funcionarios TO anon, authenticated;
 
 -- Permitir acceso total al service_role
 DROP POLICY IF EXISTS "Acceso total funcionarios service_role" ON public.perfiles_funcionarios;

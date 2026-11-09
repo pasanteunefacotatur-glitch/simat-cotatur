@@ -253,11 +253,9 @@ input, select, textarea {
     border-color: var(--border-color) !important;
 }
 
-/* Botones de selección activos en modo oscuro/AMOLED resaltados en Oro Institucional */
-[data-theme="dark"] button.bg-slate-800:not(#btn-admin-download-qr-only):not(#btn-descarga-mapa),
-[data-theme="amoled"] button.bg-slate-800:not(#btn-admin-download-qr-only):not(#btn-descarga-mapa),
-[data-theme="dark"] button.bg-slate-900,
-[data-theme="amoled"] button.bg-slate-900 {
+/* Botones de selección activos específicos en modo oscuro/AMOLED */
+[data-theme="dark"] button.btn-gold-active,
+[data-theme="amoled"] button.btn-gold-active {
     background-color: #f59e0b !important;
     color: #09090b !important;
     border-color: #fbbf24 !important;

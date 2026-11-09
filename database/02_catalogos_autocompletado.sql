@@ -130,7 +130,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS trg_incrementar_frecuencia_catalogos ON public.encuestas_turisticas;
 CREATE TRIGGER trg_incrementar_frecuencia_catalogos

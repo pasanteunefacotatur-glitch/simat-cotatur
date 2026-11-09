@@ -105,10 +105,12 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                         
                         <!-- Cabecera Institucional con Logos Oficiales -->
                         <div class="border-b-2 border-slate-900 pb-3">
-                            <div class="flex items-center justify-between px-1">
-                                <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-10 w-auto object-contain" />
-                                <img src="./assets/img/logo_gobernacion.png" alt="Gobernación del Táchira" class="h-9 w-auto object-contain" />
-                                <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo" class="h-9 w-auto object-contain" />
+                            <div class="inline-flex items-center justify-center p-1.5 rounded-2xl bg-white border border-slate-300 shadow-sm space-x-2.5 mx-auto">
+                                <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-9 w-auto object-contain" />
+                                <div class="h-6 w-[1px] bg-slate-300"></div>
+                                <img src="./assets/img/logo_gobernacion.png" alt="Gobernación del Táchira" class="h-8 w-auto object-contain" />
+                                <div class="h-6 w-[1px] bg-slate-300"></div>
+                                <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo" class="h-8 w-auto object-contain" />
                             </div>
                             <div class="text-center px-1 mt-1.5">
                                 <h4 class="text-[9px] font-black tracking-widest text-slate-600 uppercase">República Bolivariana de Venezuela • Gobernación del Táchira</h4>
