@@ -200,7 +200,7 @@ export function initMapPicker(containerId, onLocationChangeCallback) {
     const pinIcon = L.divIcon({
         className: "custom-map-pin",
         html: `
-            <div style="background-color: #f59e0b; border: 3px solid #0f172a; width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+            <div style="background-color: #198754; border: 3px solid #ffffff; width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
                 <span style="transform: rotate(45deg); font-size: 14px; font-weight: bold;">📍</span>
             </div>
         `,

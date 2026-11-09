@@ -25,7 +25,7 @@ export function getModalDetallePuntoHtml() {
             <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
                 
                 <!-- Cabecera de Ficha -->
-                <div class="bg-[#1c1c1c] text-white p-4 border-b-2 border-amber-500 flex items-center justify-between">
+                <div class="bg-[#1c1c1c] text-white p-4 border-b-2 border-[#198754] flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                         <span class="text-lg">📍</span>
                         <div>
@@ -87,7 +87,7 @@ export function getModalDetallePuntoHtml() {
                 <!-- Pie de Ficha -->
                 <div class="px-5 py-3 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex justify-end">
                     <button type="button" id="btn-cerrar-detalle-footer"
-                        class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow transition-colors">
+                        class="px-5 py-2 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl text-xs shadow transition-colors tap-target-btn">
                         Cerrar Ficha
                     </button>
                 </div>

@@ -46,7 +46,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                 <!-- Botones de Acción: Cartel Completo y Código QR -->
                 <div class="flex flex-wrap items-center gap-2">
                     <button type="button" id="btn-admin-print-afiche"
-                        class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow transition-all flex items-center space-x-1.5 text-xs active:scale-95"
+                        class="px-3.5 py-2.5 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl shadow transition-all flex items-center space-x-1.5 text-xs active:scale-95 tap-target-btn"
                         title="Imprimir cartel completo oficial en papel tamaño Carta">
                         <span>🖨️</span>
                         <span>Imprimir Cartel Oficial</span>
@@ -106,13 +106,14 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
                         <!-- Cabecera Institucional con Logos Oficiales -->
                         <div class="border-b-2 border-slate-900 pb-3">
                             <div class="flex items-center justify-between px-1">
-                                <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-11 w-auto object-contain" />
-                                <div class="text-center px-1">
-                                    <h4 class="text-[9px] font-black tracking-widest text-slate-600 uppercase">República Bolivariana de Venezuela</h4>
-                                    <h2 class="text-[11px] font-black text-slate-900 uppercase">Corporación Tachirense de Turismo</h2>
-                                    <span class="text-[8px] font-bold text-amber-600 uppercase tracking-wider">COTATUR • Táchira es Turismo</span>
-                                </div>
-                                <img src="./assets/img/logo_tachira.png" alt="Táchira Logo" class="h-11 w-auto object-contain" />
+                                <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-10 w-auto object-contain" />
+                                <img src="./assets/img/logo_gobernacion.png" alt="Gobernación del Táchira" class="h-9 w-auto object-contain" />
+                                <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo" class="h-9 w-auto object-contain" />
+                            </div>
+                            <div class="text-center px-1 mt-1.5">
+                                <h4 class="text-[9px] font-black tracking-widest text-slate-600 uppercase">República Bolivariana de Venezuela • Gobernación del Táchira</h4>
+                                <h2 class="text-[11px] font-black text-slate-900 uppercase">Corporación Tachirense de Turismo</h2>
+                                <span class="text-[8px] font-bold text-[#198754] uppercase tracking-wider">COTATUR • Táchira es Turismo</span>
                             </div>
                         </div>
 

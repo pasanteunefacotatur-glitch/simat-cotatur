@@ -226,9 +226,9 @@ export function renderSelectorPersonalDobleColumna({
                     : `<div class="text-[10px] text-slate-400 mt-0.5">Disponible sin otros puntos</div>`;
 
                 return `
-                    <div class="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-2 hover:border-amber-500/50 transition-all">
+                    <div class="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-2 hover:border-[#198754]/50 transition-all">
                         <button type="button" data-add-id="${escapeHtml(f.id)}"
-                            class="btn-col-agregar shrink-0 px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-[11px] font-bold shadow-sm transition-colors"
+                            class="btn-col-agregar shrink-0 px-2.5 py-1 bg-[#198754] hover:bg-[#157347] text-white rounded-lg text-[11px] font-bold shadow-sm transition-colors"
                             title="Asignar a este punto">
                             Asignar
                         </button>

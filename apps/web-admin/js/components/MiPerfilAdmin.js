@@ -28,7 +28,7 @@ export function renderMiPerfilAdmin(containerId, supabaseConfig, getActiveSessio
             
             <!-- Cabecera de Perfil -->
             <div class="flex items-center space-x-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-                <div class="w-14 h-14 bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 font-black text-xl rounded-2xl flex items-center justify-center shadow-md">
+                <div class="w-14 h-14 bg-gradient-to-tr from-[#198754] to-[#ffc107] text-white font-black text-xl rounded-2xl flex items-center justify-center shadow-md">
                     ${(func.nombre_completo || "U")[0].toUpperCase()}
                 </div>
                 <div>
@@ -119,7 +119,7 @@ export function renderMiPerfilAdmin(containerId, supabaseConfig, getActiveSessio
                 <!-- Botón de Guardar -->
                 <div class="pt-3 flex justify-end">
                     <button type="submit" id="btn-guardar-perfil"
-                        class="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center space-x-1.5">
+                        class="px-6 py-2.5 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center space-x-1.5 tap-target-btn">
                         <span>💾</span>
                         <span>Guardar Cambios</span>
                     </button>

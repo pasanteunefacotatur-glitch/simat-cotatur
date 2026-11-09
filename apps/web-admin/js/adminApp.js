@@ -289,12 +289,12 @@ function configurarTabs() {
             const targetId = btn.getAttribute("data-target");
 
             tabButtons.forEach(b => {
-                b.classList.remove("border-amber-500", "text-amber-500", "font-bold");
-                b.classList.add("border-transparent", "text-slate-500");
+                b.classList.remove("border-[#198754]", "text-[#198754]", "dark:text-emerald-400", "font-extrabold");
+                b.classList.add("border-transparent", "text-slate-400");
             });
 
-            btn.classList.add("border-amber-500", "text-amber-500", "font-bold");
-            btn.classList.remove("border-transparent", "text-slate-500");
+            btn.classList.add("border-[#198754]", "text-[#198754]", "dark:text-emerald-400", "font-extrabold");
+            btn.classList.remove("border-transparent", "text-slate-400");
 
             tabContents.forEach(c => c.classList.add("hidden"));
             const targetContent = document.getElementById(targetId);

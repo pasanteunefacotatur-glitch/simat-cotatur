@@ -277,7 +277,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                             <option value="2030" ${selectedYear === 2030 ? "selected" : ""}>2030</option>
                         </select>
                         <button type="button" id="btn-nuevo-evento-modal"
-                            class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center space-x-1 shadow transition-colors">
+                            class="px-3 py-1.5 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow transition-colors tap-target-btn">
                             <span>➕</span>
                             <span>Programar Actividad</span>
                         </button>
@@ -342,7 +342,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
 
                             <div class="pt-2 flex justify-end space-x-2">
                                 <button type="button" id="btn-cancelar-modal-evento" class="px-3 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs">Cancelar</button>
-                                <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs">Guardar en Calendario</button>
+                                <button type="submit" class="px-4 py-2 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl text-xs tap-target-btn">Guardar en Calendario</button>
                             </div>
                         </form>
                     </div>

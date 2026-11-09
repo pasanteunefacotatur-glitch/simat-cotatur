@@ -54,7 +54,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                 <div class="flex items-center space-x-3 self-start sm:self-auto">
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-permitir-seleccion-punto" class="sr-only peer">
-                        <div class="w-12 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        <div class="w-12 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#198754]"></div>
                     </label>
                     <span id="label-estado-switch-punto" class="text-xs font-bold text-slate-700 dark:text-slate-300">
                         Bloqueado
@@ -80,7 +80,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                             Cédula de Identidad <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="nuevo-func-cedula" required placeholder="Ej: V-18452120 o 18452120"
-                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white font-mono outline-none focus:ring-1 focus:ring-amber-500" />
+                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white font-mono outline-none focus:ring-1 focus:ring-[#198754] focus:border-[#198754]" />
                     </div>
 
                     <div>
@@ -105,7 +105,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
 
                     <div>
                         <button type="submit" id="btn-guardar-nuevo-func"
-                            class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow transition-all active:scale-95">
+                            class="w-full py-2.5 px-4 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl text-xs shadow transition-all active:scale-95 tap-target-btn">
                             Registrar Funcionario
                         </button>
                     </div>
@@ -118,7 +118,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Nómina de Funcionarios Registrados
                     </span>
-                    <button type="button" id="btn-refrescar-nomina" class="text-xs text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
+                    <button type="button" id="btn-refrescar-nomina" class="text-xs text-[#198754] hover:text-[#157347] dark:text-emerald-400 font-bold flex items-center gap-1">
                         <span>🔄</span>
                         <span>Actualizar</span>
                     </button>

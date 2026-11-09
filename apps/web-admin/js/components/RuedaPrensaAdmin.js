@@ -156,20 +156,20 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                         <div class="flex items-center space-x-2">
                             <span class="text-2xl">📊</span>
                             <h3 class="text-base font-extrabold text-slate-900 dark:text-white">
-                                Indicadores de Gestión para el Despacho del Gobernador
+                                Indicadores de Gestión Turística (KPI Gobernación)
                             </h3>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                                v0.5.0-alpha
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                                OFICIAL COTATUR
                             </span>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Tablero con indicadores clave de rendimiento (KPI) de afluencia, tipología de grupos, pernocta y ocupación hotelera.
+                            Tablero gerencial oficial para el Despacho del Gobernador y balances institucionales de afluencia, pernocta y ocupación.
                         </p>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
                         <select id="select-filtro-temporada-prensa"
-                            class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none">
+                            class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#198754]">
                             <option value="TODAS" ${filtroTemporada === "TODAS" ? "selected" : ""}>Toda la Temporada</option>
                             <option value="FISS" ${filtroTemporada === "FISS" ? "selected" : ""}>Feria Internacional de San Sebastián</option>
                             <option value="CARNAVALES" ${filtroTemporada === "CARNAVALES" ? "selected" : ""}>Carnavales Turísticos</option>
@@ -182,13 +182,13 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
 
                         <!-- Botón Propuesta 1: Diapositiva 16:9 -->
                         <button type="button" id="btn-abrir-diapositiva-16-9"
-                            class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl text-xs flex items-center space-x-1.5 shadow transition-all active:scale-95">
+                            class="px-3.5 py-2 bg-[#198754] hover:bg-[#157347] text-white font-extrabold rounded-xl text-xs flex items-center space-x-1.5 shadow transition-all active:scale-95 tap-target-btn">
                             <span>🖥️</span>
                             <span>Modo Presentación 16:9</span>
                         </button>
 
                         <button type="button" id="btn-print-prensa"
-                            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow transition-colors">
+                            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow transition-colors tap-target-btn">
                             <span>📄</span>
                             <span>Imprimir Informe</span>
                         </button>
@@ -197,10 +197,10 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
 
                 <!-- 4 NÚMEROS GIGANTES EJECUTIVOS (KPIs) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-4 text-slate-950 shadow-md">
-                        <span class="text-[10px] font-black uppercase tracking-wider block opacity-90">Visitantes Estimados</span>
+                    <div class="bg-gradient-to-br from-[#198754] to-[#146c43] rounded-2xl p-4 text-white shadow-md">
+                        <span class="text-[10px] font-black uppercase tracking-wider block opacity-90 text-emerald-100">Visitantes Estimados</span>
                         <div class="text-2xl font-black mt-1 leading-none">${totalVisitantes.toLocaleString()}</div>
-                        <span class="text-[9px] font-semibold mt-1 block opacity-80">${totalEncuestas.toLocaleString()} grupos censados</span>
+                        <span class="text-[9px] font-semibold mt-1 block opacity-80 text-emerald-100">${totalEncuestas.toLocaleString()} grupos censados</span>
                     </div>
 
                     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
@@ -280,16 +280,20 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                     </div>
 
                     <!-- CONTENEDOR EXACTO 16:9 -->
-                    <div id="diapositiva-16-9-root" class="w-full max-w-6xl aspect-[16/9] bg-[#0c1017] text-white rounded-2xl p-6 border-2 border-amber-500/60 shadow-2xl flex flex-col justify-between overflow-hidden">
-                        <!-- Cabecera Institucional 16:9 -->
+                    <div id="diapositiva-16-9-root" class="w-full max-w-6xl aspect-[16/9] bg-[#0c1017] text-white rounded-2xl p-6 border-2 border-[#198754]/70 shadow-2xl flex flex-col justify-between overflow-hidden">
+                        <!-- Cabecera Institucional 16:9 con Tríada Oficial -->
                         <div class="flex items-center justify-between border-b border-white/15 pb-3">
                             <div class="flex items-center space-x-3">
-                                <img src="./assets/img/logo_cotatur.png" alt="COTATUR" class="h-10 w-auto object-contain" />
-                                <div class="h-7 w-[1px] bg-white/20"></div>
-                                <img src="./assets/img/logo_tachira.png" alt="Táchira" class="h-9 w-auto object-contain" />
+                                <div class="inline-flex items-center p-1.5 rounded-xl bg-white/95 border border-white/20 shadow-sm space-x-2">
+                                    <img src="./assets/img/logo_cotatur.png" alt="COTATUR" class="h-8 w-auto object-contain" />
+                                    <div class="h-5 w-[1px] bg-slate-300"></div>
+                                    <img src="./assets/img/logo_gobernacion.png" alt="Gobernación" class="h-7 w-auto object-contain" />
+                                    <div class="h-5 w-[1px] bg-slate-300"></div>
+                                    <img src="./assets/img/logo_tachira.png" alt="Táchira" class="h-7 w-auto object-contain" />
+                                </div>
                                 <div>
                                     <h2 class="text-sm font-black tracking-wide uppercase text-amber-400">Gobernación del Estado Táchira • COTATUR</h2>
-                                    <p class="text-[11px] text-slate-300 font-semibold">Indicadores Clave de Gestión Turística • ${filtroTemporada}</p>
+                                    <p class="text-[11px] text-slate-300 font-semibold">Indicadores de Gestión Turística (KPI Gobernación) • ${filtroTemporada}</p>
                                 </div>
                             </div>
                             <div class="text-right font-mono text-xs text-slate-400">
@@ -300,10 +304,10 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
 
                         <!-- 4 Métricas Clave 16:9 -->
                         <div class="grid grid-cols-4 gap-3 my-3">
-                            <div class="bg-amber-500 text-slate-950 p-3 rounded-xl">
-                                <span class="text-[10px] font-black uppercase tracking-wider block">Visitantes Estimados</span>
+                            <div class="bg-[#198754] text-white p-3 rounded-xl shadow">
+                                <span class="text-[10px] font-black uppercase tracking-wider block text-emerald-100">Visitantes Estimados</span>
                                 <div class="text-3xl font-black leading-none mt-1">${totalVisitantes.toLocaleString()}</div>
-                                <span class="text-[9px] font-bold block mt-1">${totalEncuestas.toLocaleString()} grupos censados</span>
+                                <span class="text-[9px] font-bold block mt-1 text-emerald-100">${totalEncuestas.toLocaleString()} grupos censados</span>
                             </div>
                             <div class="bg-white/5 border border-white/10 p-3 rounded-xl">
                                 <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Pernocta Media</span>

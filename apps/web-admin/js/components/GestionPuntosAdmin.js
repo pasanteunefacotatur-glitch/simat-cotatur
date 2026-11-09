@@ -50,14 +50,14 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     </p>
                 </div>
                 <button type="button" id="btn-toggle-nuevo-punto"
-                    class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow transition-all flex items-center space-x-1.5 active:scale-95">
+                    class="px-4 py-2 bg-[#198754] hover:bg-[#157347] text-white font-bold text-xs rounded-xl shadow transition-all flex items-center space-x-1.5 active:scale-95 tap-target-btn">
                     <span>➕</span>
                     <span id="label-toggle-nuevo-punto">Registrar Punto de Control</span>
                 </button>
             </div>
 
             <!-- Panel de Creación con Mapa Interactivo y Asignación de Personal (Oculto por defecto) -->
-            <div id="seccion-crear-punto-mapa" class="hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-amber-500/40 shadow-lg space-y-5">
+            <div id="seccion-crear-punto-mapa" class="hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-[#198754]/40 shadow-lg space-y-5">
                 <div class="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
                     <div>
                         <h4 class="text-sm font-extrabold text-slate-900 dark:text-white">
@@ -79,7 +79,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                             Nombre del Punto Oficial <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="nuevo-punto-nombre" placeholder="Ej: Peaje Vega de Táriba"
-                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-amber-500" />
+                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-[#198754] focus:border-[#198754]" />
                     </div>
 
                     <div>
@@ -134,7 +134,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 <!-- Botón de Guardado -->
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" id="btn-guardar-punto-mapa"
-                        class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition-all text-xs flex items-center space-x-1.5 active:scale-95">
+                        class="px-5 py-2.5 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl shadow transition-all text-xs flex items-center space-x-1.5 active:scale-95 tap-target-btn">
                         <span>💾</span>
                         <span>Guardar Registro</span>
                     </button>
@@ -147,7 +147,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Puntos de Control Operativos
                     </span>
-                    <button type="button" id="btn-recargar-puntos" class="text-xs text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
+                    <button type="button" id="btn-recargar-puntos" class="text-xs text-[#198754] hover:text-[#157347] dark:text-emerald-400 font-bold flex items-center gap-1">
                         <span>🔄</span>
                         <span>Actualizar</span>
                     </button>
