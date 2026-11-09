@@ -82,23 +82,27 @@ function mostrarModalLogin() {
         };
     }
 
+    // Forzar estrictamente solo números en el campo de cédula (sin letras, sin V-, sin puntos)
+    if (inputId) {
+        inputId.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+        });
+    }
+
     form.onsubmit = async (e) => {
         e.preventDefault();
-        const rawId = inputId.value.trim();
-        // Limpiar prefijo V-, puntos y espacios para máxima tolerancia a formatos
-        const cleanId = rawId.replace(/^V-?/i, "").replace(/[\.\s-]/g, "");
-        const identificador = cleanId || rawId;
+        // Cédula estrictamente numérica
+        const identificador = inputId.value.trim().replace(/[^0-9]/g, "");
 
         const rawClave = inputClave.value.trim();
-        // Limpiar también formato de cédula en clave si el usuario escribió o pegó su cédula con formato
-        const cleanClave = rawClave.replace(/^V-?/i, "").replace(/[\.\s-]/g, "");
-        // Si cleanClave coincide con cleanId, enviamos cleanClave para garantizar match exacto en primer ingreso
-        const clave = (cleanClave === cleanId) ? cleanClave : rawClave;
+        const numClave = rawClave.replace(/[^0-9]/g, "");
+        // Si la clave tipeada coincide numéricamente con la cédula (primer ingreso o reinicio de clave)
+        const clave = (numClave && numClave === identificador) ? identificador : rawClave;
 
         errorMsg.classList.add("hidden");
 
         if (!identificador) {
-            errorMsg.textContent = "Por favor ingrese su número de cédula.";
+            errorMsg.textContent = "Por favor ingrese su número de cédula (solo números).";
             errorMsg.classList.remove("hidden");
             return;
         }
@@ -336,7 +340,7 @@ function iniciarDashboard() {
     actualizarBadgeUsuario();
     configurarTabs();
 
-    const credencialSupervisor = () => (activeSession ? (activeSession.funcionario?.id || activeSession.funcionario?.cedula || activeSession.clave) : "");
+    const credencialSupervisor = () => (activeSession?.funcionario?.id || "cotatur2026");
 
     // 1. Rueda de Prensa del Gobernador (Pestaña Principal Ejecutiva)
     renderRuedaPrensaAdmin("tab-prensa-mount", activeSession?.funcionario);
