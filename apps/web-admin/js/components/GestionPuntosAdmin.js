@@ -33,6 +33,8 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    const obtenerPin = () => (typeof getAdminPinCallback === "function" ? getAdminPinCallback() : "") || "";
+
     container.innerHTML = `
         <div class="space-y-6">
             
@@ -257,7 +259,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                 },
-                body: JSON.stringify({ p_pin: "cotatur2026", p_accion: "LISTAR", p_datos: {} })
+                body: JSON.stringify({ p_pin: obtenerPin(), p_accion: "LISTAR", p_datos: {} })
             });
 
             if (!res.ok) throw new Error("Error al consultar puntos.");
@@ -326,7 +328,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                             "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                             "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                         },
-                        body: JSON.stringify({ p_pin: "cotatur2026", p_accion: "TOGGLE_ACTIVO", p_datos: { id } })
+                        body: JSON.stringify({ p_pin: obtenerPin(), p_accion: "TOGGLE_ACTIVO", p_datos: { id } })
                     });
                     cargarPuntos();
                 });
@@ -365,7 +367,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                 },
                 body: JSON.stringify({
-                    p_pin: "cotatur2026",
+                    p_pin: obtenerPin(),
                     p_accion: "CREAR",
                     p_datos: {
                         nombre,

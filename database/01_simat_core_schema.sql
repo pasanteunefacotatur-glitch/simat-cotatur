@@ -135,18 +135,36 @@ CREATE OR REPLACE FUNCTION public.fn_asignar_temporada_automatica()
 RETURNS TRIGGER AS $$
 DECLARE
     v_temporada_id UUID;
+    v_temporada_codigo VARCHAR(40);
 BEGIN
-    -- Busca la temporada activa en la cual caiga la fecha real de captura
-    SELECT id INTO v_temporada_id
-    FROM public.temporadas_turisticas
-    WHERE NEW.captured_at >= fecha_inicio 
-      AND NEW.captured_at <= fecha_fin
-      AND activa = TRUE
-    ORDER BY fecha_inicio DESC
-    LIMIT 1;
+    -- Busca evento o asueto activo en calendario_asuetos_eventos
+    IF to_regclass('public.calendario_asuetos_eventos') IS NOT NULL THEN
+        SELECT tipo_cuestionario INTO v_temporada_codigo
+        FROM public.calendario_asuetos_eventos
+        WHERE NEW.captured_at::DATE >= fecha_inicio 
+          AND NEW.captured_at::DATE <= fecha_fin
+          AND activo = TRUE
+        ORDER BY prioridad DESC, fecha_inicio ASC
+        LIMIT 1;
 
-    -- Asigna la temporada encontrada (o queda NULL si es temporada regular baja)
-    NEW.temporada_id := v_temporada_id;
+        IF v_temporada_codigo IS NOT NULL AND (NEW.temporada_codigo IS NULL OR NEW.temporada_codigo = 'REGULAR') THEN
+            NEW.temporada_codigo := v_temporada_codigo;
+        END IF;
+    END IF;
+
+    -- Compatibilidad con tabla previa temporadas_turisticas si existe
+    IF to_regclass('public.temporadas_turisticas') IS NOT NULL THEN
+        SELECT id INTO v_temporada_id
+        FROM public.temporadas_turisticas
+        WHERE NEW.captured_at >= fecha_inicio 
+          AND NEW.captured_at <= fecha_fin
+          AND activa = TRUE
+        ORDER BY fecha_inicio DESC
+        LIMIT 1;
+
+        NEW.temporada_id := v_temporada_id;
+    END IF;
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
@@ -193,6 +211,7 @@ BEGIN
             gps_lat, gps_lng, gps_precision_m, gps_es_simulado, gps_es_cache, gps_fix_id,
             procedencia_tipo, estado_origen, pais_origen, municipio_destino,
             motivo_viaje, tipo_alojamiento, grupo_tamano, dias_estadia,
+            composicion_grupo, rango_edad, temporada_codigo, respuestas_temporada,
             calif_vialidad, calif_seguridad, calif_hospitalidad, calif_servicios_publicos,
             gasto_promedio_diario_usd
         ) VALUES (
@@ -218,6 +237,10 @@ BEGIN
             v_encuesta->>'tipo_alojamiento',
             COALESCE((v_encuesta->>'grupo_tamano')::INTEGER, 1),
             COALESCE((v_encuesta->>'dias_estadia')::INTEGER, 1),
+            COALESCE(v_encuesta->>'composicion_grupo', 'GRUPO_FAMILIAR'),
+            COALESCE(v_encuesta->>'rango_edad', '30_49'),
+            COALESCE(v_encuesta->>'temporada_codigo', 'REGULAR'),
+            COALESCE(v_encuesta->'respuestas_temporada', '{}'::JSONB),
             (v_encuesta->>'calif_vialidad')::SMALLINT,
             (v_encuesta->>'calif_seguridad')::SMALLINT,
             (v_encuesta->>'calif_hospitalidad')::SMALLINT,

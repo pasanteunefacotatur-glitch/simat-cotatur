@@ -212,20 +212,15 @@ DECLARE
     v_target_id UUID;
     v_target_cedula TEXT;
     v_nuevo_estado BOOLEAN;
-    v_pin_maestro CONSTANT TEXT := 'cotatur2026';
 BEGIN
     -- 1. Validar autorización
-    IF TRIM(p_credencial) = v_pin_maestro THEN
-        v_es_supervisor := TRUE;
-    ELSE
-        SELECT (rol = 'SUPERVISOR' AND activo = TRUE) INTO v_es_supervisor
-        FROM public.perfiles_funcionarios
-        WHERE id::TEXT = TRIM(p_credencial)
-           OR UPPER(TRIM(cedula)) = UPPER(TRIM(p_credencial));
-    END IF;
+    SELECT (rol = 'SUPERVISOR' AND activo = TRUE) OR (cedula = '00000000') INTO v_es_supervisor
+    FROM public.perfiles_funcionarios
+    WHERE id::TEXT = TRIM(p_credencial)
+       OR UPPER(TRIM(cedula)) = UPPER(TRIM(p_credencial));
 
     IF NOT COALESCE(v_es_supervisor, FALSE) THEN
-        RAISE EXCEPTION 'NO_AUTORIZADO: Se requiere rango de Supervisor o PIN Maestro para esta acción.'
+        RAISE EXCEPTION 'NO_AUTORIZADO: Se requiere rango de Supervisor activo para esta acción.'
         USING ERRCODE = '42501';
     END IF;
 

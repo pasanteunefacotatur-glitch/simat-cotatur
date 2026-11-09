@@ -42,7 +42,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
 
         if (navigator.onLine && authUser) {
             try {
-                const credencial = authUser.id || authUser.cedula || "cotatur2026";
+                const credencial = authUser?.id || authUser?.cedula || "";
                 const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_obtener_metricas_gobernador`, {
                     method: "POST",
                     headers: {

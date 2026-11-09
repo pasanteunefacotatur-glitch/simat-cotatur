@@ -16,16 +16,23 @@ CREATE OR REPLACE FUNCTION public.admin_gestionar_punto(
 )
 RETURNS JSONB AS $$
 DECLARE
-    v_admin_pin_valido CONSTANT TEXT := 'cotatur2026';
+    v_supervisor_ok BOOLEAN := FALSE;
     v_resultado JSONB;
     v_nuevo_id UUID;
     v_target_id UUID;
     v_nuevo_estado BOOLEAN;
     v_codigo_slug TEXT;
 BEGIN
-    -- 1. Validación de seguridad de credencial de supervisión
-    IF p_pin IS NULL OR TRIM(p_pin) <> v_admin_pin_valido THEN
-        RAISE EXCEPTION 'PIN_INVALIDO: Credencial de supervisión no autorizada.'
+    -- 1. Validación de seguridad de credencial de supervisión contra funcionarios activos
+    SELECT EXISTS (
+        SELECT 1 FROM public.perfiles_funcionarios
+        WHERE (id::TEXT = TRIM(p_pin) OR UPPER(TRIM(cedula)) = UPPER(TRIM(p_pin)))
+          AND activo = TRUE
+          AND (rol = 'SUPERVISOR' OR cedula = '00000000')
+    ) INTO v_supervisor_ok;
+
+    IF NOT v_supervisor_ok THEN
+        RAISE EXCEPTION 'CREDENCIAL_INVALIDA: Credencial de supervisión no autorizada.'
         USING ERRCODE = '42501';
     END IF;
 

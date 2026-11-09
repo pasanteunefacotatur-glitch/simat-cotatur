@@ -92,7 +92,7 @@ export async function guardarAsignacionesPuntoEnServidor(
             },
             body: JSON.stringify({
                 p_accion: "GUARDAR",
-                p_credencial: credencial || "cotatur2026",
+                p_credencial: credencial || "",
                 p_datos: {
                     codigo: CONFIG_CODIGO_MULTI,
                     nombre: "Registro Interno de Asignaciones Multipunto",
@@ -118,7 +118,7 @@ export async function guardarAsignacionesPuntoEnServidor(
                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                 },
                 body: JSON.stringify({
-                    p_credencial: credencial || "cotatur2026",
+                    p_credencial: credencial || "",
                     p_funcionario_id: fid,
                     p_punto_id: puntoId
                 })

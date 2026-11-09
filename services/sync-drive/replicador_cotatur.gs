@@ -184,10 +184,10 @@ function ejecutarSincronizacionIncremental() {
 
   Logger.log("[SIMAT] Se replicaron exitosamente " + filasNuevas.length + " encuestas hacia Google Sheets.");
 
-  // 4. Auto-Chaining: Si el lote llegó al límite (500), programar otro ciclo en 2 minutos
+  // 4. Auto-Chaining aislado: Si el lote llegó al límite (500), programar ciclo temporal en 2 minutos
   if (registros.length === SYNC_CONFIG.BATCH_LIMIT) {
-    purgarTriggersDuplicados();
-    ScriptApp.newTrigger("ejecutarSincronizacionIncremental")
+    purgarTriggersAutoChaining();
+    ScriptApp.newTrigger("ejecutarCicloAutoChaining")
       .timeBased()
       .after(2 * 60 * 1000)
       .create();
@@ -195,18 +195,24 @@ function ejecutarSincronizacionIncremental() {
 }
 
 /**
- * Purga disparadores automáticos duplicados para no superar el límite de 20 de Google Workspace.
+ * Handler de auto-encadenamiento temporal para lotes masivos.
+ * Se aísla del disparador horario maestro de 12 horas.
  */
-function purgarTriggersDuplicados() {
+function ejecutarCicloAutoChaining() {
+  purgarTriggersAutoChaining();
+  ejecutarSincronizacionIncremental();
+}
+
+/**
+ * Purga únicamente los disparadores temporales de auto-encadenamiento,
+ * protegiendo el disparador recurrente maestro de 12 horas.
+ */
+function purgarTriggersAutoChaining() {
   var triggers = ScriptApp.getProjectTriggers();
-  var conteo = 0;
   for (var i = 0; i < triggers.length; i++) {
     var t = triggers[i];
-    if (t.getHandlerFunction() === "ejecutarSincronizacionIncremental") {
-      conteo++;
-      if (conteo > 2) {
-        ScriptApp.deleteTrigger(t);
-      }
+    if (t.getHandlerFunction() === "ejecutarCicloAutoChaining") {
+      ScriptApp.deleteTrigger(t);
     }
   }
 }

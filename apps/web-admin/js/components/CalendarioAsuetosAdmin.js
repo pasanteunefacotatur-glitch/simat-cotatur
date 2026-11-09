@@ -143,7 +143,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
 
     let selectedYear = new Date().getFullYear();
     let dbAsuetos = [];
-    const credencial = authUser?.id || authUser?.cedula || "cotatur2026";
+    const credencial = authUser?.id || authUser?.cedula || "";
 
     async function cargarDesdeSupabase() {
         try {

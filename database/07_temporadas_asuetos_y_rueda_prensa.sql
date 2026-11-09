@@ -42,15 +42,22 @@ CREATE INDEX IF NOT EXISTS idx_encuestas_punto ON public.encuestas_turisticas(pu
 CREATE INDEX IF NOT EXISTS idx_prestadores_punto ON public.encuestas_prestadores(punto_id);
 CREATE INDEX IF NOT EXISTS idx_prestadores_funcionario ON public.encuestas_prestadores(funcionario_id);
 
--- RLS para prestadores
+-- RLS para prestadores (acceso restringido a funcionarios y supervisores autenticados)
 ALTER TABLE public.encuestas_prestadores ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Lectura de prestadores por autenticados" ON public.encuestas_prestadores;
-CREATE POLICY "Lectura de prestadores por autenticados" ON public.encuestas_prestadores
-    FOR SELECT TO authenticated, anon USING (true);
-
 DROP POLICY IF EXISTS "Insercion de prestadores por funcionarios" ON public.encuestas_prestadores;
-CREATE POLICY "Insercion de prestadores por funcionarios" ON public.encuestas_prestadores
-    FOR INSERT TO authenticated, anon WITH CHECK (true);
+DROP POLICY IF EXISTS "Lectura de prestadores por funcionarios autenticados" ON public.encuestas_prestadores;
+DROP POLICY IF EXISTS "Insercion de prestadores por funcionarios autenticados" ON public.encuestas_prestadores;
+DROP POLICY IF EXISTS "Denegar acceso directo anon prestadores" ON public.encuestas_prestadores;
+
+CREATE POLICY "Lectura de prestadores por funcionarios autenticados" ON public.encuestas_prestadores
+    FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Insercion de prestadores por funcionarios autenticados" ON public.encuestas_prestadores
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Denegar acceso directo anon prestadores" ON public.encuestas_prestadores
+    FOR ALL TO anon USING (false);
 
 -- 3. TABLA DE CALENDARIO DE ASUETOS Y ACTIVIDADES PROGRAMADAS
 CREATE TABLE IF NOT EXISTS public.calendario_asuetos_eventos (
@@ -155,7 +162,7 @@ BEGIN
     WHERE (id::TEXT = TRIM(p_credencial) OR cedula = TRIM(p_credencial))
     LIMIT 1;
 
-    IF v_supervisor_ok IS NOT TRUE AND TRIM(p_credencial) <> 'cotatur2026' THEN
+    IF v_supervisor_ok IS NOT TRUE THEN
         RETURN jsonb_build_object('ok', false, 'error', 'NO_AUTORIZADO');
     END IF;
 
@@ -249,7 +256,7 @@ BEGIN
     WHERE (id::TEXT = TRIM(p_credencial) OR cedula = TRIM(p_credencial))
     LIMIT 1;
 
-    IF v_supervisor_ok IS NOT TRUE AND TRIM(p_credencial) <> 'cotatur2026' THEN
+    IF v_supervisor_ok IS NOT TRUE THEN
         RETURN jsonb_build_object('ok', false, 'error', 'NO_AUTORIZADO');
     END IF;
 
@@ -390,38 +397,17 @@ BEGIN
     v_punto_id := (p_datos->>'punto_captura_id')::UUID;
 
     INSERT INTO public.encuestas_turisticas (
-        id,
-        punto_captura_id,
-        canal,
-        visitor_client_id,
-        duracion_llenado_seg,
-        procedencia_tipo,
-        estado_origen,
-        pais_origen,
-        municipio_destino,
-        motivo_viaje,
-        tipo_alojamiento,
-        grupo_tamano,
-        dias_estadia,
-        composicion_grupo,
-        rango_edad,
-        temporada_codigo,
-        respuestas_temporada,
-        calif_vialidad,
-        calif_seguridad,
-        calif_hospitalidad,
-        calif_servicios_publicos,
-        gasto_promedio_diario_usd,
-        captured_at
+        id, punto_captura_id, canal, visitor_client_id, duracion_llenado_seg,
+        procedencia_tipo, estado_origen, pais_origen, municipio_destino,
+        motivo_viaje, tipo_alojamiento, grupo_tamano, dias_estadia,
+        composicion_grupo, rango_edad, temporada_codigo, respuestas_temporada,
+        calif_vialidad, calif_seguridad, calif_hospitalidad, calif_servicios_publicos,
+        gasto_promedio_diario_usd, captured_at
     ) VALUES (
-        v_id,
-        v_punto_id,
-        'WEB',
-        p_datos->>'visitor_client_id',
+        v_id, v_punto_id, 'WEB', p_datos->>'visitor_client_id',
         COALESCE((p_datos->>'duracion_llenado_seg')::INT, 15),
         COALESCE(p_datos->>'procedencia_tipo', 'NACIONAL'),
-        p_datos->>'estado_origen',
-        COALESCE(p_datos->>'pais_origen', 'Venezuela'),
+        p_datos->>'estado_origen', COALESCE(p_datos->>'pais_origen', 'Venezuela'),
         p_datos->>'municipio_destino',
         COALESCE(p_datos->>'motivo_viaje', 'TURISMO_RECREACION'),
         COALESCE(p_datos->>'tipo_alojamiento', 'POSADA'),
@@ -444,8 +430,66 @@ BEGIN
 END;
 $$;
 
+-- 9. RPC: SINCRONIZACIÓN DE LOTE DE PRESTADORES DE SERVICIOS (APK FASE 2)
+CREATE OR REPLACE FUNCTION public.sincronizar_lote_prestadores_apk(
+    p_funcionario_id UUID,
+    p_prestadores JSONB
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_funcionario_activo BOOLEAN;
+    v_item JSONB;
+    v_insertadas INT := 0;
+BEGIN
+    SELECT activo INTO v_funcionario_activo FROM public.perfiles_funcionarios WHERE id = p_funcionario_id;
+    IF v_funcionario_activo IS NOT TRUE THEN
+        RAISE EXCEPTION 'ACCESO_DENEGADO: Funcionario inactivo o inexistente.' USING ERRCODE = '42501';
+    END IF;
+
+    FOR v_item IN SELECT * FROM jsonb_array_elements(p_prestadores)
+    LOOP
+        INSERT INTO public.encuestas_prestadores (
+            id, punto_id, funcionario_id, temporada_codigo,
+            nombre_establecimiento, tipo_prestador, municipio,
+            habitaciones_disponibles, habitaciones_ocupadas,
+            porcentaje_ocupacion_rango, tarifa_promedio_usd,
+            evaluacion_temporada, dificultades_operativas,
+            calif_seguridad_acompanamiento, created_at
+        ) VALUES (
+            COALESCE((v_item->>'id')::UUID, gen_random_uuid()),
+            (v_item->>'punto_id')::UUID,
+            p_funcionario_id,
+            COALESCE(v_item->>'temporada_codigo', 'REGULAR'),
+            v_item->>'nombre_establecimiento',
+            COALESCE(v_item->>'tipo_prestador', 'HOTEL'),
+            COALESCE(v_item->>'municipio', 'San Cristóbal'),
+            COALESCE((v_item->>'habitaciones_disponibles')::INT, 0),
+            COALESCE((v_item->>'habitaciones_ocupadas')::INT, 0),
+            v_item->>'porcentaje_ocupacion_rango',
+            COALESCE((v_item->>'tarifa_promedio_usd')::NUMERIC, 0),
+            COALESCE(v_item->>'evaluacion_temporada', 'IGUAL'),
+            v_item->>'dificultades_operativas',
+            COALESCE((v_item->>'calif_seguridad_acompanamiento')::SMALLINT, 5),
+            COALESCE((v_item->>'created_at')::TIMESTAMPTZ, NOW())
+        )
+        ON CONFLICT (id) DO NOTHING;
+
+        IF FOUND THEN
+            v_insertadas := v_insertadas + 1;
+        END IF;
+    END LOOP;
+
+    RETURN jsonb_build_object('ok', true, 'insertadas', v_insertadas, 'total', jsonb_array_length(p_prestadores));
+END;
+$$;
+
 -- Permisos de ejecución
 GRANT EXECUTE ON FUNCTION public.obtener_temporada_activa() TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_gestionar_calendario(VARCHAR, TEXT, JSONB) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_obtener_metricas_gobernador(TEXT, VARCHAR, DATE, DATE) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.registrar_encuesta_web(JSONB) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.sincronizar_lote_prestadores_apk(UUID, JSONB) TO anon, authenticated;

@@ -21,7 +21,6 @@ CREATE OR REPLACE FUNCTION public.auth_actualizar_mi_perfil(
 RETURNS JSONB AS $$
 DECLARE
     v_func RECORD;
-    v_pin_maestro CONSTANT TEXT := 'cotatur2026';
     v_clave_valida BOOLEAN := FALSE;
 BEGIN
     SELECT * INTO v_func FROM public.perfiles_funcionarios WHERE id = p_funcionario_id;
@@ -35,9 +34,7 @@ BEGIN
             RAISE EXCEPTION 'La nueva contraseña debe tener al menos 4 caracteres.';
         END IF;
 
-        IF p_clave_actual = v_pin_maestro THEN
-            v_clave_valida := TRUE;
-        ELSIF v_func.password_hash IS NOT NULL THEN
+        IF v_func.password_hash IS NOT NULL THEN
             v_clave_valida := (v_func.password_hash = crypt(p_clave_actual, v_func.password_hash));
         ELSE
             v_clave_valida := (TRIM(p_clave_actual) = TRIM(v_func.cedula) OR TRIM(p_clave_actual) = TRIM(REPLACE(v_func.cedula, 'V-', '')));
@@ -77,16 +74,11 @@ CREATE OR REPLACE FUNCTION public.admin_asignar_funcionario_punto(
 RETURNS JSONB AS $$
 DECLARE
     v_es_supervisor BOOLEAN := FALSE;
-    v_pin_maestro CONSTANT TEXT := 'cotatur2026';
 BEGIN
-    IF TRIM(p_credencial) = v_pin_maestro THEN
-        v_es_supervisor := TRUE;
-    ELSE
-        SELECT (rol = 'SUPERVISOR' AND activo = TRUE) INTO v_es_supervisor
-        FROM public.perfiles_funcionarios
-        WHERE id::TEXT = TRIM(p_credencial)
-           OR UPPER(TRIM(cedula)) = UPPER(TRIM(p_credencial));
-    END IF;
+    SELECT (rol = 'SUPERVISOR' AND activo = TRUE) OR (cedula = '00000000') INTO v_es_supervisor
+    FROM public.perfiles_funcionarios
+    WHERE id::TEXT = TRIM(p_credencial)
+       OR UPPER(TRIM(cedula)) = UPPER(TRIM(p_credencial));
 
     IF NOT COALESCE(v_es_supervisor, FALSE) THEN
         RAISE EXCEPTION 'NO_AUTORIZADO: Se requiere rango de Supervisor.' USING ERRCODE = '42501';
