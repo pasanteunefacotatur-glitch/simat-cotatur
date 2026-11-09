@@ -81,7 +81,9 @@ export function mostrarModalPrimerIngreso({ funcionario, config, onSuccess }) {
                                     }
                                 } catch (e) {
                                     console.error("Error al consultar perfil de Google:", e);
-                                    ejecutarFallbackGooglePrompt();
+                                    if (statusGoogle) {
+                                        statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ No se pudo obtener el perfil de Google. Puede ingresar sus datos manualmente.</span>`;
+                                    }
                                 } finally {
                                     btnGoogle.disabled = false;
                                     btnGoogle.innerHTML = `
@@ -95,12 +97,26 @@ export function mostrarModalPrimerIngreso({ funcionario, config, onSuccess }) {
                                     `;
                                 }
                             }
+                        },
+                        error_callback: (err) => {
+                            console.warn("Aviso de autorización de Google OAuth:", err);
+                            if (statusGoogle) {
+                                statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ Google OAuth: ${err.message || err.type || "Ventana cancelada o no autorizada"}. Complete sus datos manualmente.</span>`;
+                            }
                         }
                     });
                     tokenClient.requestAccessToken({ prompt: "select_account" });
                     return;
                 } catch (errToken) {
                     console.warn("Fallo inicializando token client de Google:", errToken);
+                    if (statusGoogle) {
+                        statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ Error al iniciar Google: ${errToken.message}. Ingrese sus datos manualmente abajo.</span>`;
+                    }
+                }
+            } else {
+                console.warn("Google GIS SDK aún no está disponible en window.google");
+                if (statusGoogle) {
+                    statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ El servicio de Google se encuentra cargando o fue bloqueado por el navegador. Use el formulario manual.</span>`;
                 }
             }
             ejecutarFallbackGooglePrompt();
