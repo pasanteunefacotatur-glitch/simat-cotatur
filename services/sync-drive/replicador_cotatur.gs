@@ -79,6 +79,7 @@ function obtenerHojaCruda(spreadsheet) {
       "ID Encuesta", "Canal", "Punto Captura ID", "Temporada ID", "Funcionario ID",
       "Fecha Captura", "Duración (seg)", "Procedencia", "Estado Origen", "País Origen",
       "Municipio Destino", "Motivo Viaje", "Alojamiento", "Tamaño Grupo", "Noches Pernocta",
+      "Composición Grupo", "Rango Edad", "Temporada Código", "Respuestas Temporada",
       "Calif. Vialidad", "Calif. Seguridad", "Calif. Hospitalidad", "Calif. Servicios",
       "GPS Lat", "GPS Lng", "GPS Simulado", "Fecha Replicación"
     ];
@@ -153,6 +154,10 @@ function ejecutarSincronizacionIncremental() {
       sanitizarCelda(r.tipo_alojamiento),
       Number(r.grupo_tamano || 1),
       Number(r.dias_estadia || 0),
+      sanitizarCelda(r.composicion_grupo || "GRUPO_FAMILIAR"),
+      sanitizarCelda(r.rango_edad || "30_49"),
+      sanitizarCelda(r.temporada_codigo || "REGULAR"),
+      sanitizarCelda(typeof r.respuestas_temporada === "object" ? JSON.stringify(r.respuestas_temporada) : (r.respuestas_temporada || "")),
       Number(r.calif_vialidad || 0),
       Number(r.calif_seguridad || 0),
       Number(r.calif_hospitalidad || 0),
@@ -181,9 +186,27 @@ function ejecutarSincronizacionIncremental() {
 
   // 4. Auto-Chaining: Si el lote llegó al límite (500), programar otro ciclo en 2 minutos
   if (registros.length === SYNC_CONFIG.BATCH_LIMIT) {
+    purgarTriggersDuplicados();
     ScriptApp.newTrigger("ejecutarSincronizacionIncremental")
       .timeBased()
       .after(2 * 60 * 1000)
       .create();
+  }
+}
+
+/**
+ * Purga disparadores automáticos duplicados para no superar el límite de 20 de Google Workspace.
+ */
+function purgarTriggersDuplicados() {
+  var triggers = ScriptApp.getProjectTriggers();
+  var conteo = 0;
+  for (var i = 0; i < triggers.length; i++) {
+    var t = triggers[i];
+    if (t.getHandlerFunction() === "ejecutarSincronizacionIncremental") {
+      conteo++;
+      if (conteo > 2) {
+        ScriptApp.deleteTrigger(t);
+      }
+    }
   }
 }

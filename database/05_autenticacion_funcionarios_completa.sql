@@ -161,7 +161,7 @@ BEGIN
         )
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 5. FUNCIÓN RPC: PRIMER INGRESO (ACTUALIZAR CONTRASEÑA Y PERFIL)
 CREATE OR REPLACE FUNCTION public.auth_primer_ingreso(
@@ -197,7 +197,7 @@ BEGIN
         'mensaje', 'Perfil y contraseña actualizados exitosamente'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 6. FUNCIÓN RPC MAESTRA: GESTIÓN DE FUNCIONARIOS V2 POR EL SUPERVISOR
 CREATE OR REPLACE FUNCTION public.admin_gestionar_funcionarios_v2(
@@ -346,7 +346,7 @@ BEGIN
             RAISE EXCEPTION 'Acción administrativa no soportada: %', p_accion;
     END CASE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 7. CONCEDER PERMISOS EXPLÍCITOS A ANON Y AUTHENTICATED
 GRANT EXECUTE ON FUNCTION public.auth_login_funcionario(TEXT, TEXT) TO anon, authenticated;

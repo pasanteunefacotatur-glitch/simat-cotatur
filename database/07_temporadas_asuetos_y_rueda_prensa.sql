@@ -37,6 +37,11 @@ CREATE TABLE IF NOT EXISTS public.encuestas_prestadores (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Índices de rendimiento para prestadores y encuestas (Supabase Best Practices)
+CREATE INDEX IF NOT EXISTS idx_encuestas_punto ON public.encuestas_turisticas(punto_captura_id);
+CREATE INDEX IF NOT EXISTS idx_prestadores_punto ON public.encuestas_prestadores(punto_id);
+CREATE INDEX IF NOT EXISTS idx_prestadores_funcionario ON public.encuestas_prestadores(funcionario_id);
+
 -- RLS para prestadores
 ALTER TABLE public.encuestas_prestadores ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Lectura de prestadores por autenticados" ON public.encuestas_prestadores;
@@ -90,6 +95,7 @@ CREATE OR REPLACE FUNCTION public.obtener_temporada_activa()
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_hoy DATE := CURRENT_DATE;
@@ -136,6 +142,7 @@ CREATE OR REPLACE FUNCTION public.admin_gestionar_calendario(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_supervisor_ok BOOLEAN;
@@ -224,6 +231,7 @@ CREATE OR REPLACE FUNCTION public.admin_obtener_metricas_gobernador(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_supervisor_ok BOOLEAN;
@@ -372,6 +380,7 @@ CREATE OR REPLACE FUNCTION public.registrar_encuesta_web(p_datos JSONB)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_id UUID;
@@ -383,7 +392,7 @@ BEGIN
     INSERT INTO public.encuestas_turisticas (
         id,
         punto_captura_id,
-        canal_captura,
+        canal,
         visitor_client_id,
         duracion_llenado_seg,
         procedencia_tipo,
@@ -407,7 +416,7 @@ BEGIN
     ) VALUES (
         v_id,
         v_punto_id,
-        'WEB_QR',
+        'WEB',
         p_datos->>'visitor_client_id',
         COALESCE((p_datos->>'duracion_llenado_seg')::INT, 15),
         COALESCE(p_datos->>'procedencia_tipo', 'NACIONAL'),

@@ -114,6 +114,10 @@ CREATE INDEX IF NOT EXISTS idx_encuestas_replicated_at
 ON public.encuestas_turisticas(replicated_at) 
 WHERE replicated_at IS NULL;
 
+-- Búsqueda por punto de captura (Foreign Key index según Supabase Best Practices)
+CREATE INDEX IF NOT EXISTS idx_encuestas_punto 
+ON public.encuestas_turisticas(punto_captura_id);
+
 -- Búsquedas por temporada y fecha de captura
 CREATE INDEX IF NOT EXISTS idx_encuestas_temporada 
 ON public.encuestas_turisticas(temporada_id, captured_at DESC);
@@ -145,7 +149,7 @@ BEGIN
     NEW.temporada_id := v_temporada_id;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS trg_asignar_temporada_encuestas ON public.encuestas_turisticas;
 CREATE TRIGGER trg_asignar_temporada_encuestas
@@ -233,7 +237,7 @@ BEGIN
         'insertadas', v_insertadas
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 5.2 RPC: INGESTA SEGURA PARA CANAL WEB (TURISTA)
 -- Protege la tabla de accesos directos de bots.
@@ -282,7 +286,7 @@ BEGIN
         'mensaje', 'Encuesta turística registrada exitosamente en COTATUR'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- ==============================================================================
 -- 6. POLÍTICAS DE SEGURIDAD A NIVEL DE FILA (RLS)
