@@ -37,7 +37,8 @@
          1. MODAL DE AUTENTICACIÓN POR CÉDULA Y CONTRASEÑA
          ========================================================================= -->
     <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4">
+        <div class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4">
+            <div id="login-theme-btn-mount" class="absolute top-4 right-4 z-10"></div>
             <!-- Cápsula protectora clara con la tríada oficial de logos -->
             <div class="inline-flex items-center justify-center p-2 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-x-2.5 mx-auto">
                 <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-9 w-auto object-contain" />
@@ -186,21 +187,31 @@
                         class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
                 </div>
 
-                <!-- Nueva Contraseña y Confirmación -->
+                <!-- Nueva Contraseña y Confirmación con Toggle de Visibilidad -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-200 dark:border-slate-800">
                     <div>
                         <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Nueva Contraseña Personal: <span class="text-red-500">*</span>
                         </label>
-                        <input type="password" id="activar-nueva-clave" required placeholder="Mínimo 4 caracteres"
-                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
+                        <div class="relative">
+                            <input type="password" id="activar-nueva-clave" required placeholder="Mínimo 4 caracteres"
+                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 pr-9 text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
+                            <button type="button" id="btn-toggle-activar-clave1" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs" title="Mostrar u ocultar contraseña">
+                                👁️
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Confirmar Contraseña: <span class="text-red-500">*</span>
                         </label>
-                        <input type="password" id="activar-confirmar-clave" required placeholder="Repita la contraseña"
-                            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
+                        <div class="relative">
+                            <input type="password" id="activar-confirmar-clave" required placeholder="Repita la contraseña"
+                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 pr-9 text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
+                            <button type="button" id="btn-toggle-activar-clave2" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs" title="Mostrar u ocultar contraseña">
+                                👁️
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -328,6 +339,6 @@
     </div>
 
     <!-- Inicialización del Administrador con control de caché -->
-    <script type="module" src="./apps/web-admin/js/adminApp.js?v=20261109_v5"></script>
+    <script type="module" src="./apps/web-admin/js/adminApp.js?v=20261109_v6"></script>
 </body>
 </html>

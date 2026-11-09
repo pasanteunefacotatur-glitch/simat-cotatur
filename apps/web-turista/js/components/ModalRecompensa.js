@@ -11,8 +11,8 @@ export function renderModalRecompensa(containerId) {
     if (!container) return;
 
     container.innerHTML = `
-        <div id="modal-recompensa-overlay" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
-            <div id="modal-recompensa-card" class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl border border-gray-200 dark:border-slate-800 shadow-2xl overflow-hidden transform scale-95 transition-all duration-300">
+        <div id="modal-recompensa-overlay" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none overflow-y-auto">
+            <div id="modal-recompensa-card" class="bg-white dark:bg-slate-900 w-full max-w-lg max-h-[90vh] rounded-3xl border border-gray-200 dark:border-slate-800 shadow-2xl overflow-y-auto flex flex-col transform scale-95 transition-all duration-300 my-auto">
                 
                 <!-- Encabezado Institucional Cálido -->
                 <div class="bg-gradient-to-r from-[#1c1c1c] via-[#198754] to-[#1c1c1c] text-white px-6 py-5 border-b border-amber-400/30">

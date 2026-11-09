@@ -79,7 +79,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Cédula de Identidad <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" id="nuevo-func-cedula" required placeholder="Ej: V-18452120 o 18452120"
+                        <input type="text" id="nuevo-func-cedula" required inputmode="numeric" pattern="[0-9]*" maxlength="10" placeholder="Ej: 18452120 (solo números)"
                             class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white font-mono outline-none focus:ring-1 focus:ring-[#198754] focus:border-[#198754]" />
                     </div>
 
@@ -332,10 +332,17 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
         }
     }
 
+    const inputNuevoCed = document.getElementById("nuevo-func-cedula");
+    if (inputNuevoCed) {
+        inputNuevoCed.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+        });
+    }
+
     // 3. Crear funcionario
     formCrear.onsubmit = async (e) => {
         e.preventDefault();
-        const cedula = document.getElementById("nuevo-func-cedula").value.trim();
+        const cedula = document.getElementById("nuevo-func-cedula").value.trim().replace(/[^0-9]/g, "");
         const rol = document.getElementById("nuevo-func-rol").value;
         const puntoId = document.getElementById("nuevo-func-punto").value;
 

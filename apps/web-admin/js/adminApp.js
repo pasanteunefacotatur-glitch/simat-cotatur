@@ -44,12 +44,21 @@ function initAdminApp() {
         mostrarModalLogin();
     }
 
-    // 3. Montar botón con icono de tema en la esquina superior derecha
+    // 3. Montar botón con icono de tema en la esquina superior derecha del dashboard y del login
     const mountTheme = document.getElementById("admin-theme-btn-mount");
     if (mountTheme) {
         mountTheme.innerHTML = renderThemeButtonHtml();
         const btn = document.getElementById("btn-toggle-theme");
         if (btn) btn.addEventListener("click", () => toggleTheme());
+    }
+    const mountLoginTheme = document.getElementById("login-theme-btn-mount");
+    if (mountLoginTheme) {
+        mountLoginTheme.innerHTML = renderThemeButtonHtml();
+        const btnLogin = mountLoginTheme.querySelector("button");
+        if (btnLogin) {
+            btnLogin.id = "btn-toggle-theme-login";
+            btnLogin.addEventListener("click", () => toggleTheme());
+        }
     }
 }
 
@@ -221,6 +230,26 @@ function mostrarModalPrimerIngreso(funcionario) {
         };
     }
 
+    // Alternadores de visibilidad de contraseñas en el modal de activación
+    const toggleP1 = document.getElementById("btn-toggle-activar-clave1");
+    const inputP1 = document.getElementById("activar-nueva-clave");
+    if (toggleP1 && inputP1) {
+        toggleP1.onclick = () => {
+            const isPass = inputP1.type === "password";
+            inputP1.type = isPass ? "text" : "password";
+            toggleP1.textContent = isPass ? "🙈" : "👁️";
+        };
+    }
+    const toggleP2 = document.getElementById("btn-toggle-activar-clave2");
+    const inputP2 = document.getElementById("activar-confirmar-clave");
+    if (toggleP2 && inputP2) {
+        toggleP2.onclick = () => {
+            const isPass = inputP2.type === "password";
+            inputP2.type = isPass ? "text" : "password";
+            toggleP2.textContent = isPass ? "🙈" : "👁️";
+        };
+    }
+
     // Opción B / Confirmación del formulario manual
     form.onsubmit = async (e) => {
         e.preventDefault();
@@ -233,20 +262,35 @@ function mostrarModalPrimerIngreso(funcionario) {
         const activarError = document.getElementById("activar-error");
         if (activarError) activarError.classList.add("hidden");
 
+        function mostrarErrorActivacion(msg) {
+            if (activarError) {
+                activarError.textContent = "⚠️ " + msg;
+                activarError.classList.remove("hidden");
+            } else {
+                alert(msg);
+            }
+        }
+
         if (!nombre) {
-            alert("Por favor ingrese su Nombre y Apellido.");
+            mostrarErrorActivacion("Por favor ingrese su Nombre y Apellido.");
             inputNombre.focus();
             return;
         }
 
         if (nuevaClave.length < 4) {
-            alert("La nueva contraseña debe tener al menos 4 caracteres.");
+            mostrarErrorActivacion("La nueva contraseña debe tener al menos 4 caracteres.");
+            document.getElementById("activar-nueva-clave").focus();
+            return;
+        }
+
+        if (nuevaClave === funcionario.cedula) {
+            mostrarErrorActivacion("Por seguridad institucional, su contraseña definitiva no puede ser igual a su cédula.");
             document.getElementById("activar-nueva-clave").focus();
             return;
         }
 
         if (nuevaClave !== confirmarClave) {
-            alert("Las contraseñas no coinciden. Por favor verifique.");
+            mostrarErrorActivacion("Las contraseñas no coinciden. Por favor verifique.");
             document.getElementById("activar-confirmar-clave").focus();
             return;
         }
