@@ -30,14 +30,18 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +58,7 @@ import com.cotatur.simat.CensoPrestadoresDest
 import com.cotatur.simat.EncuestaTuristaDest
 import com.cotatur.simat.OutboxDetalleDest
 import com.cotatur.simat.SupervisionDest
+import com.cotatur.simat.ota.OtaProgressState
 import com.cotatur.simat.ota.OtaUpdateManager
 import com.cotatur.simat.ota.VersionInfo
 import com.cotatur.simat.ui.theme.AppThemeMode
@@ -92,8 +97,10 @@ fun MainMenuScreen(
     onCerrarSesion: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val currentTheme = LocalThemeMode.current
     var actualizacionDisponible by remember { mutableStateOf<VersionInfo?>(null) }
+    val estadoOta by OtaUpdateManager.estadoDescarga.collectAsState()
 
     LaunchedEffect(Unit) {
         val info = OtaUpdateManager.verificarActualizacion(context)
@@ -129,11 +136,21 @@ fun MainMenuScreen(
                 onToggleTheme = onToggleTheme
             )
 
-            // --- AVISO DESATENDIDO DE ACTUALIZACIÓN REMOTA (OTA) ---
+            // --- AVISO DESATENDIDO DE ACTUALIZACIÓN REMOTA (OTA) CON PROGRESO EN VIVO ---
             actualizacionDisponible?.let { updateInfo ->
                 BannerActualizacionOta(
                     updateInfo = updateInfo,
-                    onInstalarClick = { OtaUpdateManager.descargarEInstalar(context, updateInfo) }
+                    estadoOta = estadoOta,
+                    onInstalarClick = {
+                        OtaUpdateManager.iniciarDescargaEInstalacion(context, scope, updateInfo)
+                    },
+                    onAbrirNavegadorClick = {
+                        OtaUpdateManager.abrirEnNavegador(context, updateInfo.apkUrl)
+                    },
+                    onReintentarClick = {
+                        OtaUpdateManager.reiniciarEstado()
+                        OtaUpdateManager.iniciarDescargaEInstalacion(context, scope, updateInfo)
+                    }
                 )
             }
 
@@ -636,12 +653,15 @@ private fun BarraEstadoInferior(
 }
 
 /**
- * Banner de notificación de actualización remota (OTA).
+ * Banner de notificación de actualización remota (OTA) con progreso en vivo.
  */
 @Composable
 private fun BannerActualizacionOta(
     updateInfo: VersionInfo,
-    onInstalarClick: () -> Unit
+    estadoOta: OtaProgressState,
+    onInstalarClick: () -> Unit,
+    onAbrirNavegadorClick: () -> Unit,
+    onReintentarClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -649,44 +669,155 @@ private fun BannerActualizacionOta(
         colors = CardDefaults.cardColors(containerColor = BrandAmber.copy(alpha = 0.15f)),
         border = BorderStroke(1.dp, BrandAmber)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(BrandAmber, CircleShape),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(text = "🚀", fontSize = 18.sp)
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .background(BrandAmber, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🚀", fontSize = 20.sp)
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Actualización v${updateInfo.versionName} disponible",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = BrandAmber
+                    )
+                    Text(
+                        text = updateInfo.changelog,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
+                }
+
+                when (estadoOta) {
+                    is OtaProgressState.Inactivo -> {
+                        Button(
+                            onClick = onInstalarClick,
+                            colors = ButtonDefaults.buttonColors(containerColor = BrandAmber),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Actualizar", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                        }
+                    }
+                    is OtaProgressState.Descargando -> {
+                        Text(
+                            text = "${(estadoOta.progreso * 100).toInt()}%",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp,
+                            color = BrandAmber
+                        )
+                    }
+                    is OtaProgressState.VerificandoIntegridad -> {
+                        Text(
+                            text = "Verificando...",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = BrandAmber
+                        )
+                    }
+                    is OtaProgressState.ListoParaInstalar -> {
+                        Button(
+                            onClick = onInstalarClick,
+                            colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Instalar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+                    }
+                    is OtaProgressState.Error -> {
+                        Button(
+                            onClick = onReintentarClick,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Reintentar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+                    }
+                }
             }
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Actualización v${updateInfo.versionName} disponible",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = BrandAmber
-                )
-                Text(
-                    text = updateInfo.changelog,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
-                )
-            }
-
-            Button(
-                onClick = onInstalarClick,
-                colors = ButtonDefaults.buttonColors(containerColor = BrandAmber),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text("Actualizar", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+            // Barra de progreso y estados activos
+            when (estadoOta) {
+                is OtaProgressState.Descargando -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        LinearProgressIndicator(
+                            progress = { estadoOta.progreso },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = BrandAmber,
+                            trackColor = BrandAmber.copy(alpha = 0.2f)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Descargando actualización en segundo plano...",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "%.1f MB / %.1f MB".format(estadoOta.descargadoMb, estadoOta.totalMb),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+                is OtaProgressState.VerificandoIntegridad -> {
+                    Text(
+                        text = "🔒 Validando firma criptográfica SHA-256...",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = BrandAmber
+                    )
+                }
+                is OtaProgressState.Error -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ ${estadoOta.mensaje}",
+                            fontSize = 11.sp,
+                            color = Color(0xFFFF5252),
+                            lineHeight = 14.sp
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(
+                                onClick = onAbrirNavegadorClick,
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(34.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                            ) {
+                                Text("🌐 Descargar vía Navegador", fontSize = 11.sp, color = BrandAmber)
+                            }
+                        }
+                    }
+                }
+                else -> {}
             }
         }
     }
