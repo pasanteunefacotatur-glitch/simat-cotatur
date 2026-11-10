@@ -198,23 +198,33 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Fila superior: Selector de Tema
+            // Fila superior: Selector de Tema (Pill elegante sin cortes ni wrapping)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                IconButton(onClick = onToggleTheme) {
-                    Text(
-                        text = when (currentTheme) {
-                            AppThemeMode.AMOLED -> "⚫ AMOLED"
-                            AppThemeMode.LIGHT -> "☀️ Claro"
-                            AppThemeMode.DARK -> "🌙 Oscuro"
-                            AppThemeMode.SYSTEM -> "📱 Auto"
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Surface(
+                    onClick = onToggleTheme,
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = when (currentTheme) {
+                                AppThemeMode.AMOLED -> "⚫ AMOLED"
+                                AppThemeMode.LIGHT -> "☀️ Claro"
+                                AppThemeMode.DARK -> "🌙 Oscuro"
+                                AppThemeMode.SYSTEM -> "📱 Auto"
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
