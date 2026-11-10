@@ -36,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -99,6 +100,7 @@ fun LoginScreen(
     var mensajeError by remember { mutableStateOf<String?>(null) }
     var avisoOffline by remember { mutableStateOf<String?>(null) }
     var mostrarDialogoGoogleManual by remember { mutableStateOf(false) }
+    var mostrarDialogoRecuperar by remember { mutableStateOf(false) }
 
     // Selector nativo de cuentas Google de Android
     val accountPickerLauncher = rememberLauncherForActivityResult(
@@ -152,6 +154,33 @@ fun LoginScreen(
             onConfirmar = { email ->
                 mostrarDialogoGoogleManual = false
                 ejecutarLoginGoogle(email, sessionManager, scope, context, { cargando = it }, { mensajeError = it }, { avisoOffline = it }, onLoginExitoso)
+            }
+        )
+    }
+
+    if (mostrarDialogoRecuperar) {
+        DialogoRecuperarContrasenaGoogle(
+            cedulaInicial = cedula,
+            onDismiss = { mostrarDialogoRecuperar = false },
+            onRestablecer = { ced, gEmail, nClave ->
+                mostrarDialogoRecuperar = false
+                cargando = true
+                mensajeError = null
+                avisoOffline = null
+                scope.launch {
+                    val res = withContext(Dispatchers.IO) {
+                        recuperarClaveConGoogle(sessionManager, ced, gEmail, null, nClave)
+                    }
+                    cargando = false
+                    when (res) {
+                        is LoginResult.Success -> {
+                            avisoOffline = "Contraseña restablecida con éxito mediante verificación Google."
+                            onLoginExitoso(res.session)
+                        }
+                        is LoginResult.OfflineSuccess -> onLoginExitoso(res.session)
+                        is LoginResult.Error -> mensajeError = res.mensaje
+                    }
+                }
             }
         )
     }
@@ -295,6 +324,23 @@ fun LoginScreen(
                                 focusedLabelColor = BrandGreen
                             )
                         )
+
+                        // Enlace para recuperar contraseña mediante Google
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(
+                                onClick = { mostrarDialogoRecuperar = true }
+                            ) {
+                                Text(
+                                    text = "¿Olvidó su contraseña? Recupérela con Google",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrandGreen
+                                )
+                            }
+                        }
 
                         // Mensajes de Alerta / Error
                         mensajeError?.let { err ->

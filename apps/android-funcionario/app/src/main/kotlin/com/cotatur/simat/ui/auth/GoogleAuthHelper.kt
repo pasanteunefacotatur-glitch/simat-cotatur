@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -148,6 +151,152 @@ fun DialogoCuentaGoogleManual(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text("Verificar e Ingresar", fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
+/**
+ * Diálogo de recuperación de contraseña olvidada mediante verificación con cuenta de Google.
+ */
+@Composable
+fun DialogoRecuperarContrasenaGoogle(
+    cedulaInicial: String,
+    onDismiss: () -> Unit,
+    onRestablecer: (cedula: String, googleEmail: String, nuevaClave: String) -> Unit
+) {
+    var cedulaInput by remember { mutableStateOf(cedulaInicial) }
+    var googleEmailInput by remember { mutableStateOf("") }
+    var nuevaClaveInput by remember { mutableStateOf("") }
+    var confirmarClaveInput by remember { mutableStateOf("") }
+    var claveVisible by remember { mutableStateOf(false) }
+    var errorLocal by remember { mutableStateOf<String?>(null) }
+
+    val accountPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val data = result.data
+        val cuentaSeleccionada = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+        if (!cuentaSeleccionada.isNullOrBlank()) {
+            googleEmailInput = cuentaSeleccionada.trim().lowercase()
+            errorLocal = null
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(text = "🔑", fontSize = 20.sp)
+                Text(text = "Recuperar Contraseña", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "Restablezca su clave verificando la cuenta Google vinculada a su cédula:",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                OutlinedTextField(
+                    value = cedulaInput,
+                    onValueChange = { cedulaInput = it; errorLocal = null },
+                    label = { Text("Cédula de Identidad") },
+                    placeholder = { Text("Ej: 31061007") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (googleEmailInput.isBlank()) {
+                    OutlinedButton(
+                        onClick = {
+                            try {
+                                val intent = AccountManager.newChooseAccountIntent(
+                                    null, null, arrayOf("com.google"), false, null, null, null, null
+                                )
+                                accountPickerLauncher.launch(intent)
+                            } catch (_: Exception) {
+                                errorLocal = "Seleccione o escriba su correo de Google abajo."
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("🌐 Seleccionar Cuenta Google", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                OutlinedTextField(
+                    value = googleEmailInput,
+                    onValueChange = { googleEmailInput = it; errorLocal = null },
+                    label = { Text("Correo Google Vinculado") },
+                    placeholder = { Text("usuario@gmail.com") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = nuevaClaveInput,
+                    onValueChange = { nuevaClaveInput = it; errorLocal = null },
+                    label = { Text("Nueva Contraseña") },
+                    placeholder = { Text("Mínimo 4 caracteres") },
+                    singleLine = true,
+                    visualTransformation = if (claveVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { claveVisible = !claveVisible }) {
+                            Text(text = if (claveVisible) "👁️" else "🙈", fontSize = 14.sp)
+                        }
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = confirmarClaveInput,
+                    onValueChange = { confirmarClaveInput = it; errorLocal = null },
+                    label = { Text("Confirmar Contraseña") },
+                    singleLine = true,
+                    visualTransformation = if (claveVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                errorLocal?.let {
+                    Text(text = "⚠️ $it", fontSize = 11.sp, color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val cedula = cedulaInput.trim()
+                    val email = googleEmailInput.trim().lowercase()
+                    val clave = nuevaClaveInput.trim()
+                    val conf = confirmarClaveInput.trim()
+
+                    if (cedula.isBlank()) {
+                        errorLocal = "Ingrese su número de cédula."
+                    } else if (email.isBlank() || !email.contains("@")) {
+                        errorLocal = "Verifique o ingrese su correo de Google."
+                    } else if (clave.length < 4) {
+                        errorLocal = "La nueva contraseña debe tener al menos 4 caracteres."
+                    } else if (clave != conf) {
+                        errorLocal = "Las contraseñas no coinciden."
+                    } else {
+                        onRestablecer(cedula, email, clave)
+                    }
+                },
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Restablecer Clave", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
