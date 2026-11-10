@@ -266,14 +266,18 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                             <div>${puntosDisplay}</div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div class="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <button type="button" data-id="${escapeHtml(f.id)}" data-action="toggle"
-                                class="btn-action-func py-2.5 px-3 rounded-xl text-xs font-bold min-h-[44px] flex items-center justify-center transition-colors ${f.activo ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/25' : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25'}">
-                                ${f.activo ? 'Desactivar' : 'Reactivar'}
+                                class="btn-action-func py-2 px-1.5 rounded-xl text-[11px] font-bold min-h-[44px] flex items-center justify-center transition-colors ${f.activo ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/25' : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25'}">
+                                ${f.activo ? 'Desactivar' : 'Activar'}
                             </button>
                             <button type="button" data-id="${escapeHtml(f.id)}" data-action="reset" data-cedula="${escapeHtml(f.cedula)}"
-                                class="btn-action-func py-2.5 px-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold min-h-[44px] flex items-center justify-center hover:bg-blue-100">
-                                Reset Clave
+                                class="btn-action-func py-2 px-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-[11px] font-bold min-h-[44px] flex items-center justify-center hover:bg-blue-100">
+                                Reset
+                            </button>
+                            <button type="button" data-id="${escapeHtml(f.id)}" data-action="delete"
+                                class="btn-action-func py-2 px-1.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl text-[11px] font-bold min-h-[44px] flex items-center justify-center hover:bg-red-100">
+                                Eliminar
                             </button>
                         </div>
                     </div>

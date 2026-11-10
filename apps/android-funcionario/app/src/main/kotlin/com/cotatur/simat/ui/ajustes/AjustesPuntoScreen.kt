@@ -139,17 +139,28 @@ fun AjustesPuntoScreen(
                                     text = item.nombre,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = "Municipio: ${item.municipio} • Tipo: ${item.tipo}",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                 )
                             }
 
                             if (esActivo) {
-                                Text(text = "✅ Activo", color = BrandGreen, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text(
+                                    text = "✅ Activo",
+                                    color = BrandGreen,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    modifier = Modifier.padding(start = 6.dp)
+                                )
                             }
                         }
                     }

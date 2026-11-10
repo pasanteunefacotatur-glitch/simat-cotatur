@@ -299,6 +299,11 @@ function configurarTabs() {
             btn.classList.add("border-[#198754]", "text-[#198754]", "dark:text-emerald-400", "font-extrabold");
             btn.classList.remove("border-transparent", "text-slate-400");
 
+            // Asegurar que la pestaña activa quede visible y centrada en móviles
+            try {
+                btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+            } catch (_) {}
+
             tabContents.forEach(c => c.classList.add("hidden"));
             const targetContent = document.getElementById(targetId);
             if (targetContent) targetContent.classList.remove("hidden");

@@ -259,12 +259,16 @@ private fun ItemOutboxRow(item: EncuestaTuristicaLocal) {
                     text = "🚗 Turista: ${item.procedenciaTipo} (${item.estadoOrigen ?: item.paisOrigen ?: "N/D"})",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
                     text = "Destino: ${item.municipioDestino} • Duración: ${item.duracionLlenadoSeg}s",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
 

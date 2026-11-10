@@ -9,6 +9,16 @@
  * ==============================================================================
  */
 
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 /**
  * Muestra el modal de activación de primer ingreso.
  * @param {Object} params
@@ -67,14 +77,15 @@ export function mostrarModalPrimerIngreso({ funcionario, config, onSuccess }) {
                                         }
 
                                         vinculoGoogle.google_id = googleProfile.sub || emailLimpio;
+                                        const safeAvatar = (googleProfile.picture && String(googleProfile.picture).startsWith("https://")) ? escapeHtml(googleProfile.picture) : null;
                                         vinculoGoogle.email = emailLimpio;
-                                        vinculoGoogle.avatar_url = googleProfile.picture || null;
+                                        vinculoGoogle.avatar_url = safeAvatar;
 
                                         if (statusGoogle) {
                                             statusGoogle.innerHTML = `
                                                 <div class="flex items-center justify-center gap-2 text-[#198754] dark:text-emerald-400 font-bold text-xs">
-                                                    ${googleProfile.picture ? `<img src="${googleProfile.picture}" class="w-5 h-5 rounded-full shadow-sm" alt="Avatar">` : '✓'}
-                                                    <span>Cuenta verificada con Google OAuth: ${emailLimpio}</span>
+                                                    ${safeAvatar ? `<img src="${safeAvatar}" class="w-5 h-5 rounded-full shadow-sm" alt="Avatar">` : '✓'}
+                                                    <span>Cuenta verificada con Google OAuth: ${escapeHtml(emailLimpio)}</span>
                                                 </div>
                                             `;
                                         }
@@ -101,7 +112,7 @@ export function mostrarModalPrimerIngreso({ funcionario, config, onSuccess }) {
                         error_callback: (err) => {
                             console.warn("Aviso de autorización de Google OAuth:", err);
                             if (statusGoogle) {
-                                statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ Google OAuth: ${err.message || err.type || "Ventana cancelada o no autorizada"}. Complete sus datos manualmente.</span>`;
+                                statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ Google OAuth: ${escapeHtml(err.message || err.type || "Ventana cancelada o no autorizada")}. Complete sus datos manualmente.</span>`;
                             }
                         }
                     });
@@ -110,7 +121,7 @@ export function mostrarModalPrimerIngreso({ funcionario, config, onSuccess }) {
                 } catch (errToken) {
                     console.warn("Fallo inicializando token client de Google:", errToken);
                     if (statusGoogle) {
-                        statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ Error al iniciar Google: ${errToken.message}. Ingrese sus datos manualmente abajo.</span>`;
+                        statusGoogle.innerHTML = `<span class="text-amber-500 font-bold text-xs">⚠️ Error al iniciar Google: ${escapeHtml(errToken.message)}. Ingrese sus datos manualmente abajo.</span>`;
                     }
                 }
             } else {

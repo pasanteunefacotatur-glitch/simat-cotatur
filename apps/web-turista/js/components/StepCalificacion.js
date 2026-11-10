@@ -19,10 +19,10 @@ export function renderStepCalificacion(containerId) {
                 <span class="text-xs sm:text-sm font-bold text-gray-800 dark:text-slate-200">${c.label}</span>
                 <span class="text-[10px] text-gray-400 dark:text-slate-500 block">Escala: 1 (Deficiente) a 5 (Excelente)</span>
             </div>
-            <div class="flex items-center space-x-1.5" data-rating-group="${c.id}" data-current="${c.default}">
+            <div class="flex items-center justify-between w-full sm:w-auto gap-1 sm:gap-1.5" data-rating-group="${c.id}" data-current="${c.default}">
                 ${[1, 2, 3, 4, 5].map(num => `
                     <button type="button" data-val="${num}" data-selected="${num === c.default ? 'true' : 'false'}"
-                        class="rating-pill-btn rounded-xl text-xs font-bold transition-all flex items-center justify-center">
+                        class="rating-pill-btn flex-1 sm:flex-initial rounded-xl text-xs font-bold transition-all flex items-center justify-center">
                         ${num === 5 ? '★ 5' : num}
                     </button>
                 `).join("")}

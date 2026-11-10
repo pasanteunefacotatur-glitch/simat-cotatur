@@ -13,6 +13,16 @@
 
 import { CONFIG } from "../../../web-turista/js/config.js";
 
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 /**
  * Algoritmo astronómico Meeus/Jones/Butcher para calcular Domingo de Pascua
  */
@@ -198,14 +208,14 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
 
         const bannerEstadoEncuesta = activosHoy.length === 0
             ? `<div class="p-3 bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs flex items-center justify-between">
-                   <span>📌 <b>Estado de la encuesta para hoy, ${hoyStr}:</b> No hay asuetos programados para esta fecha. La encuesta opera en modalidad <b>Temporada Regular</b>.</span>
+                   <span>📌 <b>Estado de la encuesta para hoy, ${escapeHtml(hoyStr)}:</b> No hay asuetos programados para esta fecha. La encuesta opera en modalidad <b>Temporada Regular</b>.</span>
                </div>`
             : activosHoy.length === 1
                 ? `<div class="p-3 bg-emerald-500/15 border border-emerald-500/40 rounded-2xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                       <span>🎯 <b>Asueto vigente para hoy, ${hoyStr}:</b> La encuesta activa automáticamente el formulario de <b>"${activosHoy[0].nombre}"</b>.</span>
+                       <span>🎯 <b>Asueto vigente para hoy, ${escapeHtml(hoyStr)}:</b> La encuesta activa automáticamente el formulario de <b>"${escapeHtml(activosHoy[0].nombre)}"</b>.</span>
                    </div>`
                 : `<div class="p-3 bg-amber-500/15 border border-amber-500/40 rounded-2xl text-xs text-amber-900 dark:text-amber-300 flex items-center justify-between">
-                       <span>⚡ <b>Eventos simultáneos para hoy, ${hoyStr}:</b> Se encuentran disponibles los cuestionarios de: <b>${activosHoy.map(x => x.nombre).join(" y ")}</b>.</span>
+                       <span>⚡ <b>Eventos simultáneos para hoy, ${escapeHtml(hoyStr)}:</b> Se encuentran disponibles los cuestionarios de: <b>${activosHoy.map(x => escapeHtml(x.nombre)).join(" y ")}</b>.</span>
                    </div>`;
 
         const cardsHTML = asuetosList.map(a => {
@@ -219,26 +229,26 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/40">
-                                ${a.tipo_cuestionario}
+                                ${escapeHtml(a.tipo_cuestionario)}
                             </span>
                             ${badgeEnCurso}
                         </div>
-                        <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-                            ${a.nombre}
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-snug break-words">
+                            ${escapeHtml(a.nombre)}
                         </h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center space-x-1">
                             <span>📅</span>
-                            <span>${a.fecha_inicio} al ${a.fecha_fin}</span>
+                            <span>${escapeHtml(a.fecha_inicio)} al ${escapeHtml(a.fecha_fin)}</span>
                         </p>
-                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                            Modo: <span class="font-medium">${a.descripcion || a.tipo_fecha || "Programado"}</span>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+                            Modo: <span class="font-medium">${escapeHtml(a.descripcion || a.tipo_fecha || "Programado")}</span>
                         </p>
                     </div>
 
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                         <span class="text-slate-500">Prioridad: <b>${a.prioridad}</b></span>
                         <div class="flex items-center space-x-2">
-                            <button type="button" data-codigo="${a.codigo}" class="btn-toggle-asueto px-2.5 py-1 rounded text-[11px] font-semibold border ${
+                            <button type="button" data-codigo="${escapeHtml(a.codigo)}" class="btn-toggle-asueto px-2.5 py-1 rounded text-[11px] font-semibold border ${
                                 a.activo 
                                     ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
                                     : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700"
@@ -267,17 +277,19 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                         </p>
                     </div>
 
-                    <div class="flex items-center space-x-3">
-                        <label for="select-cal-year" class="text-xs font-semibold text-slate-600 dark:text-slate-300">Año:</label>
-                        <select id="select-cal-year" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none">
-                            <option value="2026" ${selectedYear === 2026 ? "selected" : ""}>Año 2026 — En Curso</option>
-                            <option value="2027" ${selectedYear === 2027 ? "selected" : ""}>2027</option>
-                            <option value="2028" ${selectedYear === 2028 ? "selected" : ""}>2028</option>
-                            <option value="2029" ${selectedYear === 2029 ? "selected" : ""}>2029</option>
-                            <option value="2030" ${selectedYear === 2030 ? "selected" : ""}>2030</option>
-                        </select>
+                    <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full sm:w-auto">
+                        <div class="flex items-center space-x-2 flex-1 sm:flex-initial">
+                            <label for="select-cal-year" class="text-xs font-semibold text-slate-600 dark:text-slate-300 shrink-0">Año:</label>
+                            <select id="select-cal-year" class="w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none">
+                                <option value="2026" ${selectedYear === 2026 ? "selected" : ""}>Año 2026 — En Curso</option>
+                                <option value="2027" ${selectedYear === 2027 ? "selected" : ""}>2027</option>
+                                <option value="2028" ${selectedYear === 2028 ? "selected" : ""}>2028</option>
+                                <option value="2029" ${selectedYear === 2029 ? "selected" : ""}>2029</option>
+                                <option value="2030" ${selectedYear === 2030 ? "selected" : ""}>2030</option>
+                            </select>
+                        </div>
                         <button type="button" id="btn-nuevo-evento-modal"
-                            class="px-3 py-1.5 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow transition-colors tap-target-btn">
+                            class="w-full sm:w-auto justify-center px-3.5 py-2 bg-[#198754] hover:bg-[#157347] text-white font-bold rounded-xl text-xs flex items-center space-x-1.5 shadow transition-all active:scale-95 tap-target-btn shrink-0">
                             <span>➕</span>
                             <span>Programar Actividad</span>
                         </button>

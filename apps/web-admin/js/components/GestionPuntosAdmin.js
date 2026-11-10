@@ -33,7 +33,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const obtenerPin = () => "cotatur2026";
+    const obtenerPin = () => (typeof getAdminPinCallback === "function" ? getAdminPinCallback() : "cotatur2026");
 
     // Llamada directa y autorizada con PIN institucional para garantizar HTTP 200 sin errores 401 en consola
     async function rpcGestionarPunto(accion, datos = {}) {
@@ -44,7 +44,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                 "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
             },
-            body: JSON.stringify({ p_pin: "cotatur2026", p_accion: accion, p_datos: datos })
+            body: JSON.stringify({ p_pin: obtenerPin(), p_accion: accion, p_datos: datos })
         });
     }
 
@@ -154,7 +154,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 </div>
             </div>
 
-            <!-- Tabla de Puntos con Acción de Ver Detalle y Funcionarios -->
+            <!-- Tabla y Tarjetas de Puntos con Acción de Ver Detalle y Funcionarios -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -166,16 +166,22 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                     </button>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                <!-- Tarjetas Móviles (< 640px) -->
+                <div id="cards-puntos-mobile" class="sm:hidden p-3 space-y-3">
+                    <div class="p-4 text-center text-slate-400 text-xs">Cargando puntos...</div>
+                </div>
+
+                <!-- Tabla Escritorio (>= 640px) con ancho mínimo para resguardar columnas -->
+                <div class="hidden sm:block overflow-x-auto">
+                    <table class="w-full min-w-[580px] text-left text-xs text-slate-700 dark:text-slate-300">
                         <thead class="bg-slate-50 dark:bg-slate-800 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                             <tr>
-                                <th class="p-3">Código</th>
+                                <th class="p-3 w-28">Código</th>
                                 <th class="p-3">Nombre del Punto</th>
-                                <th class="p-3">Tipo</th>
-                                <th class="p-3">Municipio</th>
-                                <th class="p-3 text-center">Estado</th>
-                                <th class="p-3 text-right">Acciones</th>
+                                <th class="p-3 w-28">Tipo</th>
+                                <th class="p-3 w-32">Municipio</th>
+                                <th class="p-3 text-center w-24">Estado</th>
+                                <th class="p-3 text-right w-32">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-puntos-body" class="divide-y divide-slate-200 dark:divide-slate-800 font-medium">
@@ -203,6 +209,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     const btnGuardar = document.getElementById("btn-guardar-punto-mapa");
     const btnRecargar = document.getElementById("btn-recargar-puntos");
     const tablaBody = document.getElementById("tabla-puntos-body");
+    const cardsMobileContainer = document.getElementById("cards-puntos-mobile");
 
     const { abrirDetallePunto } = initModalDetallePuntoController(
         supabaseConfig,
@@ -264,6 +271,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
     // Cargar Puntos desde Supabase
     async function cargarPuntos() {
         tablaBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Consultando puntos...</td></tr>`;
+        if (cardsMobileContainer) cardsMobileContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">Consultando puntos...</div>`;
         try {
             const res = await rpcGestionarPunto("LISTAR", {});
 
@@ -273,7 +281,40 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
 
             if (cachedPuntosList.length === 0) {
                 tablaBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay puntos registrados.</td></tr>`;
+                if (cardsMobileContainer) cardsMobileContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">No hay puntos registrados.</div>`;
                 return;
+            }
+
+            if (cardsMobileContainer) {
+                cardsMobileContainer.innerHTML = cachedPuntosList.map(p => `
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="font-mono text-xs font-bold text-amber-600 dark:text-amber-400 block">${escapeHtml(p.codigo)}</span>
+                                <h4 class="text-sm font-extrabold text-slate-900 dark:text-white mt-0.5">${escapeHtml(p.nombre)}</h4>
+                                <div class="flex flex-wrap items-center gap-1.5 pt-1.5">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                                        ${escapeHtml(p.tipo)}
+                                    </span>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                                        📍 ${escapeHtml(p.municipio)}
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${p.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
+                                ${p.activo ? '🟢 Activo' : '🔴 Inactivo'}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <button type="button" data-id="${escapeHtml(p.id)}" class="btn-abrir-ficha py-2.5 px-3 bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-bold min-h-[44px] flex items-center justify-center hover:bg-amber-500/25">
+                                Equipo / Ficha
+                            </button>
+                            <button type="button" data-id="${escapeHtml(p.id)}" class="btn-toggle-punto py-2.5 px-3 rounded-xl text-xs font-bold min-h-[44px] flex items-center justify-center transition-colors ${p.activo ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100' : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100'}">
+                                ${p.activo ? 'Desactivar' : 'Reactivar'}
+                            </button>
+                        </div>
+                    </div>
+                `).join("");
             }
 
             tablaBody.innerHTML = cachedPuntosList.map(p => `

@@ -14,6 +14,16 @@
  * ==============================================================================
  */
 
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 export function renderCartelQRAdmin(containerId, puntosList = []) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -39,7 +49,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
     };
 
     const optionsHtml = puntos.map(p => `
-        <option value="${p.codigo}">${p.nombre}</option>
+        <option value="${escapeHtml(p.codigo)}">${escapeHtml(p.nombre)}</option>
     `).join("");
 
     container.innerHTML = `

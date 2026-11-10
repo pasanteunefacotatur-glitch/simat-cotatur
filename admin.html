@@ -245,34 +245,34 @@
         
         <!-- Encabezado Institucional del Administrador -->
         <header class="bg-[#1c1c1c] text-white border-b-4 border-[#198754] shadow-md">
-            <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center space-x-3">
-                    <!-- Cápsula protectora clara con la tríada oficial de logos -->
-                    <div class="inline-flex items-center p-1.5 rounded-xl bg-white/95 border border-white/20 shadow-sm space-x-2">
-                        <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-8 w-auto object-contain" />
-                        <div class="h-5 w-[1px] bg-slate-300"></div>
-                        <img src="./assets/img/logo_gobernacion.png" alt="Gobernación del Táchira" class="h-7 w-auto object-contain" />
-                        <div class="h-5 w-[1px] bg-slate-300"></div>
-                        <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo" class="h-7 w-auto object-contain" />
-                    </div>
-                    <div>
-                        <span class="text-[9px] uppercase tracking-widest text-[#ffc107] font-bold block" id="admin-current-user-badge">
-                            Supervisor General COTATUR
-                        </span>
-                        <h1 class="text-sm font-extrabold text-white leading-tight">
-                            SIMAT • Control Maestro Institucional
-                        </h1>
-                    </div>
+            <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                <!-- Cápsula protectora clara con la tríada oficial de logos -->
+                <div class="inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-white/95 border border-white/20 shadow-sm space-x-1.5 sm:space-x-2 shrink-0">
+                    <img src="./assets/img/logo_cotatur.png" alt="COTATUR Logo" class="h-6 sm:h-8 w-auto object-contain" />
+                    <div class="h-4 sm:h-5 w-[1px] bg-slate-300"></div>
+                    <img src="./assets/img/logo_gobernacion.png" alt="Gobernación del Táchira" class="h-5 sm:h-7 w-auto object-contain" />
+                    <div class="h-4 sm:h-5 w-[1px] bg-slate-300"></div>
+                    <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo" class="h-5 sm:h-7 w-auto object-contain" />
                 </div>
 
                 <!-- Botón con icono de tema en la esquina superior derecha + Salir -->
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2 shrink-0 order-2 sm:order-3">
                     <div id="admin-theme-btn-mount"></div>
                     <button type="button" id="btn-admin-logout"
-                        class="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-semibold rounded-lg border border-red-500/30 text-[11px] transition-colors"
+                        class="px-2.5 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-semibold rounded-lg border border-red-500/30 text-xs transition-colors"
                         title="Cerrar sesión de supervisor">
                         Cerrar Sesión
                     </button>
+                </div>
+
+                <!-- Identidad del Usuario y Título Institucional (Mobile: fila completa ordenada; Desktop: centrado/expandido) -->
+                <div class="w-full sm:w-auto sm:flex-1 order-3 sm:order-2 sm:px-3 pt-1.5 sm:pt-0 border-t border-white/10 sm:border-t-0 min-w-0">
+                    <span class="text-[10px] sm:text-[9px] uppercase tracking-wider sm:tracking-widest text-[#ffc107] font-bold block truncate" id="admin-current-user-badge">
+                        Supervisor General COTATUR
+                    </span>
+                    <h1 class="text-xs sm:text-sm font-extrabold text-white leading-tight truncate">
+                        SIMAT • Control Maestro Institucional
+                    </h1>
                 </div>
             </div>
 
@@ -280,32 +280,32 @@
             <div class="relative bg-black/40 border-t border-white/10 no-print">
                 <div class="max-w-6xl mx-auto px-3 sm:px-4 flex space-x-1 sm:space-x-2 overflow-x-auto no-scrollbar scroll-smooth snap-x text-xs py-1">
                     <button type="button" data-target="tab-prensa"
-                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-[#198754] text-[#198754] dark:text-emerald-400 font-extrabold flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-[#198754] text-[#198754] dark:text-emerald-400 font-extrabold flex items-center space-x-1.5 whitespace-nowrap shrink-0">
                         <span>📊</span>
                         <span>KPIs</span>
                     </button>
                     <button type="button" data-target="tab-calendario"
-                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap shrink-0">
                         <span>📅</span>
                         <span>Calendario</span>
                     </button>
                     <button type="button" data-target="tab-puntos"
-                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap shrink-0">
                         <span>📍</span>
                         <span>Puntos</span>
                     </button>
                     <button type="button" data-target="tab-personal"
-                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap shrink-0">
                         <span>👥</span>
                         <span>Nómina</span>
                     </button>
                     <button type="button" data-target="tab-qr"
-                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap shrink-0">
                         <span>📱</span>
                         <span>Material QR</span>
                     </button>
                     <button type="button" data-target="tab-perfil"
-                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap shrink-0">
                         <span>👤</span>
                         <span>Mi Perfil</span>
                     </button>

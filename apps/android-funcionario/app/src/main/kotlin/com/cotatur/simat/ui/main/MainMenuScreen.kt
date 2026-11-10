@@ -257,7 +257,9 @@ fun TarjetaMenuPrimaria(
                         text = titulo,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 }
 
@@ -265,7 +267,9 @@ fun TarjetaMenuPrimaria(
                     text = subtitulo,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 15.sp
+                    lineHeight = 15.sp,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -281,7 +285,9 @@ fun TarjetaMenuPrimaria(
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = badgeColor
+                        color = badgeColor,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 }
             }
@@ -290,7 +296,8 @@ fun TarjetaMenuPrimaria(
                 text = "❯",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = bordeColor
+                color = bordeColor,
+                modifier = Modifier.padding(start = 2.dp)
             )
         }
     }
@@ -344,13 +351,17 @@ fun TarjetaMenuSupervision(
                     text = "Panel de Supervisión y Métricas",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
                     text = "Monitoreo satelital de peajes, KPIs ejecutivos y semáforo de geocerca.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
 
@@ -358,7 +369,10 @@ fun TarjetaMenuSupervision(
                 text = "Ingresar ❯",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF6366F1)
+                color = Color(0xFF6366F1),
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
+                modifier = Modifier.padding(start = 2.dp)
             )
         }
     }

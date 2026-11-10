@@ -131,14 +131,17 @@ export function createAutocomplete({
         dropdownEl.classList.remove("hidden");
 
         dropdownEl.querySelectorAll(".autocomplete-item").forEach(btn => {
-            btn.addEventListener("mousedown", (e) => {
-                e.preventDefault(); // Evita que el blur cierre antes de asignar el valor
+            const selectItem = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 const selectedVal = btn.getAttribute("data-value");
                 inputEl.value = selectedVal;
                 inputEl.setAttribute("data-valid-selection", selectedVal);
                 clearBtn.classList.remove("hidden");
                 dropdownEl.classList.add("hidden");
-            });
+            };
+            btn.addEventListener("pointerdown", selectItem);
+            btn.addEventListener("mousedown", selectItem);
         });
     }
 
@@ -173,7 +176,7 @@ export function createAutocomplete({
                     inputEl.setAttribute("data-valid-selection", label);
                 }
             }
-        }, 150);
+        }, 220);
     });
 
     clearBtn.addEventListener("click", () => {

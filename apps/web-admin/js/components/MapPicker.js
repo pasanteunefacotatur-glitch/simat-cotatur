@@ -11,6 +11,16 @@
  * ==============================================================================
  */
 
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 /**
  * Coordenadas centrales de las capitales de los 29 Municipios del Estado Táchira
  * para detección instantánea por cercanía geodésica y cruce con Nominatim.
@@ -318,7 +328,7 @@ function actualizarInterfazMapa(state) {
             badgeEl.innerHTML = `
                 <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5 animate-ping"></span>
                 <span class="text-red-600 dark:text-red-400 font-bold">
-                    ⚠️ Fuera del Táchira: ${state.motivoInvalido}
+                    ⚠️ Fuera del Táchira: ${escapeHtml(state.motivoInvalido)}
                 </span>
             `;
         }

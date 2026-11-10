@@ -112,6 +112,14 @@ fun EncuestaTuristaScreen(
         califServiciosPublicos = 4
     }
 
+    androidx.activity.compose.BackHandler(enabled = true) {
+        if (pasoActual > 1) {
+            pasoActual -= 1
+        } else {
+            onVolverAlMenu()
+        }
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -277,10 +285,12 @@ private fun BarraProgresoPills(
     totalPasos: Int,
     onPillClick: (Int) -> Unit
 ) {
-    val nombresPasos = listOf("1. Origen", "2. Destino", "3. Temporada", "4. Evaluar")
+    val nombresPasos = listOf("1. Origen", "2. Destino", "3. Tempo", "4. Evaluar")
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         (1..totalPasos).forEach { paso ->
@@ -303,12 +313,14 @@ private fun BarraProgresoPills(
                     .clip(RoundedCornerShape(8.dp))
                     .background(bgColor)
                     .clickable { onPillClick(paso) }
-                    .padding(vertical = 8.dp),
+                    .padding(horizontal = 2.dp, vertical = 7.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = nombresPasos[paso - 1],
-                    fontSize = 11.sp,
+                    fontSize = 10.5.sp,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     fontWeight = if (activo) FontWeight.ExtraBold else FontWeight.Medium,
                     color = textColor
                 )
@@ -354,7 +366,7 @@ private fun BarraNavegacionInferior(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Botón Visible: "◀ Corregir Anterior"
@@ -363,28 +375,34 @@ private fun BarraNavegacionInferior(
             modifier = Modifier
                 .weight(1f)
                 .height(52.dp),
-            shape = RoundedCornerShape(14.dp)
+            shape = RoundedCornerShape(14.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 6.dp, vertical = 4.dp)
         ) {
             Text(
                 text = if (pasoActual > 1) "◀ Corregir" else "✕ Salir",
                 fontWeight = FontWeight.Bold,
-                fontSize = 13.sp
+                fontSize = 12.5.sp,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
 
-        // Botón Primario: "Continuar" o "Guardar y Siguiente"
+        // Botón Primario: "Continuar" o "Guardar" (Texto Confinado sin Recortes)
         Button(
             onClick = onAvanzar,
             modifier = Modifier
                 .weight(1.5f)
                 .height(52.dp),
             shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = BrandGreen)
+            colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 6.dp, vertical = 4.dp)
         ) {
             Text(
-                text = if (pasoActual == totalPasos) "✅ GUARDAR Y SIGUIENTE" else "Continuar ▶",
+                text = if (pasoActual == totalPasos) "✅ GUARDAR" else "Continuar ▶",
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 13.sp
+                fontSize = 13.sp,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
     }

@@ -167,9 +167,9 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                         </p>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                         <select id="select-filtro-temporada-prensa"
-                            class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#198754]">
+                            class="w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#198754]">
                             <option value="TODAS" ${filtroTemporada === "TODAS" ? "selected" : ""}>Toda la Temporada</option>
                             <option value="FISS" ${filtroTemporada === "FISS" ? "selected" : ""}>Feria Internacional de San Sebastián</option>
                             <option value="CARNAVALES" ${filtroTemporada === "CARNAVALES" ? "selected" : ""}>Carnavales Turísticos</option>
@@ -180,45 +180,49 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                             <option value="FIN_DE_ANO" ${filtroTemporada === "FIN_DE_ANO" ? "selected" : ""}>Temporada Decembrina y Año Nuevo</option>
                         </select>
 
-                        <!-- Botón Propuesta 1: Diapositiva 16:9 -->
-                        <button type="button" id="btn-abrir-diapositiva-16-9"
-                            class="px-3.5 py-2 bg-[#198754] hover:bg-[#157347] text-white font-extrabold rounded-xl text-xs flex items-center space-x-1.5 shadow transition-all active:scale-95 tap-target-btn">
-                            <span>🖥️</span>
-                            <span>Modo Presentación 16:9</span>
-                        </button>
+                        <div class="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex">
+                            <!-- Botón Diapositiva 16:9 -->
+                            <button type="button" id="btn-abrir-diapositiva-16-9"
+                                class="w-full sm:w-auto justify-center px-3 py-2 bg-[#198754] hover:bg-[#157347] text-white font-extrabold rounded-xl text-xs flex items-center space-x-1.5 shadow transition-all active:scale-95 tap-target-btn">
+                                <span>🖥️</span>
+                                <span class="hidden sm:inline">Modo Presentación 16:9</span>
+                                <span class="sm:hidden">Presentación</span>
+                            </button>
 
-                        <button type="button" id="btn-print-prensa"
-                            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow transition-colors tap-target-btn">
-                            <span>📄</span>
-                            <span>Imprimir Informe</span>
-                        </button>
+                            <button type="button" id="btn-print-prensa"
+                                class="w-full sm:w-auto justify-center px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow transition-colors tap-target-btn">
+                                <span>📄</span>
+                                <span class="hidden sm:inline">Imprimir Informe</span>
+                                <span class="sm:hidden">Imprimir</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- 4 NÚMEROS GIGANTES EJECUTIVOS (KPIs) -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-gradient-to-br from-[#198754] to-[#146c43] rounded-2xl p-4 text-white shadow-md">
-                        <span class="text-[10px] font-black uppercase tracking-wider block opacity-90 text-emerald-100">Visitantes Estimados</span>
-                        <div class="text-2xl font-black mt-1 leading-none">${totalVisitantes.toLocaleString()}</div>
-                        <span class="text-[9px] font-semibold mt-1 block opacity-80 text-emerald-100">${totalEncuestas.toLocaleString()} grupos censados</span>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                    <div class="bg-gradient-to-br from-[#198754] to-[#146c43] rounded-2xl p-3.5 sm:p-4 text-white shadow-md">
+                        <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider block opacity-90 text-emerald-100 truncate">Visitantes Estimados</span>
+                        <div class="text-xl sm:text-2xl font-black mt-1 leading-none truncate">${totalVisitantes.toLocaleString()}</div>
+                        <span class="text-[8px] sm:text-[9px] font-semibold mt-1 block opacity-80 text-emerald-100 truncate">${totalEncuestas.toLocaleString()} grupos censados</span>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Pernocta Promedio</span>
-                        <div class="text-2xl font-black text-slate-900 dark:text-white mt-1 leading-none">${pernoctaPromedio} <span class="text-xs font-medium">días</span></div>
-                        <span class="text-[9px] text-emerald-500 font-semibold mt-1 block">Permanencia alta</span>
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm">
+                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Pernocta Promedio</span>
+                        <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1 leading-none truncate">${pernoctaPromedio} <span class="text-xs font-medium">días</span></div>
+                        <span class="text-[8px] sm:text-[9px] text-emerald-500 font-semibold mt-1 block truncate">Permanencia alta</span>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Flujo Internacional</span>
-                        <div class="text-2xl font-black text-slate-900 dark:text-white mt-1 leading-none">${pctInternacional}%</div>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-1 block">Colombia principal</span>
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm">
+                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Flujo Internacional</span>
+                        <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1 leading-none truncate">${pctInternacional}%</div>
+                        <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold mt-1 block truncate">Colombia principal</span>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Satisfacción Global</span>
-                        <div class="text-2xl font-black text-amber-500 mt-1 leading-none">${sat.general || "4.7"} <span class="text-xs text-slate-400">/ 5★</span></div>
-                        <span class="text-[9px] text-slate-500 font-semibold mt-1 block">Destino hospitalario</span>
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm">
+                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Satisfacción Global</span>
+                        <div class="text-xl sm:text-2xl font-black text-amber-500 mt-1 leading-none truncate">${sat.general || "4.7"} <span class="text-xs text-slate-400">/ 5★</span></div>
+                        <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold mt-1 block truncate">Destino hospitalario</span>
                     </div>
                 </div>
 
@@ -279,64 +283,64 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                         </div>
                     </div>
 
-                    <!-- CONTENEDOR EXACTO 16:9 -->
-                    <div id="diapositiva-16-9-root" class="w-full max-w-6xl aspect-[16/9] bg-[#0c1017] text-white rounded-2xl p-6 border-2 border-[#198754]/70 shadow-2xl flex flex-col justify-between overflow-hidden">
+                    <!-- CONTENEDOR EXACTO 16:9 Adaptativo Móvil/Escritorio -->
+                    <div id="diapositiva-16-9-root" class="w-full max-w-6xl aspect-auto md:aspect-[16/9] max-h-[90dvh] overflow-y-auto md:overflow-hidden bg-[#0c1017] text-white rounded-2xl p-4 sm:p-6 border-2 border-[#198754]/70 shadow-2xl flex flex-col justify-between">
                         <!-- Cabecera Institucional 16:9 con Tríada Oficial -->
-                        <div class="flex items-center justify-between border-b border-white/15 pb-3">
-                            <div class="flex items-center space-x-3">
-                                <div class="inline-flex items-center p-1.5 rounded-xl bg-white/95 border border-white/20 shadow-sm space-x-2">
-                                    <img src="./assets/img/logo_cotatur.png" alt="COTATUR" class="h-8 w-auto object-contain" />
-                                    <div class="h-5 w-[1px] bg-slate-300"></div>
-                                    <img src="./assets/img/logo_gobernacion.png" alt="Gobernación" class="h-7 w-auto object-contain" />
-                                    <div class="h-5 w-[1px] bg-slate-300"></div>
-                                    <img src="./assets/img/logo_tachira.png" alt="Táchira" class="h-7 w-auto object-contain" />
+                        <div class="flex flex-wrap items-center justify-between border-b border-white/15 pb-3 gap-2">
+                            <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                                <div class="inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-white/95 border border-white/20 shadow-sm space-x-1.5 sm:space-x-2 shrink-0">
+                                    <img src="./assets/img/logo_cotatur.png" alt="COTATUR" class="h-6 sm:h-8 w-auto object-contain" />
+                                    <div class="h-4 sm:h-5 w-[1px] bg-slate-300"></div>
+                                    <img src="./assets/img/logo_gobernacion.png" alt="Gobernación" class="h-5 sm:h-7 w-auto object-contain" />
+                                    <div class="h-4 sm:h-5 w-[1px] bg-slate-300"></div>
+                                    <img src="./assets/img/logo_tachira.png" alt="Táchira" class="h-5 sm:h-7 w-auto object-contain" />
                                 </div>
-                                <div>
-                                    <h2 class="text-sm font-black tracking-wide uppercase text-amber-400">Gobernación del Estado Táchira • COTATUR</h2>
-                                    <p class="text-[11px] text-slate-300 font-semibold">Indicadores de Gestión Turística (KPI Gobernación) • ${filtroTemporada}</p>
+                                <div class="min-w-0 flex-1">
+                                    <h2 class="text-xs sm:text-sm font-black tracking-wide uppercase text-amber-400 truncate">Gobernación del Estado Táchira • COTATUR</h2>
+                                    <p class="text-[10px] sm:text-[11px] text-slate-300 font-semibold truncate">Indicadores de Gestión Turística • ${filtroTemporada}</p>
                                 </div>
                             </div>
-                            <div class="text-right font-mono text-xs text-slate-400">
+                            <div class="text-right font-mono text-[10px] sm:text-xs text-slate-400 shrink-0">
                                 <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1 animate-pulse"></span>
-                                SIMAT-COTATUR • v0.5.0-alpha
+                                SIMAT-COTATUR • v0.7.6
                             </div>
                         </div>
 
                         <!-- 4 Métricas Clave 16:9 -->
-                        <div class="grid grid-cols-4 gap-3 my-3">
-                            <div class="bg-[#198754] text-white p-3 rounded-xl shadow">
-                                <span class="text-[10px] font-black uppercase tracking-wider block text-emerald-100">Visitantes Estimados</span>
-                                <div class="text-3xl font-black leading-none mt-1">${totalVisitantes.toLocaleString()}</div>
-                                <span class="text-[9px] font-bold block mt-1 text-emerald-100">${totalEncuestas.toLocaleString()} grupos censados</span>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 my-3">
+                            <div class="bg-[#198754] text-white p-2.5 sm:p-3 rounded-xl shadow min-w-0">
+                                <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider block text-emerald-100 truncate">Visitantes Estimados</span>
+                                <div class="text-xl sm:text-3xl font-black leading-none mt-1 truncate">${totalVisitantes.toLocaleString()}</div>
+                                <span class="text-[8px] sm:text-[9px] font-bold block mt-1 text-emerald-100 truncate">${totalEncuestas.toLocaleString()} grupos censados</span>
                             </div>
-                            <div class="bg-white/5 border border-white/10 p-3 rounded-xl">
-                                <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Pernocta Media</span>
-                                <div class="text-3xl font-black text-white leading-none mt-1">${pernoctaPromedio} <span class="text-sm font-normal text-slate-400">días</span></div>
-                                <span class="text-[9px] text-emerald-400 block mt-1">Alta retención turística</span>
+                            <div class="bg-white/5 border border-white/10 p-2.5 sm:p-3 rounded-xl min-w-0">
+                                <span class="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider block truncate">Pernocta Media</span>
+                                <div class="text-xl sm:text-3xl font-black text-white leading-none mt-1 truncate">${pernoctaPromedio} <span class="text-xs sm:text-sm font-normal text-slate-400">días</span></div>
+                                <span class="text-[8px] sm:text-[9px] text-emerald-400 block mt-1 truncate">Alta retención turística</span>
                             </div>
-                            <div class="bg-white/5 border border-white/10 p-3 rounded-xl">
-                                <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Turismo Internacional</span>
-                                <div class="text-3xl font-black text-amber-400 leading-none mt-1">${pctInternacional}%</div>
-                                <span class="text-[9px] text-slate-400 block mt-1">Principal origen: Colombia</span>
+                            <div class="bg-white/5 border border-white/10 p-2.5 sm:p-3 rounded-xl min-w-0">
+                                <span class="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider block truncate">Turismo Internacional</span>
+                                <div class="text-xl sm:text-3xl font-black text-amber-400 leading-none mt-1 truncate">${pctInternacional}%</div>
+                                <span class="text-[8px] sm:text-[9px] text-slate-400 block mt-1 truncate">Principal origen: Colombia</span>
                             </div>
-                            <div class="bg-white/5 border border-white/10 p-3 rounded-xl">
-                                <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Satisfacción Global</span>
-                                <div class="text-3xl font-black text-amber-500 leading-none mt-1">${sat.general || "4.7"} <span class="text-sm font-normal text-slate-400">/ 5★</span></div>
-                                <span class="text-[9px] text-slate-400 block mt-1">Valoración de servicios</span>
+                            <div class="bg-white/5 border border-white/10 p-2.5 sm:p-3 rounded-xl min-w-0">
+                                <span class="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider block truncate">Satisfacción Global</span>
+                                <div class="text-xl sm:text-3xl font-black text-amber-500 leading-none mt-1 truncate">${sat.general || "4.7"} <span class="text-xs sm:text-sm font-normal text-slate-400">/ 5★</span></div>
+                                <span class="text-[8px] sm:text-[9px] text-slate-400 block mt-1 truncate">Valoración de servicios</span>
                             </div>
                         </div>
 
                         <!-- 3 Columnas de Análisis 16:9 -->
-                        <div class="grid grid-cols-3 gap-4 flex-1 items-start text-xs">
-                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 h-full flex flex-col justify-between">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 flex-1 items-start text-xs">
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex flex-col justify-between">
                                 <span class="text-[11px] font-extrabold text-amber-400 uppercase block mb-1">Top Orígenes</span>
                                 <div class="space-y-1.5 flex-1">${origenesHTML}</div>
                             </div>
-                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 h-full flex flex-col justify-between">
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex flex-col justify-between">
                                 <span class="text-[11px] font-extrabold text-blue-400 uppercase block mb-1">Composición Grupal</span>
                                 <div class="space-y-1 flex-1">${tipologiasHTML}</div>
                             </div>
-                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 h-full flex flex-col justify-between">
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex flex-col justify-between">
                                 <span class="text-[11px] font-extrabold text-emerald-400 uppercase block mb-1">Ocupación y Calidad</span>
                                 <div class="space-y-1 flex-1">${ocupacionHTML}</div>
                             </div>

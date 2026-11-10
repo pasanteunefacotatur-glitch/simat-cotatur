@@ -278,6 +278,7 @@ BEGIN
         captured_at, duracion_llenado_seg,
         procedencia_tipo, estado_origen, pais_origen, municipio_destino,
         motivo_viaje, tipo_alojamiento, grupo_tamano, dias_estadia,
+        composicion_grupo, rango_edad, temporada_codigo, respuestas_temporada,
         calif_vialidad, calif_seguridad, calif_hospitalidad, calif_servicios_publicos,
         gasto_promedio_diario_usd
     ) VALUES (
@@ -295,6 +296,10 @@ BEGIN
         p_datos->>'tipo_alojamiento',
         COALESCE((p_datos->>'grupo_tamano')::INTEGER, 1),
         COALESCE((p_datos->>'dias_estadia')::INTEGER, 1),
+        COALESCE(p_datos->>'composicion_grupo', 'GRUPO_FAMILIAR'),
+        COALESCE(p_datos->>'rango_edad', '30_49'),
+        COALESCE(p_datos->>'temporada_codigo', 'REGULAR'),
+        COALESCE(p_datos->'respuestas_temporada', '{}'::JSONB),
         (p_datos->>'calif_vialidad')::SMALLINT,
         (p_datos->>'calif_seguridad')::SMALLINT,
         (p_datos->>'calif_hospitalidad')::SMALLINT,

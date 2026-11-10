@@ -94,12 +94,15 @@ export function savePendingSurveyLocally(surveyData) {
     }
 }
 
+let isFlushing = false;
+
 /**
  * Intenta enviar a Supabase las encuestas pendientes almacenadas sin conexión.
  * Se ejecuta al recuperar red ('online') o al volver a la pestaña ('visibilitychange').
  */
 export async function flushPendingSurveys(supabaseUrl, publishableKey) {
-    if (!navigator.onLine) return;
+    if (!navigator.onLine || isFlushing) return;
+    isFlushing = true;
     try {
         const rawQueue = localStorage.getItem(STORAGE_KEYS.PENDING_SURVEYS);
         if (!rawQueue) return;
@@ -128,5 +131,7 @@ export async function flushPendingSurveys(supabaseUrl, publishableKey) {
         localStorage.setItem(STORAGE_KEYS.PENDING_SURVEYS, JSON.stringify(remaining));
     } catch (err) {
         console.error("[SIMAT] Error sincronizando cola local:", err);
+    } finally {
+        isFlushing = false;
     }
 }
