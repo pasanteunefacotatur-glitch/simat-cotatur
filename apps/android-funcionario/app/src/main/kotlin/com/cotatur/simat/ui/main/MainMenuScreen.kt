@@ -1,7 +1,5 @@
 package com.cotatur.simat.ui.main
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -9,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,21 +15,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.NavKey
@@ -58,13 +47,14 @@ import com.cotatur.simat.CensoPrestadoresDest
 import com.cotatur.simat.EncuestaTuristaDest
 import com.cotatur.simat.OutboxDetalleDest
 import com.cotatur.simat.SupervisionDest
-import com.cotatur.simat.ota.OtaProgressState
 import com.cotatur.simat.ota.OtaUpdateManager
 import com.cotatur.simat.ota.VersionInfo
+import com.cotatur.simat.ui.main.components.AlertaGeocercaFueraDeSitio
+import com.cotatur.simat.ui.main.components.BannerActualizacionOta
+import com.cotatur.simat.ui.main.components.BarraEstadoInferior
+import com.cotatur.simat.ui.main.components.HeaderInstitucional
 import com.cotatur.simat.ui.theme.AppThemeMode
 import com.cotatur.simat.ui.theme.BrandAmber
-import com.cotatur.simat.ui.theme.BrandAmberDark
-import com.cotatur.simat.ui.theme.BrandCarbon
 import com.cotatur.simat.ui.theme.BrandGreen
 import com.cotatur.simat.ui.theme.BrandGreenNeon
 import com.cotatur.simat.ui.theme.LocalThemeMode
@@ -76,9 +66,10 @@ import com.cotatur.simat.ui.theme.LocalThemeMode
  * DESCRIPCIÓN: Pantalla principal de captura en campo para encuestadores de COTATUR.
  *              - Tarjeta 1: Encuesta a Turistas (Modo Ráfaga de Demanda, meta <= 18s).
  *              - Tarjeta 2: Censo de Prestadores de Servicios Turísticos (PST - Oferta).
- *              - Tarjeta 3: Panel de Supervisión y Métricas (Lanzador Chrome Custom Tabs).
+ *              - Tarjeta 3: Panel de Supervisión Nativo en Compose (Solo Supervisores).
  *              - Cabecera con Trilogía Institucional, Outbox Badge y selector de temas.
  *              - Barra de estado con Geocerca Haversine (350m de tolerancia).
+ *              Cumple estrictamente con la Regla de Oro de modularidad (< 300 líneas).
  * ==============================================================================
  */
 
@@ -204,227 +195,10 @@ fun MainMenuScreen(
 }
 
 /**
- * Cabecera institucional con logos, selector de punto, Outbox y selector de tema.
+ * Tarjeta táctil interactiva primaria para los formularios de campo.
  */
 @Composable
-private fun HeaderInstitucional(
-    puntoNombre: String,
-    pendientesCount: Int,
-    currentTheme: AppThemeMode,
-    usuarioNombre: String = "",
-    usuarioRol: String = "ENCUESTADOR",
-    esSupervisor: Boolean = false,
-    onCerrarSesion: () -> Unit = {},
-    onOutboxClick: () -> Unit,
-    onAjustesClick: () -> Unit,
-    onToggleTheme: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Identidad Institucional
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = "🏔️",
-                            fontSize = 18.sp
-                        )
-                        Text(
-                            text = "SIMAT • COTATUR",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    Text(
-                        text = "Gobernación del Estado Táchira",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                // Controles de cabecera: Outbox Badge + Selector de Tema
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Outbox Badge (Bandeja de Salida Offline)
-                    OutboxBadgeButton(
-                        pendientesCount = pendientesCount,
-                        onClick = onOutboxClick
-                    )
-
-                    // Botón de alternancia de tema (AMOLED / Claro / Oscuro)
-                    IconButton(
-                        onClick = onToggleTheme,
-                        modifier = Modifier
-                            .size(38.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                shape = CircleShape
-                            )
-                    ) {
-                        Text(
-                            text = when (currentTheme) {
-                                AppThemeMode.AMOLED -> "⚫"
-                                AppThemeMode.LIGHT -> "☀️"
-                                AppThemeMode.DARK -> "🌙"
-                                AppThemeMode.SYSTEM -> "⚙️"
-                            },
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-
-            // Identidad del Usuario Autenticado y Botón Cerrar Sesión
-            if (usuarioNombre.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(text = if (esSupervisor) "🛡️" else "📋", fontSize = 14.sp)
-                        Column {
-                            Text(
-                                text = usuarioNombre,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = if (esSupervisor) "SUPERVISOR OFICIAL" else "ENCUESTADOR DE CAMPO",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Black,
-                                color = if (esSupervisor) BrandAmberDark else BrandGreen
-                            )
-                        }
-                    }
-
-                    androidx.compose.material3.TextButton(
-                        onClick = onCerrarSesion,
-                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
-                    ) {
-                        Text(
-                            text = "Cerrar Sesión 🚪",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFEF4444)
-                        )
-                    }
-                }
-            }
-
-            // Punto de Control Asignado (Clickable para cambiar de punto)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                    .clickable { onAjustesClick() }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(text = "📍", fontSize = 14.sp)
-                    Column {
-                        Text(
-                            text = "PUNTO DE CONTROL ACTIVO",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = puntoNombre,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-                Text(
-                    text = "Cambiar ▾",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    }
-}
-
-/**
- * Badge visual de la cola local de salida (Outbox).
- */
-@Composable
-private fun OutboxBadgeButton(
-    pendientesCount: Int,
-    onClick: () -> Unit
-) {
-    val esVacio = pendientesCount == 0
-    val badgeBg = if (esVacio) Color(0xFF198754).copy(alpha = 0.15f) else Color(0xFFFFC107).copy(alpha = 0.2f)
-    val badgeText = if (esVacio) Color(0xFF198754) else Color(0xFFD97706)
-
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(badgeBg)
-            .clickable { onClick() }
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        Text(
-            text = if (esVacio) "✅" else "📦",
-            fontSize = 12.sp
-        )
-        Text(
-            text = if (esVacio) "Al día" else "$pendientesCount por subir",
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.ExtraBold,
-            color = badgeText
-        )
-    }
-}
-
-/**
- * Tarjeta de acción de alto impacto táctil (mínimo 100dp de altura, tap-target generoso).
- */
-@Composable
-private fun TarjetaMenuPrimaria(
+fun TarjetaMenuPrimaria(
     icono: String,
     titulo: String,
     subtitulo: String,
@@ -436,40 +210,43 @@ private fun TarjetaMenuPrimaria(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(18.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        border = BorderStroke(2.dp, bordeColor)
+        border = BorderStroke(1.5.dp, bordeColor.copy(alpha = 0.8f))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Icono en cápsula circular grande
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .background(bordeColor.copy(alpha = 0.15f), CircleShape),
+                    .size(52.dp)
+                    .background(
+                        color = bordeColor.copy(alpha = 0.12f),
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = icono, fontSize = 28.sp)
+                Text(
+                    text = icono,
+                    fontSize = 26.sp
+                )
             }
 
-            // Textos informativos
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = titulo,
@@ -481,30 +258,31 @@ private fun TarjetaMenuPrimaria(
 
                 Text(
                     text = subtitulo,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 17.sp
+                    lineHeight = 15.sp
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Box(
                     modifier = Modifier
-                        .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(badgeColor.copy(alpha = 0.15f))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = etiquetaBadge,
                         style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = badgeColor
                     )
                 }
             }
 
-            // Flecha indicadora
             Text(
-                text = "➔",
+                text = "❯",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = bordeColor
@@ -514,10 +292,12 @@ private fun TarjetaMenuPrimaria(
 }
 
 /**
- * Tarjeta ejecutiva exclusiva para supervisores: acceso nativo dentro del APK.
+ * Tarjeta táctil de supervisión (exclusiva para supervisores).
  */
 @Composable
-private fun TarjetaMenuSupervision(onClick: () -> Unit) {
+fun TarjetaMenuSupervision(
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -525,9 +305,9 @@ private fun TarjetaMenuSupervision(onClick: () -> Unit) {
             .clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        border = BorderStroke(1.dp, Color(0xFF6366F1).copy(alpha = 0.5f))
+        border = BorderStroke(1.5.dp, Color(0xFF6366F1).copy(alpha = 0.7f))
     ) {
         Row(
             modifier = Modifier
@@ -538,14 +318,23 @@ private fun TarjetaMenuSupervision(onClick: () -> Unit) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(Color(0xFF6366F1).copy(alpha = 0.15f), CircleShape),
+                    .size(52.dp)
+                    .background(
+                        color = Color(0xFF6366F1).copy(alpha = 0.12f),
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "🛡️", fontSize = 22.sp)
+                Text(
+                    text = "🛡️",
+                    fontSize = 26.sp
+                )
             }
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
                 Text(
                     text = "Panel de Supervisión y Métricas",
                     style = MaterialTheme.typography.titleMedium,
@@ -566,259 +355,6 @@ private fun TarjetaMenuSupervision(onClick: () -> Unit) {
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF6366F1)
             )
-        }
-    }
-}
-
-/**
- * Alerta visual en caso de que el encuestador se retire más de 350m del punto asignado.
- */
-@Composable
-private fun AlertaGeocercaFueraDeSitio(distanciaM: Int) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
-        border = BorderStroke(1.5.dp, Color(0xFFEF4444))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(text = "⚠️", fontSize = 20.sp)
-            Column {
-                Text(
-                    text = "Desplazamiento Fuera de Sitio Detectado",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Black,
-                    color = Color(0xFFB91C1C)
-                )
-                Text(
-                    text = "Distancia al punto asignado: ${distanciaM}m (Límite: 350m). Las encuestas registrarán bandera de auditoría.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 11.sp,
-                    color = Color(0xFF991B1B)
-                )
-            }
-        }
-    }
-}
-
-/**
- * Barra inferior con telemetría de satélite y versión.
- */
-@Composable
-private fun BarraEstadoInferior(
-    puntoNombre: String,
-    gpsDistanciaM: Int,
-    gpsFueraDePunto: Boolean,
-    currentTheme: AppThemeMode
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(
-                        color = if (gpsFueraDePunto) Color(0xFFEF4444) else Color(0xFF10B981),
-                        shape = CircleShape
-                    )
-            )
-            Text(
-                text = if (gpsFueraDePunto) "Fuera de geocerca (${gpsDistanciaM}m)" else "GPS Anclado ($puntoNombre • ${gpsDistanciaM}m)",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Text(
-            text = "SIMAT v0.7.0-beta • Corporación Tachirense de Turismo • UNEFA",
-            style = MaterialTheme.typography.labelSmall,
-            fontSize = 10.sp,
-            color = MaterialTheme.colorScheme.outline
-        )
-    }
-}
-
-/**
- * Banner de notificación de actualización remota (OTA) con progreso en vivo.
- */
-@Composable
-private fun BannerActualizacionOta(
-    updateInfo: VersionInfo,
-    estadoOta: OtaProgressState,
-    onInstalarClick: () -> Unit,
-    onAbrirNavegadorClick: () -> Unit,
-    onReintentarClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandAmber.copy(alpha = 0.15f)),
-        border = BorderStroke(1.dp, BrandAmber)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .background(BrandAmber, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🚀", fontSize = 20.sp)
-                }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Actualización v${updateInfo.versionName} disponible",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = BrandAmber
-                    )
-                    Text(
-                        text = updateInfo.changelog,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2
-                    )
-                }
-
-                when (estadoOta) {
-                    is OtaProgressState.Inactivo -> {
-                        Button(
-                            onClick = onInstalarClick,
-                            colors = ButtonDefaults.buttonColors(containerColor = BrandAmber),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Actualizar", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
-                        }
-                    }
-                    is OtaProgressState.Descargando -> {
-                        Text(
-                            text = "${(estadoOta.progreso * 100).toInt()}%",
-                            fontWeight = FontWeight.Black,
-                            fontSize = 14.sp,
-                            color = BrandAmber
-                        )
-                    }
-                    is OtaProgressState.VerificandoIntegridad -> {
-                        Text(
-                            text = "Verificando...",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
-                            color = BrandAmber
-                        )
-                    }
-                    is OtaProgressState.ListoParaInstalar -> {
-                        Button(
-                            onClick = onInstalarClick,
-                            colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Instalar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                        }
-                    }
-                    is OtaProgressState.Error -> {
-                        Button(
-                            onClick = onReintentarClick,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Reintentar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                        }
-                    }
-                }
-            }
-
-            // Barra de progreso y estados activos
-            when (estadoOta) {
-                is OtaProgressState.Descargando -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        LinearProgressIndicator(
-                            progress = { estadoOta.progreso },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp)),
-                            color = BrandAmber,
-                            trackColor = BrandAmber.copy(alpha = 0.2f)
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Descargando actualización en segundo plano...",
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "%.1f MB / %.1f MB".format(estadoOta.descargadoMb, estadoOta.totalMb),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-                is OtaProgressState.VerificandoIntegridad -> {
-                    Text(
-                        text = "🔒 Validando firma criptográfica SHA-256...",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = BrandAmber
-                    )
-                }
-                is OtaProgressState.Error -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = "⚠️ ${estadoOta.mensaje}",
-                            fontSize = 11.sp,
-                            color = Color(0xFFFF5252),
-                            lineHeight = 14.sp
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(
-                                onClick = onAbrirNavegadorClick,
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.height(34.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
-                            ) {
-                                Text("🌐 Descargar vía Navegador", fontSize = 11.sp, color = BrandAmber)
-                            }
-                        }
-                    }
-                }
-                else -> {}
-            }
         }
     }
 }

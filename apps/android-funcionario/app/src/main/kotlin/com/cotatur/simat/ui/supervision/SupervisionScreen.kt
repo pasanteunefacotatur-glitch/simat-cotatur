@@ -1,8 +1,5 @@
 package com.cotatur.simat.ui.supervision
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -26,7 +23,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,9 +37,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cotatur.simat.ui.supervision.components.CardKpiEjecutivo
+import com.cotatur.simat.ui.supervision.components.ItemSemaforoPunto
+import com.cotatur.simat.ui.supervision.models.EstadoPeajeAuditoria
+import com.cotatur.simat.ui.supervision.models.KpiResumenSupervision
+import com.cotatur.simat.ui.supervision.models.verificarInternetActivo
 import com.cotatur.simat.ui.theme.AppThemeMode
 import com.cotatur.simat.ui.theme.BrandAmber
 import com.cotatur.simat.ui.theme.BrandAmberDark
@@ -55,45 +55,18 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Modelos de datos para el Dashboard Ejecutivo de Supervisión.
+ * ==============================================================================
+ * PROYECTO: SIMAT-COTATUR
+ * ARCHIVO: SupervisionScreen.kt
+ * DESCRIPCIÓN: Pantalla Nativa de Supervisión Integrada en el APK.
+ *              - Acceso directo para usuarios con rol SUPERVISOR (sin PIN).
+ *              - Obligatoriedad de conexión ONLINE para realizar modificaciones.
+ *              - Registro visible de la última hora de actualización de los KPIs.
+ *              - Semáforo satelital de geocerca (350m) en peajes y terminales.
+ *              Cumple estrictamente con la Regla de Oro de modularidad (< 350 líneas).
+ * ==============================================================================
  */
-data class KpiResumenSupervision(
-    val totalVisitantesHoy: Int = 1420,
-    val totalGruposHoy: Int = 412,
-    val ocupacionHoteleraPct: Int = 84,
-    val gastoPromedioUsd: Double = 38.5,
-    val pernoctaPromedioDias: Double = 3.2
-)
 
-data class EstadoPeajeAuditoria(
-    val codigo: String,
-    val nombre: String,
-    val encuestadorNombre: String,
-    val encuestadorCedula: String,
-    val encuestasHoy: Int,
-    val distanciaM: Int,
-    val fueraDePunto: Boolean,
-    val esSimulado: Boolean,
-    val ultimaSincronizacionMin: Int
-)
-
-/**
- * Función utilitaria para verificar conectividad activa a Internet.
- */
-fun verificarInternetActivo(context: Context): Boolean {
-    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
-    val network = cm.activeNetwork ?: return false
-    val capabilities = cm.getNetworkCapabilities(network) ?: return false
-    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-}
-
-/**
- * Pantalla Nativa de Supervisión Integrada en el APK.
- * - Acceso directo para usuarios con rol SUPERVISOR (sin PIN).
- * - Obligatoriedad de conexión ONLINE para realizar modificaciones.
- * - Registro visible de la última hora de actualización de los KPIs.
- * - Semáforo satelital de geocerca (350m) en peajes y terminales.
- */
 @Composable
 fun SupervisionScreen(
     onVolverAlMenu: () -> Unit,
@@ -179,13 +152,13 @@ fun SupervisionScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(BrandGreen.copy(alpha = 0.15f)),
+                            .size(42.dp)
+                            .background(Color(0xFF6366F1).copy(alpha = 0.15f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = "🛡️", fontSize = 22.sp)
                     }
+
                     Column {
                         Text(
                             text = "Supervisión Operativa",
@@ -195,136 +168,130 @@ fun SupervisionScreen(
                         )
                         Text(
                             text = supervisorNombre,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = BrandAmberDark
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
 
                 FilledTonalButton(
                     onClick = onVolverAlMenu,
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    Text(text = "Volver ✕", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "✕ Volver",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
 
-            // REGLA INSTITUCIONAL: CONDICIÓN DE CONECTIVIDAD PARA MODIFICACIONES
-            if (!isOnline) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
-                    border = BorderStroke(1.2.dp, Color(0xFFEF4444))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(text = "🔴", fontSize = 16.sp)
-                        Column {
-                            Text(
-                                text = "Modo Consulta Offline",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Black,
-                                color = Color(0xFFB91C1C)
-                            )
-                            Text(
-                                text = "Para realizar modificaciones, reasignar encuestadores o alterar parámetros es obligatorio estar en línea (Online).",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontSize = 11.sp,
-                                color = Color(0xFF991B1B)
-                            )
-                        }
-                    }
-                }
-            } else {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (currentTheme == AppThemeMode.AMOLED) Color(0xFF0F291E) else BrandGreenLight.copy(alpha = 0.4f)
-                    ),
-                    border = BorderStroke(1.dp, BrandGreen.copy(alpha = 0.6f))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(text = "🟢", fontSize = 16.sp)
-                        Column {
-                            Text(
-                                text = "Conectado a la Nube (Online)",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Black,
-                                color = BrandGreen
-                            )
-                            Text(
-                                text = "Modo de Gestión y Modificaciones Oficiales habilitado.",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Cuerpo Scrolleable: KPIs Ejecutivos + Semáforo Satelital
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+            // Indicador de Estado de Conectividad (Online Obligatorio para Modificaciones)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isOnline) Color(0xFF198754).copy(alpha = 0.15f) else Color(0xFFEF4444).copy(alpha = 0.15f)
+                ),
+                border = BorderStroke(
+                    1.dp,
+                    if (isOnline) BrandGreen else Color(0xFFEF4444)
+                )
             ) {
-                // 1. Vista Ejecutiva (Grid 2x2 de KPIs con Última Actualización)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(
+                                    if (isOnline) Color(0xFF10B981) else Color(0xFFEF4444),
+                                    CircleShape
+                                )
+                        )
+                        Text(
+                            text = if (isOnline) "🟢 Conectado a la Nube (Online)" else "🔴 Modo Consulta Offline",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isOnline) BrandGreen else Color(0xFFEF4444)
+                        )
+                    }
+
+                    if (!isOnline) {
+                        Text(
+                            text = "Modificaciones bloqueadas",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            color = Color(0xFFEF4444),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            // Contenido Scrollable: KPIs y Semáforo de Peajes
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // 1. Bloque de KPIs Ejecutivos con hora de actualización en vivo
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
                             Text(
-                                text = "BALANCE EJECUTIVO REGIONAL",
+                                text = "MÉTRICAS DEL OPERATIVO",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 letterSpacing = 1.sp
                             )
-                            Text(
-                                text = "🕒 Última actualización: $ultimaActualizacionHora",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = BrandAmberDark
-                            )
                         }
 
-                        FilledTonalButton(
-                            onClick = {
-                                isOnline = verificarInternetActivo(context)
-                                ultimaActualizacionHora = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date())
-                                Toast.makeText(context, "Métricas actualizadas a las $ultimaActualizacionHora", Toast.LENGTH_SHORT).show()
-                            },
-                            shape = RoundedCornerShape(10.dp),
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text("🔄 Actualizar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "🕒 $ultimaActualizacionHora",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = BrandAmber
+                            )
+
+                            FilledTonalButton(
+                                onClick = {
+                                    isOnline = verificarInternetActivo(context)
+                                    ultimaActualizacionHora = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date())
+                                    Toast.makeText(context, "Métricas actualizadas ($ultimaActualizacionHora)", Toast.LENGTH_SHORT).show()
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text("🔄", fontSize = 11.sp)
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -332,19 +299,19 @@ fun SupervisionScreen(
                     ) {
                         CardKpiEjecutivo(
                             modifier = Modifier.weight(1f),
-                            titulo = "Afluencia Hoy",
+                            titulo = "Afluencia Total",
                             valorPrincipal = "${kpis.totalVisitantesHoy}",
                             unidad = "turistas",
                             subtexto = "${kpis.totalGruposHoy} grupos censados",
-                            colorAcento = if (currentTheme == AppThemeMode.AMOLED) BrandGreenNeon else BrandGreen,
-                            icono = "🚗"
+                            colorAcento = if (currentTheme == AppThemeMode.AMOLED) BrandGreenNeon else BrandGreenLight,
+                            icono = "👥"
                         )
                         CardKpiEjecutivo(
                             modifier = Modifier.weight(1f),
-                            titulo = "Ocupación Hotelera",
+                            titulo = "Ocupación PST",
                             valorPrincipal = "${kpis.ocupacionHoteleraPct}%",
                             unidad = "capacidad",
-                            subtexto = "SC y La Grita polos líderes",
+                            subtexto = "Hoteles y Posadas",
                             colorAcento = BrandAmber,
                             icono = "🏨"
                         )
@@ -421,154 +388,6 @@ fun SupervisionScreen(
                                 ).show()
                             }
                         }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CardKpiEjecutivo(
-    modifier: Modifier = Modifier,
-    titulo: String,
-    valorPrincipal: String,
-    unidad: String,
-    subtexto: String,
-    colorAcento: Color,
-    icono: String
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.2.dp, colorAcento.copy(alpha = 0.4f))
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = titulo, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(text = icono, fontSize = 15.sp)
-            }
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = valorPrincipal,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Black,
-                    color = colorAcento
-                )
-                Text(
-                    text = unidad,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 3.dp)
-                )
-            }
-            Text(
-                text = subtexto,
-                style = MaterialTheme.typography.bodySmall,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-@Composable
-private fun ItemSemaforoPunto(
-    punto: EstadoPeajeAuditoria,
-    currentTheme: AppThemeMode,
-    isOnline: Boolean,
-    onModificarClick: () -> Unit
-) {
-    val esAlerta = punto.fueraDePunto || punto.esSimulado
-    val semaforoColor = if (esAlerta) Color(0xFFEF4444) else BrandGreen
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (esAlerta) Color(0xFFFEF2F2).copy(alpha = if (currentTheme == AppThemeMode.AMOLED) 0.15f else 1f)
-            else MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(
-            width = if (esAlerta) 1.8.dp else 1.dp,
-            color = semaforoColor.copy(alpha = if (esAlerta) 1f else 0.35f)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = punto.nombre,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Funcionario: ${punto.encuestadorNombre} (${punto.encuestadorCedula})",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(semaforoColor.copy(alpha = 0.18f))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = if (esAlerta) "🚨 FUERA DE PUNTO" else "🟢 EN SITIO",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Black,
-                        color = semaforoColor
-                    )
-                }
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Encuestas: ${punto.encuestasHoy} • Distancia: ${punto.distanciaM}m",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (esAlerta) Color(0xFFEF4444) else MaterialTheme.colorScheme.onSurface
-                )
-
-                FilledTonalButton(
-                    onClick = onModificarClick,
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = if (isOnline) "Modificar ⚙️" else "Bloqueado 🔒",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isOnline) BrandGreen else Color(0xFFEF4444)
                     )
                 }
             }
