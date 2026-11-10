@@ -13,7 +13,8 @@ data class UserSession(
     val rol: String, // "SUPERVISOR" o "ENCUESTADOR"
     val puntoCodigo: String,
     val puntoNombre: String,
-    val debeCambiarClave: Boolean = false
+    val debeCambiarClave: Boolean = false,
+    val email: String? = null
 ) {
     val esSupervisor: Boolean
         get() = rol.equals("SUPERVISOR", ignoreCase = true)
@@ -49,7 +50,8 @@ class SessionManager(context: Context) {
         puntoCodigo: String,
         puntoNombre: String,
         claveTextoPlano: String,
-        debeCambiarClave: Boolean = false
+        debeCambiarClave: Boolean = false,
+        email: String? = null
     ) {
         val claveHash = sha256(claveTextoPlano.trim())
         prefs.edit()
@@ -60,7 +62,28 @@ class SessionManager(context: Context) {
             .putString("punto_codigo", puntoCodigo.trim())
             .putString("punto_nombre", puntoNombre.trim())
             .putString("clave_hash", claveHash)
+            .putString("email", email?.trim()?.lowercase())
             .putBoolean("debe_cambiar_clave", debeCambiarClave)
+            .apply()
+    }
+
+    fun guardarSesionGoogle(
+        cedula: String,
+        nombreCompleto: String,
+        rol: String,
+        email: String,
+        puntoCodigo: String,
+        puntoNombre: String
+    ) {
+        prefs.edit()
+            .putBoolean("is_logged_in", true)
+            .putString("cedula", cedula.trim())
+            .putString("nombre_completo", nombreCompleto.trim())
+            .putString("rol", rol.trim().uppercase())
+            .putString("email", email.trim().lowercase())
+            .putString("punto_codigo", puntoCodigo.trim())
+            .putString("punto_nombre", puntoNombre.trim())
+            .putBoolean("debe_cambiar_clave", false)
             .apply()
     }
 
@@ -75,7 +98,8 @@ class SessionManager(context: Context) {
             rol = prefs.getString("rol", "ENCUESTADOR") ?: "ENCUESTADOR",
             puntoCodigo = prefs.getString("punto_codigo", "PEAJE_TARIBA") ?: "PEAJE_TARIBA",
             puntoNombre = prefs.getString("punto_nombre", "Peaje Vega de Táriba") ?: "Peaje Vega de Táriba",
-            debeCambiarClave = prefs.getBoolean("debe_cambiar_clave", false)
+            debeCambiarClave = prefs.getBoolean("debe_cambiar_clave", false),
+            email = prefs.getString("email", null)
         )
     }
 
@@ -88,6 +112,11 @@ class SessionManager(context: Context) {
 
         if (cleanCedula != targetCedula) return false
         return sha256(claveTextoPlano.trim()) == savedHash
+    }
+
+    fun validarOfflineGoogle(email: String): Boolean {
+        val savedEmail = prefs.getString("email", null) ?: return false
+        return savedEmail.trim().equals(email.trim(), ignoreCase = true)
     }
 
     fun cerrarSesion() {
