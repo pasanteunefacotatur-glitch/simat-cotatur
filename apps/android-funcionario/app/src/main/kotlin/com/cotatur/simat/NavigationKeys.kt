@@ -20,3 +20,6 @@ data object OutboxDetalleDest : NavKey
 
 @Serializable
 data object AjustesPuntoDest : NavKey
+
+@Serializable
+data object SupervisionDest : NavKey

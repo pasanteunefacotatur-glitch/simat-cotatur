@@ -12,6 +12,7 @@ import com.cotatur.simat.ui.ajustes.AjustesPuntoScreen
 import com.cotatur.simat.ui.main.MainMenuScreen
 import com.cotatur.simat.ui.outbox.OutboxScreen
 import com.cotatur.simat.ui.prestador.CensoPrestadoresScreen
+import com.cotatur.simat.ui.supervision.SupervisionScreen
 import com.cotatur.simat.ui.theme.AppThemeMode
 import com.cotatur.simat.ui.turista.EncuestaTuristaScreen
 
@@ -72,6 +73,13 @@ fun MainNavigation(
                         puntoNombre = nombre
                     },
                     onVolverAlMenu = { backStack.removeLastOrNull() }
+                )
+            }
+            entry<SupervisionDest> {
+                SupervisionScreen(
+                    onVolverAlMenu = { backStack.removeLastOrNull() },
+                    currentTheme = currentTheme,
+                    supervisorNombre = "Supervisor General COTATUR"
                 )
             }
         }

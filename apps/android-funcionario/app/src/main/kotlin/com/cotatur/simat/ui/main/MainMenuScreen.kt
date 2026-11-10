@@ -52,6 +52,7 @@ import com.cotatur.simat.AjustesPuntoDest
 import com.cotatur.simat.CensoPrestadoresDest
 import com.cotatur.simat.EncuestaTuristaDest
 import com.cotatur.simat.OutboxDetalleDest
+import com.cotatur.simat.SupervisionDest
 import com.cotatur.simat.ota.OtaUpdateManager
 import com.cotatur.simat.ota.VersionInfo
 import com.cotatur.simat.ui.theme.AppThemeMode
@@ -156,14 +157,10 @@ fun MainMenuScreen(
                 onClick = { onNavigate(CensoPrestadoresDest) }
             )
 
-            // --- 4. TARJETA 3: PANEL DE SUPERVISIÓN WEB (CONDICIONAL SUPERVISOR) ---
+            // --- 4. TARJETA 3: PANEL DE SUPERVISIÓN NATIVO (100% INTEGRADO EN EL APK) ---
             if (esSupervisor) {
                 TarjetaMenuSupervision(
-                    onClick = {
-                        val url = "https://pasanteunefacotatur-glitch.github.io/simat-cotatur/admin.html"
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        context.startActivity(intent)
-                    }
+                    onClick = { onNavigate(SupervisionDest) }
                 )
             }
 
@@ -439,7 +436,7 @@ private fun TarjetaMenuPrimaria(
 }
 
 /**
- * Tarjeta ejecutiva exclusiva para supervisores: abre admin.html.
+ * Tarjeta ejecutiva exclusiva para supervisores: acceso nativo dentro del APK.
  */
 @Composable
 private fun TarjetaMenuSupervision(onClick: () -> Unit) {
@@ -478,7 +475,7 @@ private fun TarjetaMenuSupervision(onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Acceso a la consola web admin.html, métricas del Gobernador y gestión.",
+                    text = "Monitoreo satelital de peajes, KPIs ejecutivos y semáforo de geocerca.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -486,7 +483,7 @@ private fun TarjetaMenuSupervision(onClick: () -> Unit) {
             }
 
             Text(
-                text = "Abrir ↗",
+                text = "Ingresar ❯",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF6366F1)

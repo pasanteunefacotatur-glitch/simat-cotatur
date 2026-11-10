@@ -39,8 +39,8 @@
     <!-- =========================================================================
          1. MODAL DE AUTENTICACIÓN POR CÉDULA Y CONTRASEÑA
          ========================================================================= -->
-    <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4">
+    <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center space-y-4 my-auto max-h-[92dvh] overflow-y-auto">
             <div id="login-theme-btn-mount" class="absolute top-4 right-4 z-10"></div>
             <!-- Cápsula protectora clara con la tríada oficial de logos -->
             <div class="inline-flex items-center justify-center p-2 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-x-2.5 mx-auto">
@@ -103,8 +103,8 @@
     <!-- =========================================================================
          2. MODAL DE ACTIVACIÓN (PRIMER INGRESO DE SUPERVISOR)
          ========================================================================= -->
-    <div id="modal-primer-ingreso" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border-2 border-[#198754]/40 p-6 sm:p-7 space-y-4 my-auto">
+    <div id="modal-primer-ingreso" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border-2 border-[#198754]/40 p-5 sm:p-7 space-y-4 my-auto max-h-[92dvh] overflow-y-auto">
             
             <!-- Encabezado del Modal -->
             <div class="text-center space-y-1.5">
@@ -268,40 +268,42 @@
                 </div>
             </div>
 
-            <!-- Flujo Ordenado de Pestañas de Navegación (Sin barra de desplazamiento visible) -->
-            <div class="bg-black/30 border-t border-white/10 no-print">
-                <div class="max-w-6xl mx-auto px-4 flex space-x-1 overflow-x-auto no-scrollbar text-xs">
+            <!-- Flujo Ordenado de Pestañas de Navegación Mobile-First -->
+            <div class="relative bg-black/40 border-t border-white/10 no-print">
+                <div class="max-w-6xl mx-auto px-3 sm:px-4 flex space-x-1 sm:space-x-2 overflow-x-auto no-scrollbar scroll-smooth snap-x text-xs py-1">
                     <button type="button" data-target="tab-prensa"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-[#198754] text-[#198754] dark:text-emerald-400 font-extrabold flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-[#198754] text-[#198754] dark:text-emerald-400 font-extrabold flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📊</span>
-                        <span>Indicadores de Gestión (KPI)</span>
+                        <span>KPIs</span>
                     </button>
                     <button type="button" data-target="tab-calendario"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📅</span>
-                        <span>Calendario Turístico</span>
+                        <span>Calendario</span>
                     </button>
                     <button type="button" data-target="tab-puntos"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📍</span>
-                        <span>Puntos de Control</span>
+                        <span>Puntos</span>
                     </button>
                     <button type="button" data-target="tab-personal"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>👥</span>
-                        <span>Equipo de Encuestadores</span>
+                        <span>Nómina</span>
                     </button>
                     <button type="button" data-target="tab-qr"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>📱</span>
-                        <span>Material Promocional y QR</span>
+                        <span>Material QR</span>
                     </button>
                     <button type="button" data-target="tab-perfil"
-                        class="admin-tab-btn py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
+                        class="admin-tab-btn snap-start py-2.5 px-3 sm:px-4 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
                         <span>👤</span>
                         <span>Mi Perfil</span>
                     </button>
                 </div>
+                <!-- Indicador de desplazamiento horizontal lateral para móviles -->
+                <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/60 to-transparent pointer-events-none sm:hidden"></div>
             </div>
         </header>
 

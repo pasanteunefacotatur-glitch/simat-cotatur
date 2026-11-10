@@ -124,7 +124,13 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     </button>
                 </div>
 
-                <div class="overflow-x-auto">
+                <!-- Vista Móvil: Tarjetas Táctiles (< 768px) -->
+                <div id="cards-nomina-mobile" class="block md:hidden p-3 space-y-3">
+                    <div class="p-6 text-center text-slate-400">Consultando funcionarios...</div>
+                </div>
+
+                <!-- Vista Escritorio: Tabla Clásica (>= 768px) -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
                         <thead class="bg-slate-50 dark:bg-slate-800 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                             <tr>
@@ -153,6 +159,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
     const formCrear = document.getElementById("form-crear-funcionario-cedula");
     const btnRefrescar = document.getElementById("btn-refrescar-nomina");
     const tablaBody = document.getElementById("tabla-nomina-body");
+    const cardsContainer = document.getElementById("cards-nomina-mobile");
 
     // 1. Cargar configuración global del punto
     async function cargarConfiguracionGlobal() {
@@ -202,7 +209,8 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
 
     // 2. Cargar nómina de funcionarios
     async function cargarNomina() {
-        tablaBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Cargando personal...</td></tr>`;
+        if (tablaBody) tablaBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Cargando personal...</td></tr>`;
+        if (cardsContainer) cardsContainer.innerHTML = `<div class="p-6 text-center text-slate-400">Cargando personal...</div>`;
 
         try {
             const cred = getAdminCredencialCallback();
@@ -223,58 +231,107 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
             const lista = await res.json();
 
             if (!Array.isArray(lista) || lista.length === 0) {
-                tablaBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay funcionarios registrados.</td></tr>`;
+                if (tablaBody) tablaBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay funcionarios registrados.</td></tr>`;
+                if (cardsContainer) cardsContainer.innerHTML = `<div class="p-6 text-center text-slate-400">No hay funcionarios registrados.</div>`;
                 return;
             }
 
-            tablaBody.innerHTML = lista.map(f => {
-                const puntosActivos = obtenerNombresPuntosDeFuncionario(f, puntosList, mapaMulti);
-                const puntosDisplay = puntosActivos.length > 0
-                    ? puntosActivos.map(n => `<span class="inline-block px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold mr-1 mb-1">📍 ${escapeHtml(n)}</span>`).join("")
-                    : `<span class="text-slate-400 text-[11px]">Sin asignar</span>`;
+            // Renderizar Tarjetas Móviles (< 768px)
+            if (cardsContainer) {
+                cardsContainer.innerHTML = lista.map(f => {
+                    const puntosActivos = obtenerNombresPuntosDeFuncionario(f, puntosList, mapaMulti);
+                    const puntosDisplay = puntosActivos.length > 0
+                        ? puntosActivos.map(n => `<span class="inline-block px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold mr-1 mb-1">📍 ${escapeHtml(n)}</span>`).join("")
+                        : `<span class="text-slate-400 text-[11px]">Sin punto asignado</span>`;
 
-                return `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td class="p-3 font-mono font-bold text-slate-900 dark:text-white">${escapeHtml(f.cedula)}</td>
-                    <td class="p-3">
-                        <div class="font-semibold text-slate-900 dark:text-white">${escapeHtml(f.nombre_completo)}</div>
-                        <div class="text-[10px] text-slate-400">
-                            ${f.debe_cambiar_clave ? '⚠️ Pendiente de primer ingreso' : escapeHtml(f.email || 'Activo')}
+                    return `
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="font-mono text-xs font-bold text-slate-500 dark:text-slate-400 block">${escapeHtml(f.cedula)}</span>
+                                <h4 class="text-sm font-extrabold text-slate-900 dark:text-white mt-0.5">${escapeHtml(f.nombre_completo || 'Funcionario')}</h4>
+                                <div class="flex flex-wrap items-center gap-1.5 pt-1.5">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${f.rol === 'SUPERVISOR' ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}">
+                                        ${escapeHtml(f.rol)}
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${f.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
+                                        ${f.activo ? '🟢 Activo' : '🔴 Inactivo'}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                    </td>
-                    <td class="p-3">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${f.rol === 'SUPERVISOR' ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}">
-                            ${escapeHtml(f.rol)}
-                        </span>
-                    </td>
-                    <td class="p-3">${puntosDisplay}</td>
-                    <td class="p-3 text-center">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${f.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
-                            ${f.activo ? '🟢 Activo' : '🔴 Inactivo'}
-                        </span>
-                    </td>
-                    <td class="p-3 text-right space-x-2">
-                        <button type="button" data-id="${escapeHtml(f.id)}" data-action="toggle"
-                            class="btn-action-func text-xs font-bold ${f.activo ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700' : 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700'}"
-                            title="${f.activo ? 'Desactivar usuario' : 'Activar usuario'}">
-                            ${f.activo ? 'Desactivar' : 'Reactivar'}
-                        </button>
 
-                        <button type="button" data-id="${escapeHtml(f.id)}" data-action="reset" data-cedula="${escapeHtml(f.cedula)}"
-                            class="btn-action-func text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
-                            title="Restablece la clave al número de cédula">
-                            Restablecer Clave
-                        </button>
+                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-xs">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Puntos Asignados:</span>
+                            <div>${puntosDisplay}</div>
+                        </div>
 
-                        <button type="button" data-id="${escapeHtml(f.id)}" data-action="delete"
-                            class="btn-action-func text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
-                            title="Eliminar usuario definitivamente">
-                            Eliminar
-                        </button>
-                    </td>
-                </tr>
-            `;
-            }).join("");
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <button type="button" data-id="${escapeHtml(f.id)}" data-action="toggle"
+                                class="btn-action-func py-2.5 px-3 rounded-xl text-xs font-bold min-h-[44px] flex items-center justify-center transition-colors ${f.activo ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/25' : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25'}">
+                                ${f.activo ? 'Desactivar' : 'Reactivar'}
+                            </button>
+                            <button type="button" data-id="${escapeHtml(f.id)}" data-action="reset" data-cedula="${escapeHtml(f.cedula)}"
+                                class="btn-action-func py-2.5 px-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold min-h-[44px] flex items-center justify-center hover:bg-blue-100">
+                                Reset Clave
+                            </button>
+                        </div>
+                    </div>
+                    `;
+                }).join("");
+            }
+
+            // Renderizar Tabla Escritorio (>= 768px)
+            if (tablaBody) {
+                tablaBody.innerHTML = lista.map(f => {
+                    const puntosActivos = obtenerNombresPuntosDeFuncionario(f, puntosList, mapaMulti);
+                    const puntosDisplay = puntosActivos.length > 0
+                        ? puntosActivos.map(n => `<span class="inline-block px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold mr-1 mb-1">📍 ${escapeHtml(n)}</span>`).join("")
+                        : `<span class="text-slate-400 text-[11px]">Sin asignar</span>`;
+
+                    return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td class="p-3 font-mono font-bold text-slate-900 dark:text-white">${escapeHtml(f.cedula)}</td>
+                        <td class="p-3">
+                            <div class="font-semibold text-slate-900 dark:text-white">${escapeHtml(f.nombre_completo)}</div>
+                            <div class="text-[10px] text-slate-400">
+                                ${f.debe_cambiar_clave ? '⚠️ Pendiente de primer ingreso' : escapeHtml(f.email || 'Activo')}
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${f.rol === 'SUPERVISOR' ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}">
+                                ${escapeHtml(f.rol)}
+                            </span>
+                        </td>
+                        <td class="p-3">${puntosDisplay}</td>
+                        <td class="p-3 text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${f.activo ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'}">
+                                ${f.activo ? '🟢 Activo' : '🔴 Inactivo'}
+                            </span>
+                        </td>
+                        <td class="p-3 text-right space-x-2">
+                            <button type="button" data-id="${escapeHtml(f.id)}" data-action="toggle"
+                                class="btn-action-func text-xs font-bold ${f.activo ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700' : 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700'}"
+                                title="${f.activo ? 'Desactivar usuario' : 'Activar usuario'}">
+                                ${f.activo ? 'Desactivar' : 'Reactivar'}
+                            </button>
+
+                            <button type="button" data-id="${escapeHtml(f.id)}" data-action="reset" data-cedula="${escapeHtml(f.cedula)}"
+                                class="btn-action-func text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                                title="Restablece la clave al número de cédula">
+                                Restablecer Clave
+                            </button>
+
+                            <button type="button" data-id="${escapeHtml(f.id)}" data-action="delete"
+                                class="btn-action-func text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
+                                title="Eliminar usuario definitivamente">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                }).join("");
+            }
 
             // Enlazar botones de acción
             document.querySelectorAll(".btn-action-func").forEach(btn => {
