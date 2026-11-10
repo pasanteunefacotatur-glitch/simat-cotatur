@@ -1,8 +1,11 @@
 package com.cotatur.simat.ui.supervision
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,7 +48,11 @@ import com.cotatur.simat.ui.theme.AppThemeMode
 import com.cotatur.simat.ui.theme.BrandAmber
 import com.cotatur.simat.ui.theme.BrandAmberDark
 import com.cotatur.simat.ui.theme.BrandGreen
+import com.cotatur.simat.ui.theme.BrandGreenLight
 import com.cotatur.simat.ui.theme.BrandGreenNeon
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Modelos de datos para el Dashboard Ejecutivo de Supervisión.
@@ -71,9 +78,21 @@ data class EstadoPeajeAuditoria(
 )
 
 /**
+ * Función utilitaria para verificar conectividad activa a Internet.
+ */
+fun verificarInternetActivo(context: Context): Boolean {
+    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
+    val network = cm.activeNetwork ?: return false
+    val capabilities = cm.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+}
+
+/**
  * Pantalla Nativa de Supervisión Integrada en el APK.
- * Elimina la necesidad de redirigir a navegadores externos.
- * Funciona offline con métricas locales y semáforo satelital de geocerca.
+ * - Acceso directo para usuarios con rol SUPERVISOR (sin PIN).
+ * - Obligatoriedad de conexión ONLINE para realizar modificaciones.
+ * - Registro visible de la última hora de actualización de los KPIs.
+ * - Semáforo satelital de geocerca (350m) en peajes y terminales.
  */
 @Composable
 fun SupervisionScreen(
@@ -81,14 +100,10 @@ fun SupervisionScreen(
     currentTheme: AppThemeMode = AppThemeMode.AMOLED,
     supervisorNombre: String = "Supervisor General COTATUR"
 ) {
-    var pinAutenticado by remember { mutableStateOf(false) }
-
-    if (!pinAutenticado) {
-        DialogoPinSupervisor(
-            onPinValido = { pinAutenticado = true },
-            onCancelar = onVolverAlMenu
-        )
-        return
+    val context = LocalContext.current
+    var isOnline by remember { mutableStateOf(verificarInternetActivo(context)) }
+    var ultimaActualizacionHora by remember {
+        mutableStateOf(SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date()))
     }
 
     val kpis = remember { KpiResumenSupervision() }
@@ -150,7 +165,7 @@ fun SupervisionScreen(
                 .fillMaxSize()
                 .safeDrawingPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Cabecera de Supervisión
             Row(
@@ -187,14 +202,81 @@ fun SupervisionScreen(
                 }
 
                 FilledTonalButton(
-                    onClick = { pinAutenticado = false; onVolverAlMenu() },
+                    onClick = onVolverAlMenu,
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    Text(text = "Salir ✕", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    Text(text = "Volver ✕", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            // REGLA INSTITUCIONAL: CONDICIÓN DE CONECTIVIDAD PARA MODIFICACIONES
+            if (!isOnline) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
+                    border = BorderStroke(1.2.dp, Color(0xFFEF4444))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(text = "🔴", fontSize = 16.sp)
+                        Column {
+                            Text(
+                                text = "Modo Consulta Offline",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFB91C1C)
+                            )
+                            Text(
+                                text = "Para realizar modificaciones, reasignar encuestadores o alterar parámetros es obligatorio estar en línea (Online).",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 11.sp,
+                                color = Color(0xFF991B1B)
+                            )
+                        }
+                    }
+                }
+            } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (currentTheme == AppThemeMode.AMOLED) Color(0xFF0F291E) else BrandGreenLight.copy(alpha = 0.4f)
+                    ),
+                    border = BorderStroke(1.dp, BrandGreen.copy(alpha = 0.6f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(text = "🟢", fontSize = 16.sp)
+                        Column {
+                            Text(
+                                text = "Conectado a la Nube (Online)",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Black,
+                                color = BrandGreen
+                            )
+                            Text(
+                                text = "Modo de Gestión y Modificaciones Oficiales habilitado.",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
 
@@ -205,15 +287,43 @@ fun SupervisionScreen(
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // 1. Vista Ejecutiva (Grid 2x2 de KPIs)
+                // 1. Vista Ejecutiva (Grid 2x2 de KPIs con Última Actualización)
                 item {
-                    Text(
-                        text = "BALANCE EJECUTIVO REGIONAL",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 1.sp
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "BALANCE EJECUTIVO REGIONAL",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                letterSpacing = 1.sp
+                            )
+                            Text(
+                                text = "🕒 Última actualización: $ultimaActualizacionHora",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandAmberDark
+                            )
+                        }
+
+                        FilledTonalButton(
+                            onClick = {
+                                isOnline = verificarInternetActivo(context)
+                                ultimaActualizacionHora = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date())
+                                Toast.makeText(context, "Métricas actualizadas a las $ultimaActualizacionHora", Toast.LENGTH_SHORT).show()
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text("🔄 Actualizar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -292,7 +402,26 @@ fun SupervisionScreen(
                 }
 
                 items(listaPuntos, key = { it.codigo }) { punto ->
-                    ItemSemaforoPunto(punto = punto, currentTheme = currentTheme)
+                    ItemSemaforoPunto(
+                        punto = punto,
+                        currentTheme = currentTheme,
+                        isOnline = isOnline,
+                        onModificarClick = {
+                            if (!isOnline) {
+                                Toast.makeText(
+                                    context,
+                                    "⚠️ Acción bloqueada: Para realizar modificaciones en ${punto.nombre} es obligatorio estar en línea (Online).",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Abriendo editor en línea de ${punto.nombre}...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -356,7 +485,9 @@ private fun CardKpiEjecutivo(
 @Composable
 private fun ItemSemaforoPunto(
     punto: EstadoPeajeAuditoria,
-    currentTheme: AppThemeMode
+    currentTheme: AppThemeMode,
+    isOnline: Boolean,
+    onModificarClick: () -> Unit
 ) {
     val esAlerta = punto.fueraDePunto || punto.esSimulado
     val semaforoColor = if (esAlerta) Color(0xFFEF4444) else BrandGreen
@@ -427,134 +558,20 @@ private fun ItemSemaforoPunto(
                     fontWeight = FontWeight.SemiBold,
                     color = if (esAlerta) Color(0xFFEF4444) else MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = "Sync hace ${punto.ultimaSincronizacionMin}m",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
+                FilledTonalButton(
+                    onClick = onModificarClick,
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (isOnline) "Modificar ⚙️" else "Bloqueado 🔒",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isOnline) BrandGreen else Color(0xFFEF4444)
+                    )
+                }
             }
         }
     }
-}
-
-@Composable
-private fun DialogoPinSupervisor(
-    onPinValido: () -> Unit,
-    onCancelar: () -> Unit
-) {
-    var pinIngresado by remember { mutableStateOf("") }
-    var errorPin by remember { mutableStateOf(false) }
-    val pinCorrecto = "2026" // PIN Institucional COTATUR
-
-    AlertDialog(
-        onDismissRequest = onCancelar,
-        title = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "🛡️", fontSize = 32.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Acceso a Supervisión",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Black
-                )
-                Text(
-                    text = "Ingrese su PIN institucional de 4 dígitos",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    repeat(4) { index ->
-                        val lleno = index < pinIngresado.length
-                        Box(
-                            modifier = Modifier
-                                .size(16.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (errorPin) Color(0xFFEF4444)
-                                    else if (lleno) BrandGreen
-                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                                )
-                        )
-                    }
-                }
-
-                if (errorPin) {
-                    Text(
-                        text = "⚠️ PIN Incorrecto. Intente con el año institucional (2026).",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFFEF4444),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                val numeros = listOf(
-                    listOf("1", "2", "3"),
-                    listOf("4", "5", "6"),
-                    listOf("7", "8", "9"),
-                    listOf("✕", "0", "⌫")
-                )
-
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    numeros.forEach { fila ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            fila.forEach { tecla ->
-                                Box(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                                        .clickable {
-                                            when (tecla) {
-                                                "✕" -> onCancelar()
-                                                "⌫" -> {
-                                                    if (pinIngresado.isNotEmpty()) {
-                                                        pinIngresado = pinIngresado.dropLast(1)
-                                                        errorPin = false
-                                                    }
-                                                }
-                                                else -> {
-                                                    if (pinIngresado.length < 4) {
-                                                        pinIngresado += tecla
-                                                        errorPin = false
-                                                        if (pinIngresado.length == 4) {
-                                                            if (pinIngresado == pinCorrecto) {
-                                                                onPinValido()
-                                                            } else {
-                                                                errorPin = true
-                                                                pinIngresado = ""
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = tecla,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = if (tecla == "⌫" || tecla == "✕") BrandAmberDark else MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {}
-    )
 }

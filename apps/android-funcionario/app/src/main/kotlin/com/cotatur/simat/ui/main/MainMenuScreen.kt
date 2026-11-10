@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,6 +58,7 @@ import com.cotatur.simat.ota.OtaUpdateManager
 import com.cotatur.simat.ota.VersionInfo
 import com.cotatur.simat.ui.theme.AppThemeMode
 import com.cotatur.simat.ui.theme.BrandAmber
+import com.cotatur.simat.ui.theme.BrandAmberDark
 import com.cotatur.simat.ui.theme.BrandCarbon
 import com.cotatur.simat.ui.theme.BrandGreen
 import com.cotatur.simat.ui.theme.BrandGreenNeon
@@ -84,7 +86,10 @@ fun MainMenuScreen(
     pendientesCount: Int = 0,
     gpsDistanciaM: Int = 42,
     gpsFueraDePunto: Boolean = false,
-    esSupervisor: Boolean = true
+    esSupervisor: Boolean = true,
+    usuarioNombre: String = "",
+    usuarioRol: String = "ENCUESTADOR",
+    onCerrarSesion: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val currentTheme = LocalThemeMode.current
@@ -115,6 +120,10 @@ fun MainMenuScreen(
                 puntoNombre = puntoNombre,
                 pendientesCount = pendientesCount,
                 currentTheme = currentTheme,
+                usuarioNombre = usuarioNombre,
+                usuarioRol = usuarioRol,
+                esSupervisor = esSupervisor,
+                onCerrarSesion = onCerrarSesion,
                 onOutboxClick = { onNavigate(OutboxDetalleDest) },
                 onAjustesClick = { onNavigate(AjustesPuntoDest) },
                 onToggleTheme = onToggleTheme
@@ -185,6 +194,10 @@ private fun HeaderInstitucional(
     puntoNombre: String,
     pendientesCount: Int,
     currentTheme: AppThemeMode,
+    usuarioNombre: String = "",
+    usuarioRol: String = "ENCUESTADOR",
+    esSupervisor: Boolean = false,
+    onCerrarSesion: () -> Unit = {},
     onOutboxClick: () -> Unit,
     onAjustesClick: () -> Unit,
     onToggleTheme: () -> Unit
@@ -261,6 +274,54 @@ private fun HeaderInstitucional(
                                 AppThemeMode.SYSTEM -> "⚙️"
                             },
                             fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            // Identidad del Usuario Autenticado y Botón Cerrar Sesión
+            if (usuarioNombre.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(text = if (esSupervisor) "🛡️" else "📋", fontSize = 14.sp)
+                        Column {
+                            Text(
+                                text = usuarioNombre,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = if (esSupervisor) "SUPERVISOR OFICIAL" else "ENCUESTADOR DE CAMPO",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (esSupervisor) BrandAmberDark else BrandGreen
+                            )
+                        }
+                    }
+
+                    androidx.compose.material3.TextButton(
+                        onClick = onCerrarSesion,
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                    ) {
+                        Text(
+                            text = "Cerrar Sesión 🚪",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFEF4444)
                         )
                     }
                 }

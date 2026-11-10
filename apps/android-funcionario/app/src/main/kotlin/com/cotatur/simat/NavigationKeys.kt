@@ -7,6 +7,9 @@ import kotlinx.serialization.Serializable
  * Destinos de navegación del aplicativo móvil SIMAT-COTATUR (Navigation 3).
  */
 @Serializable
+data object LoginDest : NavKey
+
+@Serializable
 data object MainMenuDest : NavKey
 
 @Serializable
