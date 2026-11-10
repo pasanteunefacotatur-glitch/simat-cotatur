@@ -22,6 +22,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +52,8 @@ import com.cotatur.simat.AjustesPuntoDest
 import com.cotatur.simat.CensoPrestadoresDest
 import com.cotatur.simat.EncuestaTuristaDest
 import com.cotatur.simat.OutboxDetalleDest
+import com.cotatur.simat.ota.OtaUpdateManager
+import com.cotatur.simat.ota.VersionInfo
 import com.cotatur.simat.ui.theme.AppThemeMode
 import com.cotatur.simat.ui.theme.BrandAmber
 import com.cotatur.simat.ui.theme.BrandCarbon
@@ -82,6 +87,14 @@ fun MainMenuScreen(
 ) {
     val context = LocalContext.current
     val currentTheme = LocalThemeMode.current
+    var actualizacionDisponible by remember { mutableStateOf<VersionInfo?>(null) }
+
+    LaunchedEffect(Unit) {
+        val info = OtaUpdateManager.verificarActualizacion(context)
+        if (info != null) {
+            actualizacionDisponible = info
+        }
+    }
 
     Surface(
         modifier = Modifier
@@ -105,6 +118,14 @@ fun MainMenuScreen(
                 onAjustesClick = { onNavigate(AjustesPuntoDest) },
                 onToggleTheme = onToggleTheme
             )
+
+            // --- AVISO DESATENDIDO DE ACTUALIZACIÓN REMOTA (OTA) ---
+            actualizacionDisponible?.let { updateInfo ->
+                BannerActualizacionOta(
+                    updateInfo = updateInfo,
+                    onInstalarClick = { OtaUpdateManager.descargarEInstalar(context, updateInfo) }
+                )
+            }
 
             // --- ALERTA VISUAL: GEOCERCA HAVERSINE SALIDA DE SITIO (> 350m) ---
             AnimatedVisibility(visible = gpsFueraDePunto) {
@@ -553,5 +574,62 @@ private fun BarraEstadoInferior(
             fontSize = 10.sp,
             color = MaterialTheme.colorScheme.outline
         )
+    }
+}
+
+/**
+ * Banner de notificación de actualización remota (OTA).
+ */
+@Composable
+private fun BannerActualizacionOta(
+    updateInfo: VersionInfo,
+    onInstalarClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = BrandAmber.copy(alpha = 0.15f)),
+        border = BorderStroke(1.dp, BrandAmber)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(BrandAmber, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "🚀", fontSize = 18.sp)
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Actualización v${updateInfo.versionName} disponible",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = BrandAmber
+                )
+                Text(
+                    text = updateInfo.changelog,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
+
+            Button(
+                onClick = onInstalarClick,
+                colors = ButtonDefaults.buttonColors(containerColor = BrandAmber),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Actualizar", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+            }
+        }
     }
 }
