@@ -2,6 +2,7 @@ package com.cotatur.simat.ui.main.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -201,6 +202,21 @@ fun BannerActualizacionOta(
                     }
                 }
                 else -> {}
+            }
+
+            // Opción alternativa: descarga directa por navegador
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = "🌐 Descargar APK directo desde el navegador",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    color = BrandAmber,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onAbrirNavegadorClick() }
+                )
             }
         }
     }

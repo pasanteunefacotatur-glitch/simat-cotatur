@@ -106,9 +106,41 @@ object OtaUpdateManager {
     fun iniciarDescargaEInstalacion(context: Context, scope: CoroutineScope, info: VersionInfo) {
         if (_estadoDescarga.value is OtaProgressState.Descargando) return
 
+        // 1. Si el APK ya se descargó previamente y su hash es válido, instalar de inmediato
+        val destinoApk = File(context.cacheDir, "simat_update_v${info.versionName}.apk")
+        if (destinoApk.exists() && info.sha256.isNotBlank() && verificarSha256(destinoApk, info.sha256)) {
+            _estadoDescarga.value = OtaProgressState.ListoParaInstalar
+            ejecutarInstaladorConPermisos(context, destinoApk)
+            return
+        }
+
+        // 2. Comprobar permisos de instalación antes de iniciar la descarga
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!context.packageManager.canRequestPackageInstalls()) {
+                Toast.makeText(
+                    context,
+                    "⚠️ Autoriza la opción 'Permitir desde esta fuente' para actualizar automáticamente",
+                    Toast.LENGTH_LONG
+                ).show()
+                try {
+                    val settingsIntent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(settingsIntent)
+                } catch (_: Exception) {
+                    val fallbackIntent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(fallbackIntent)
+                }
+                return
+            }
+        }
+
+        // 3. Descarga en segundo plano con corrutinas y monitoreo de progreso
         scope.launch {
             withContext(Dispatchers.IO) {
-                val destinoApk = File(context.cacheDir, "simat_update_v${info.versionName}.apk")
                 try {
                     _estadoDescarga.value = OtaProgressState.Descargando(0f, 0f, 0f)
 
@@ -165,6 +197,15 @@ object OtaUpdateManager {
                     }
                 }
             }
+        }
+    }
+
+    fun instalarApkDescargado(context: Context, info: VersionInfo) {
+        val destinoApk = File(context.cacheDir, "simat_update_v${info.versionName}.apk")
+        if (destinoApk.exists()) {
+            ejecutarInstaladorConPermisos(context, destinoApk)
+        } else {
+            _estadoDescarga.value = OtaProgressState.Inactivo
         }
     }
 

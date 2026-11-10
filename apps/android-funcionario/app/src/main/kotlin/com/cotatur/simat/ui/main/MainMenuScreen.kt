@@ -47,6 +47,7 @@ import com.cotatur.simat.CensoPrestadoresDest
 import com.cotatur.simat.EncuestaTuristaDest
 import com.cotatur.simat.OutboxDetalleDest
 import com.cotatur.simat.SupervisionDest
+import com.cotatur.simat.ota.OtaProgressState
 import com.cotatur.simat.ota.OtaUpdateManager
 import com.cotatur.simat.ota.VersionInfo
 import com.cotatur.simat.ui.main.components.AlertaGeocercaFueraDeSitio
@@ -133,7 +134,11 @@ fun MainMenuScreen(
                     updateInfo = updateInfo,
                     estadoOta = estadoOta,
                     onInstalarClick = {
-                        OtaUpdateManager.iniciarDescargaEInstalacion(context, scope, updateInfo)
+                        if (estadoOta is OtaProgressState.ListoParaInstalar) {
+                            OtaUpdateManager.instalarApkDescargado(context, updateInfo)
+                        } else {
+                            OtaUpdateManager.iniciarDescargaEInstalacion(context, scope, updateInfo)
+                        }
                     },
                     onAbrirNavegadorClick = {
                         OtaUpdateManager.abrirEnNavegador(context, updateInfo.apkUrl)
