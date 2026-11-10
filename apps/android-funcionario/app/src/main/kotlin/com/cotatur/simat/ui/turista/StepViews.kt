@@ -6,12 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -35,219 +31,13 @@ import com.cotatur.simat.ui.theme.BrandGreen
  * ==============================================================================
  * PROYECTO: SIMAT-COTATUR
  * ARCHIVO: StepViews.kt
- * DESCRIPCIÓN: Vistas de pasos modulares para el Modo Ráfaga (Demanda Turista).
- *              Diseñadas con Fitts' Law (botones >= 48dp) y auto-avance táctil.
+ * DESCRIPCIÓN: Componentes atómicos y Vista del Paso 4 (Calificación de Servicios).
+ *              Diseñados con Fitts' Law (botones >= 48dp) y áreas táctiles ergonómicas.
+ *              Cumple estrictamente con la Regla de Modularidad (< 500 líneas).
  * ==============================================================================
  */
 
-// --- PASO 1: PROCEDENCIA DEL VISITANTE ---
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun Step1ProcedenciaView(
-    procedenciaTipo: String,
-    estadoOrigen: String?,
-    paisOrigen: String?,
-    onTipoSelected: (String) -> Unit,
-    onEstadoSelected: (String) -> Unit,
-    onPaisSelected: (String) -> Unit
-) {
-    val estadosFrecuentes = listOf(
-        "Zulia", "Mérida", "Barinas", "Distrito Capital",
-        "Carabobo", "Lara", "Táchira (Local)", "Trujillo",
-        "Aragua", "Anzoátegui", "Bolívar", "Otro Estado"
-    )
-
-    val paisesFrecuentes = listOf(
-        "Colombia", "España", "Estados Unidos",
-        "Ecuador", "Perú", "Chile", "Otro País"
-    )
-
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text(
-            text = "¿De dónde nos visita el turista?",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        // Selector Tipo: Nacional vs Internacional
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            SelectorCard(
-                titulo = "🇻🇪 Nacional",
-                seleccionado = procedenciaTipo == "NACIONAL",
-                modifier = Modifier.weight(1f),
-                onClick = { onTipoSelected("NACIONAL") }
-            )
-            SelectorCard(
-                titulo = "✈️ Internacional",
-                seleccionado = procedenciaTipo == "INTERNACIONAL",
-                modifier = Modifier.weight(1f),
-                onClick = { onTipoSelected("INTERNACIONAL") }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        if (procedenciaTipo == "NACIONAL") {
-            Text(
-                text = "Estado de Origen:",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                estadosFrecuentes.forEach { estado ->
-                    ChipOpcion(
-                        texto = estado,
-                        seleccionado = estadoOrigen == estado,
-                        onClick = { onEstadoSelected(estado) }
-                    )
-                }
-            }
-        } else {
-            Text(
-                text = "País de Residencia:",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                paisesFrecuentes.forEach { pais ->
-                    ChipOpcion(
-                        texto = pais,
-                        seleccionado = paisOrigen == pais,
-                        onClick = { onPaisSelected(pais) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-// --- PASO 2: DESTINO Y PERFIL DE VIAJE ---
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun Step2DestinoPerfilView(
-    municipioDestino: String,
-    motivoViaje: String,
-    tipoAlojamiento: String,
-    grupoTamano: Int,
-    diasEstadia: Int,
-    onMunicipioSelected: (String) -> Unit,
-    onMotivoSelected: (String) -> Unit,
-    onAlojamientoSelected: (String) -> Unit,
-    onGrupoChanged: (Int) -> Unit,
-    onDiasChanged: (Int) -> Unit
-) {
-    val municipios = listOf(
-        "San Cristóbal", "Cárdenas (Táriba)", "Junín (Rubio)",
-        "Jáuregui (La Grita)", "Guásimos (Palmira)", "Lobatera (San Pedro)",
-        "Capacho Nuevo/Viejo", "Uribante (Pregonero)", "Otro Municipio"
-    )
-
-    val motivos = listOf(
-        "Turismo y Recreación", "Visita Familiar/Amigos",
-        "Negocios y Comercio", "Peregrinación/Religioso", "Tránsito a Frontera"
-    )
-
-    val alojamientos = listOf(
-        "Hotel", "Posada Turística", "Casa Familiar/Amigos", "Campamento/Propio"
-    )
-
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        // Municipio Destino
-        Text(
-            text = "Destino Principal en Táchira:",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            municipios.forEach { mun ->
-                ChipOpcion(
-                    texto = mun,
-                    seleccionado = municipioDestino == mun,
-                    onClick = { onMunicipioSelected(mun) }
-                )
-            }
-        }
-
-        // Motivo del Viaje
-        Text(
-            text = "Motivo de la Visita:",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            motivos.forEach { mot ->
-                ChipOpcion(
-                    texto = mot,
-                    seleccionado = motivoViaje == mot,
-                    onClick = { onMotivoSelected(mot) }
-                )
-            }
-        }
-
-        // Tipo de Alojamiento
-        Text(
-            text = "Tipo de Alojamiento:",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            alojamientos.forEach { aloj ->
-                ChipOpcion(
-                    texto = aloj,
-                    seleccionado = tipoAlojamiento == aloj,
-                    onClick = { onAlojamientoSelected(aloj) }
-                )
-            }
-        }
-
-        // Stepper: Personas en el Grupo
-        ContadorStepperFila(
-            etiqueta = "Personas en el Grupo:",
-            valor = grupoTamano,
-            unidad = "personas",
-            presets = listOf(1, 2, 4, 6),
-            onValorChanged = onGrupoChanged
-        )
-
-        // Stepper: Días de Estadía
-        ContadorStepperFila(
-            etiqueta = "Días de Permanencia:",
-            valor = diasEstadia,
-            unidad = "días",
-            presets = listOf(1, 3, 7, 14),
-            onValorChanged = onDiasChanged
-        )
-    }
-}
-
-// --- PASO 4: CALIFICACIÓN DE SERVICIOS ---
+// --- PASO 4: CALIFICACIÓN DE SERVICIOS REGIONALES ---
 @Composable
 fun Step4CalificacionView(
     califVialidad: Int,
@@ -295,7 +85,7 @@ fun Step4CalificacionView(
 
 // --- COMPONENTES AUXILIARES REUTILIZABLES ---
 @Composable
-private fun SelectorCard(
+internal fun SelectorCard(
     titulo: String,
     seleccionado: Boolean,
     modifier: Modifier = Modifier,
@@ -356,7 +146,7 @@ fun ChipOpcion(
 }
 
 @Composable
-private fun ContadorStepperFila(
+internal fun ContadorStepperFila(
     etiqueta: String,
     valor: Int,
     unidad: String,
@@ -449,7 +239,7 @@ private fun ContadorStepperFila(
 }
 
 @Composable
-private fun FilaEstrellasCalificacion(
+internal fun FilaEstrellasCalificacion(
     etiqueta: String,
     calificacion: Int,
     onCalificacionChanged: (Int) -> Unit

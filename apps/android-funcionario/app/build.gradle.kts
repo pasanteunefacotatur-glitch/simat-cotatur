@@ -11,8 +11,8 @@ android {
     applicationId = "com.cotatur.simat"
     minSdk = 26
     targetSdk = 35
-    versionCode = 4
-    versionName = "0.7.3-beta"
+    versionCode = 5
+    versionName = "0.7.4-beta"
   }
 
   buildTypes {

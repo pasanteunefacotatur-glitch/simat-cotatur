@@ -1,6 +1,7 @@
 package com.cotatur.simat.ui.prestador
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cotatur.simat.data.local.CatalogosGeograficos
 import com.cotatur.simat.data.local.EncuestaPrestadorLocal
 import com.cotatur.simat.data.local.EncuestaRepository
 import com.cotatur.simat.ui.theme.BrandAmber
@@ -94,10 +97,10 @@ fun CensoPrestadoresScreen(
         "TRANSPORTE" to "🚐 Transporte"
     )
 
-    val municipios = listOf(
-        "San Cristóbal", "Cárdenas", "Junín", "Jáuregui",
-        "Guásimos", "Lobatera", "Capacho", "Uribante"
-    )
+    var mostrar29Municipios by remember {
+        mutableStateOf(municipio !in CatalogosGeograficos.MUNICIPIOS_FRECUENTES)
+    }
+    var filtroMunPst by remember { mutableStateOf("") }
 
     val rangosOcupacion = listOf("0-25%", "26-50%", "51-75%", "76-100%")
     val evaluaciones = listOf("MEJOR" to "📈 Mejor", "IGUAL" to "⚖️ Igual", "PEOR" to "📉 Menor")
@@ -175,7 +178,7 @@ fun CensoPrestadoresScreen(
 
             // Municipio
             Text(
-                text = "Municipio de Ubicación:",
+                text = "Municipio de Ubicación en Táchira:",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -185,12 +188,87 @@ fun CensoPrestadoresScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                municipios.forEach { mun ->
+                CatalogosGeograficos.MUNICIPIOS_FRECUENTES.forEach { mun ->
+                    val esSel = !mostrar29Municipios && municipio == mun
                     ChipOpcion(
                         texto = mun,
-                        seleccionado = municipio == mun,
-                        onClick = { municipio = mun }
+                        seleccionado = esSel,
+                        onClick = {
+                            mostrar29Municipios = false
+                            municipio = mun
+                        }
                     )
+                }
+
+                ChipOpcion(
+                    texto = if (mostrar29Municipios) "📍 Municipio: $municipio" else "📍 Ver los 29 Municipios / Buscar",
+                    seleccionado = mostrar29Municipios,
+                    onClick = { mostrar29Municipios = !mostrar29Municipios }
+                )
+            }
+
+            if (mostrar29Municipios) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BrandAmber.copy(alpha = 0.6f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "🏛️ Catálogo de los 29 Municipios del Táchira:",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        OutlinedTextField(
+                            value = filtroMunPst,
+                            onValueChange = { filtroMunPst = it },
+                            placeholder = { Text("Filtrar por nombre o pueblo...") },
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BrandGreen,
+                                focusedLabelColor = BrandGreen
+                            )
+                        )
+
+                        val filtrados = CatalogosGeograficos.MUNICIPIOS_TACHIRA_29
+                            .filter { filtroMunPst.isBlank() || it.contains(filtroMunPst, ignoreCase = true) }
+
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            filtrados.forEach { m ->
+                                val sel = municipio == m
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (sel) BrandGreen else MaterialTheme.colorScheme.surface)
+                                        .border(1.dp, if (sel) BrandGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable { municipio = m }
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = m,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (sel) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (sel) Color.White else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+
+                        Text(
+                            text = "✅ Municipio PST: $municipio",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = BrandGreen
+                        )
+                    }
                 }
             }
 
