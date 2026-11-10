@@ -1,3 +1,5 @@
+import { CATALOGO_PAISES_MUNDIAL } from "./data/paises.js";
+
 /**
  * ==============================================================================
  * PROYECTO: Sistema de Medición y Estadística Turística (Borrador Fase 1)
@@ -112,34 +114,9 @@ export const CATALOGO_MUNICIPIOS_TACHIRA = [
 ];
 
 /**
- * Catálogo de Países de Procedencia ordenados por mayor flujo hacia el Táchira.
+ * Catálogo de Países de Procedencia: Catálogo mundial completo (200 países con banderas).
  */
-export const CATALOGO_PAISES = [
-    { codigo: "CO", nombre: "Colombia", referencias: "Cúcuta, Norte de Santander, Bogotá, Bucaramanga, Medellín, Cali", uso: 1000 },
-    { codigo: "US", nombre: "Estados Unidos", referencias: "USA, Miami, Florida, Nueva York, Texas", uso: 500 },
-    { codigo: "ES", nombre: "España", referencias: "Madrid, Barcelona, Canarias, Tenerife", uso: 450 },
-    { codigo: "EC", nombre: "Ecuador", referencias: "Quito, Guayaquil, Cuenca", uso: 400 },
-    { codigo: "PE", nombre: "Perú", referencias: "Lima, Arequipa, Trujillo", uso: 380 },
-    { codigo: "CL", nombre: "Chile", referencias: "Santiago, Valparaíso", uso: 360 },
-    { codigo: "PA", nombre: "Panamá", referencias: "Ciudad de Panamá", uso: 340 },
-    { codigo: "MX", nombre: "México", referencias: "CDMX, Monterrey, Guadalajara", uso: 320 },
-    { codigo: "AR", nombre: "Argentina", referencias: "Buenos Aires, Córdoba", uso: 300 },
-    { codigo: "BR", nombre: "Brasil", referencias: "São Paulo, Manaos, Boa Vista, Río", uso: 280 },
-    { codigo: "IT", nombre: "Italia", referencias: "Roma, Milán, Nápoles", uso: 260 },
-    { codigo: "PT", nombre: "Portugal", referencias: "Lisboa, Madeira, Oporto", uso: 240 },
-    { codigo: "CA", nombre: "Canadá", referencias: "Toronto, Montreal, Vancouver", uso: 220 },
-    { codigo: "DE", nombre: "Alemania", referencias: "Berlín, Múnich, Frankfurt", uso: 200 },
-    { codigo: "FR", nombre: "Francia", referencias: "París, Lyon", uso: 180 },
-    { codigo: "DO", nombre: "República Dominicana", referencias: "Santo Domingo, Punta Cana", uso: 160 },
-    { codigo: "CR", nombre: "Costa Rica", referencias: "San José", uso: 150 },
-    { codigo: "UY", nombre: "Uruguay", referencias: "Montevideo", uso: 140 },
-    { codigo: "BO", nombre: "Bolivia", referencias: "La Paz, Santa Cruz", uso: 130 },
-    { codigo: "PY", nombre: "Paraguay", referencias: "Asunción", uso: 120 },
-    { codigo: "GB", nombre: "Reino Unido", referencias: "Londres, Inglaterra", uso: 110 },
-    { codigo: "CH", nombre: "Suiza", referencias: "Zúrich, Ginebra", uso: 100 },
-    { codigo: "CN", nombre: "China", referencias: "Pekín, Shanghái", uso: 90 },
-    { codigo: "OT", nombre: "Otro país", referencias: "Internacional", uso: 50 }
-];
+export const CATALOGO_PAISES = CATALOGO_PAISES_MUNDIAL;
 
 // Catálogo de Estados de Venezuela ordenados por mayor emisión de visitantes al Táchira
 export const ESTADOS_VENEZUELA = [

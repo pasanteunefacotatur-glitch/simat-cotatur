@@ -60,9 +60,18 @@ export function renderStepProcedencia(containerId) {
                 <label for="select-estado-origen" class="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
                     Estado de residencia habitual <span class="text-red-500">*</span>
                 </label>
+                <!-- Acceso rápido en 1 toque para los estados más frecuentes -->
+                <div class="flex flex-wrap gap-1.5 mb-2.5" id="chips-estados-rapidos">
+                    <button type="button" class="chip-estado text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:border-emerald-500 transition-colors" data-estado="Zulia">Zulia</button>
+                    <button type="button" class="chip-estado text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:border-emerald-500 transition-colors" data-estado="Mérida">Mérida</button>
+                    <button type="button" class="chip-estado text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:border-emerald-500 transition-colors" data-estado="Barinas">Barinas</button>
+                    <button type="button" class="chip-estado text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:border-emerald-500 transition-colors" data-estado="Distrito Capital">Caracas / Dtto Capital</button>
+                    <button type="button" class="chip-estado text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:border-emerald-500 transition-colors" data-estado="Carabobo">Carabobo</button>
+                    <button type="button" class="chip-estado text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:border-emerald-500 transition-colors" data-estado="Lara">Lara</button>
+                </div>
                 <select id="select-estado-origen" 
                     class="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl px-3.5 py-3 text-sm text-gray-900 dark:text-white focus:border-[#198754] focus:ring-1 focus:ring-[#198754] outline-none transition-all">
-                    <option value="" disabled selected>Seleccione el estado de procedencia...</option>
+                    <option value="" disabled selected>O seleccione cualquier otro estado de Venezuela...</option>
                     ${estadosOptions}
                 </select>
             </div>
@@ -84,9 +93,9 @@ export function renderStepProcedencia(containerId) {
     createAutocomplete({
         mountId: "mount-autocomplete-pais",
         inputId: "input-pais-origen",
-        placeholder: "Indique el país de procedencia...",
+        placeholder: "Indique el país de procedencia (ej: Rusia, Colombia, España)...",
         items: CATALOGO_PAISES,
-        getLabel: (item) => item.nombre,
+        getLabel: (item) => `${item.bandera ? `${item.bandera} ` : ""}${item.nombre}`,
         getSubLabel: (item) => item.referencias ? `Ref: ${item.referencias}` : "",
         getSearchString: (item) => `${item.nombre} ${item.codigo} ${item.referencias || ""}`,
         allowCustom: true
@@ -110,5 +119,25 @@ export function renderStepProcedencia(containerId) {
         btnNacional.setAttribute("data-selected", "false");
         wrapInternacional.classList.remove("hidden");
         wrapNacional.classList.add("hidden");
+    });
+
+    // Eventos para chips rápidos de estado en 1 toque
+    const selectEstado = document.getElementById("select-estado-origen");
+    document.querySelectorAll(".chip-estado").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const estado = btn.getAttribute("data-estado");
+            if (selectEstado) {
+                selectEstado.value = estado;
+                // Disparar evento change para validaciones
+                selectEstado.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+            // Resaltar chip activo
+            document.querySelectorAll(".chip-estado").forEach(c => {
+                c.classList.remove("bg-emerald-600", "text-white", "border-emerald-600");
+                c.classList.add("bg-gray-100", "dark:bg-slate-800", "text-gray-700", "dark:text-slate-300");
+            });
+            btn.classList.remove("bg-gray-100", "dark:bg-slate-800", "text-gray-700", "dark:text-slate-300");
+            btn.classList.add("bg-emerald-600", "text-white", "border-emerald-600");
+        });
     });
 }

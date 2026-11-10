@@ -4,12 +4,18 @@ package com.cotatur.simat.data.local
  * ==============================================================================
  * PROYECTO: SIMAT-COTATUR
  * ARCHIVO: CatalogosGeograficos.kt
- * DESCRIPCIÓN: Catálogos oficiales para recolección de datos geográficos exactos:
- *              - Los 29 Municipios del Estado Táchira con sus capitales.
- *              - Todos los Estados de Venezuela (24 entidades federales).
- *              - Catálogo amplio de Países internacionales y emisores turísticos.
+ * DESCRIPCIÓN: Catálogos oficiales para recolección turística exacta:
+ *              - Los 29 Municipios del Táchira con sus capitales.
+ *              - Los 24 Estados de Venezuela.
+ *              - Catálogo mundial de 200 países con códigos ISO y banderas.
  * ==============================================================================
  */
+data class PaisCatalogo(
+    val codigo: String,
+    val nombre: String,
+    val bandera: String
+)
+
 object CatalogosGeograficos {
 
     val MUNICIPIOS_TACHIRA_29 = listOf(
@@ -45,29 +51,9 @@ object CatalogosGeograficos {
     )
 
     val MUNICIPIOS_FRECUENTES = listOf(
-        "San Cristóbal",
-        "Cárdenas (Táriba)",
-        "Junín (Rubio)",
-        "Jáuregui (La Grita)",
-        "Guásimos (Palmira)",
-        "Lobatera (San Pedro)",
-        "Capacho Nuevo/Viejo",
-        "Uribante (Pregonero)",
-        "Bolívar (San Antonio)"
-    )
-
-    val PAISES_CATALOGO = listOf(
-        "Colombia", "España", "Estados Unidos", "Ecuador", "Perú",
-        "Chile", "Panamá", "México", "Argentina", "Brasil",
-        "Italia", "Portugal", "Canadá", "Alemania", "Francia",
-        "República Dominicana", "Costa Rica", "Uruguay", "Bolivia",
-        "Paraguay", "Reino Unido", "Suiza", "China", "Países Bajos",
-        "Bélgica", "Aruba / Curazao", "Trinidad y Tobago"
-    )
-
-    val PAISES_FRECUENTES = listOf(
-        "Colombia", "España", "Estados Unidos",
-        "Ecuador", "Perú", "Chile"
+        "San Cristóbal", "Cárdenas (Táriba)", "Junín (Rubio)",
+        "Jáuregui (La Grita)", "Guásimos (Palmira)", "Lobatera (San Pedro)",
+        "Capacho Nuevo (Independencia)", "Uribante (Pregonero)", "Bolívar (San Antonio)"
     )
 
     val ESTADOS_VENEZUELA_24 = listOf(
@@ -80,8 +66,217 @@ object CatalogosGeograficos {
     )
 
     val ESTADOS_FRECUENTES = listOf(
-        "Zulia", "Mérida", "Barinas", "Distrito Capital",
-        "Carabobo", "Lara", "Táchira (Local)", "Trujillo",
-        "Aragua", "Anzoátegui", "Bolívar"
+        "Zulia", "Mérida", "Barinas", "Distrito Capital", "Carabobo", "Lara"
     )
+
+    val PAISES_FRECUENTES = listOf(
+        "Colombia", "Estados Unidos", "España", "Ecuador", "Perú", "Chile"
+    )
+
+    val PAISES_MUNDIAL = listOf(
+        PaisCatalogo("CO", "Colombia", "🇨🇴"),
+        PaisCatalogo("US", "Estados Unidos", "🇺🇸"),
+        PaisCatalogo("ES", "España", "🇪🇸"),
+        PaisCatalogo("EC", "Ecuador", "🇪🇨"),
+        PaisCatalogo("PE", "Perú", "🇵🇪"),
+        PaisCatalogo("CL", "Chile", "🇨🇱"),
+        PaisCatalogo("PA", "Panamá", "🇵🇦"),
+        PaisCatalogo("MX", "México", "🇲🇽"),
+        PaisCatalogo("AR", "Argentina", "🇦🇷"),
+        PaisCatalogo("BR", "Brasil", "🇧🇷"),
+        PaisCatalogo("IT", "Italia", "🇮🇹"),
+        PaisCatalogo("PT", "Portugal", "🇵🇹"),
+        PaisCatalogo("CA", "Canadá", "🇨🇦"),
+        PaisCatalogo("DE", "Alemania", "🇩🇪"),
+        PaisCatalogo("FR", "Francia", "🇫🇷"),
+        PaisCatalogo("RU", "Rusia", "🇷🇺"),
+        PaisCatalogo("DO", "República Dominicana", "🇩🇴"),
+        PaisCatalogo("CR", "Costa Rica", "🇨🇷"),
+        PaisCatalogo("UY", "Uruguay", "🇺🇾"),
+        PaisCatalogo("BO", "Bolivia", "🇧🇴"),
+        PaisCatalogo("PY", "Paraguay", "🇵🇾"),
+        PaisCatalogo("GB", "Reino Unido", "🇬🇧"),
+        PaisCatalogo("CH", "Suiza", "🇨🇭"),
+        PaisCatalogo("CN", "China", "🇨🇳"),
+        PaisCatalogo("TR", "Turquía", "🇹🇷"),
+        PaisCatalogo("JP", "Japón", "🇯🇵"),
+        PaisCatalogo("NL", "Países Bajos", "🇳🇱"),
+        PaisCatalogo("BE", "Bélgica", "🇧🇪"),
+        PaisCatalogo("CU", "Cuba", "🇨🇺"),
+        PaisCatalogo("AW", "Aruba", "🇦🇼"),
+        PaisCatalogo("CW", "Curazao", "🇨🇼"),
+        PaisCatalogo("TT", "Trinidad y Tobago", "🇹🇹"),
+        PaisCatalogo("PR", "Puerto Rico", "🇵🇷"),
+        PaisCatalogo("GT", "Guatemala", "🇬🇹"),
+        PaisCatalogo("SV", "El Salvador", "🇸🇻"),
+        PaisCatalogo("HN", "Honduras", "🇭🇳"),
+        PaisCatalogo("NI", "Nicaragua", "🇳🇮"),
+        PaisCatalogo("PL", "Polonia", "🇵🇱"),
+        PaisCatalogo("SE", "Suecia", "🇸🇪"),
+        PaisCatalogo("NO", "Noruega", "🇳🇴"),
+        PaisCatalogo("DK", "Dinamarca", "🇩🇰"),
+        PaisCatalogo("FI", "Finlandia", "🇫🇮"),
+        PaisCatalogo("IE", "Irlanda", "🇮🇪"),
+        PaisCatalogo("AT", "Austria", "🇦🇹"),
+        PaisCatalogo("GR", "Grecia", "🇬🇷"),
+        PaisCatalogo("CZ", "República Checa", "🇨🇿"),
+        PaisCatalogo("HU", "Hungría", "🇭🇺"),
+        PaisCatalogo("RO", "Rumania", "🇷🇴"),
+        PaisCatalogo("UA", "Ucrania", "🇺🇦"),
+        PaisCatalogo("AU", "Australia", "🇦🇺"),
+        PaisCatalogo("NZ", "Nueva Zelanda", "🇳🇿"),
+        PaisCatalogo("KR", "Corea del Sur", "🇰🇷"),
+        PaisCatalogo("IN", "India", "🇮🇳"),
+        PaisCatalogo("IL", "Israel", "🇮🇱"),
+        PaisCatalogo("AE", "Emiratos Árabes Unidos", "🇦🇪"),
+        PaisCatalogo("SA", "Arabia Saudita", "🇸🇦"),
+        PaisCatalogo("EG", "Egipto", "🇪🇬"),
+        PaisCatalogo("ZA", "Sudáfrica", "🇿🇦"),
+        PaisCatalogo("MA", "Marruecos", "🇲🇦"),
+        PaisCatalogo("LB", "Líbano", "🇱🇧"),
+        PaisCatalogo("SY", "Siria", "🇸🇾"),
+        PaisCatalogo("JO", "Jordania", "🇯🇴"),
+        PaisCatalogo("ID", "Indonesia", "🇮🇩"),
+        PaisCatalogo("MY", "Malasia", "🇲🇾"),
+        PaisCatalogo("SG", "Singapur", "🇸🇬"),
+        PaisCatalogo("TH", "Tailandia", "🇹🇭"),
+        PaisCatalogo("PH", "Filipinas", "🇵🇭"),
+        PaisCatalogo("VN", "Vietnam", "🇻🇳"),
+        PaisCatalogo("TW", "Taiwán", "🇹🇼"),
+        PaisCatalogo("HK", "Hong Kong", "🇭🇰"),
+        PaisCatalogo("AF", "Afganistán", "🇦🇫"),
+        PaisCatalogo("AL", "Albania", "🇦🇱"),
+        PaisCatalogo("AD", "Andorra", "🇦🇩"),
+        PaisCatalogo("AO", "Angola", "🇦🇴"),
+        PaisCatalogo("AG", "Antigua y Barbuda", "🇦🇬"),
+        PaisCatalogo("DZ", "Argelia", "🇩🇿"),
+        PaisCatalogo("AM", "Armenia", "🇦🇲"),
+        PaisCatalogo("AZ", "Azerbaiyán", "🇦🇿"),
+        PaisCatalogo("BS", "Bahamas", "🇧🇸"),
+        PaisCatalogo("BD", "Bangladés", "🇧🇩"),
+        PaisCatalogo("BB", "Barbados", "🇧🇧"),
+        PaisCatalogo("BH", "Baréin", "🇧🇭"),
+        PaisCatalogo("BZ", "Belice", "🇧🇿"),
+        PaisCatalogo("BJ", "Benín", "🇧🇯"),
+        PaisCatalogo("BY", "Bielorrusia", "🇧🇾"),
+        PaisCatalogo("MM", "Birmania (Myanmar)", "🇲🇲"),
+        PaisCatalogo("BA", "Bosnia y Herzegovina", "🇧🇦"),
+        PaisCatalogo("BW", "Botsuana", "🇧🇼"),
+        PaisCatalogo("BN", "Brunéi", "🇧🇳"),
+        PaisCatalogo("BG", "Bulgaria", "🇧🇬"),
+        PaisCatalogo("BF", "Burkina Faso", "🇧🇫"),
+        PaisCatalogo("BI", "Burundi", "🇧🇮"),
+        PaisCatalogo("BT", "Bután", "🇧🇹"),
+        PaisCatalogo("CV", "Cabo Verde", "🇨🇻"),
+        PaisCatalogo("KH", "Camboya", "🇰🇭"),
+        PaisCatalogo("CM", "Camerún", "🇨🇲"),
+        PaisCatalogo("QA", "Catar", "🇶🇦"),
+        PaisCatalogo("TD", "Chad", "🇹🇩"),
+        PaisCatalogo("CY", "Chipre", "🇨🇾"),
+        PaisCatalogo("VA", "Ciudad del Vaticano", "🇻🇦"),
+        PaisCatalogo("KM", "Comoras", "🇰🇲"),
+        PaisCatalogo("KP", "Corea del Norte", "🇰🇵"),
+        PaisCatalogo("CI", "Costa de Marfil", "🇨🇮"),
+        PaisCatalogo("HR", "Croacia", "🇭🇷"),
+        PaisCatalogo("DM", "Dominica", "🇩🇲"),
+        PaisCatalogo("ER", "Eritrea", "🇪🇷"),
+        PaisCatalogo("SK", "Eslovaquia", "🇸🇰"),
+        PaisCatalogo("SI", "Eslovenia", "🇸🇮"),
+        PaisCatalogo("EE", "Estonia", "🇪🇪"),
+        PaisCatalogo("ET", "Etiopía", "🇪🇹"),
+        PaisCatalogo("FJ", "Fiyi", "🇫🇯"),
+        PaisCatalogo("GA", "Gabón", "🇬🇦"),
+        PaisCatalogo("GM", "Gambia", "🇬🇲"),
+        PaisCatalogo("GE", "Georgia", "🇬🇪"),
+        PaisCatalogo("GH", "Ghana", "🇬🇭"),
+        PaisCatalogo("GD", "Granada", "🇬🇩"),
+        PaisCatalogo("GN", "Guinea", "🇬🇳"),
+        PaisCatalogo("GW", "Guinea-Bisáu", "🇬🇼"),
+        PaisCatalogo("GQ", "Guinea Ecuatorial", "🇬🇶"),
+        PaisCatalogo("GY", "Guyana", "🇬🇾"),
+        PaisCatalogo("HT", "Haití", "🇭🇹"),
+        PaisCatalogo("IQ", "Irak", "🇮🇶"),
+        PaisCatalogo("IR", "Irán", "🇮🇷"),
+        PaisCatalogo("IS", "Islandia", "🇮🇸"),
+        PaisCatalogo("MH", "Islas Marshall", "🇲🇭"),
+        PaisCatalogo("SB", "Islas Salomón", "🇸🇧"),
+        PaisCatalogo("JM", "Jamaica", "🇯🇲"),
+        PaisCatalogo("KZ", "Kazajistán", "🇰🇿"),
+        PaisCatalogo("KE", "Kenia", "🇰🇪"),
+        PaisCatalogo("KG", "Kirguistán", "🇰🇬"),
+        PaisCatalogo("KI", "Kiribati", "🇰🇮"),
+        PaisCatalogo("KW", "Kuwait", "🇰🇼"),
+        PaisCatalogo("LA", "Laos", "🇱🇦"),
+        PaisCatalogo("LS", "Lesoto", "🇱🇸"),
+        PaisCatalogo("LV", "Letonia", "🇱🇻"),
+        PaisCatalogo("LR", "Liberia", "🇱🇷"),
+        PaisCatalogo("LY", "Libia", "🇱🇾"),
+        PaisCatalogo("LI", "Liechtenstein", "🇱🇮"),
+        PaisCatalogo("LT", "Lituania", "🇱🇹"),
+        PaisCatalogo("LU", "Luxemburgo", "🇱🇺"),
+        PaisCatalogo("MK", "Macedonia del Norte", "🇲🇰"),
+        PaisCatalogo("MG", "Madagascar", "🇲🇬"),
+        PaisCatalogo("MW", "Malaui", "🇲🇼"),
+        PaisCatalogo("MV", "Maldivas", "🇲🇻"),
+        PaisCatalogo("ML", "Malí", "🇲🇱"),
+        PaisCatalogo("MT", "Malta", "🇲🇹"),
+        PaisCatalogo("MU", "Mauricio", "🇲🇺"),
+        PaisCatalogo("MR", "Mauritania", "🇲🇷"),
+        PaisCatalogo("FM", "Micronesia", "🇫🇲"),
+        PaisCatalogo("MD", "Moldavia", "🇲🇩"),
+        PaisCatalogo("MC", "Mónaco", "🇲🇨"),
+        PaisCatalogo("MN", "Mongolia", "🇲🇳"),
+        PaisCatalogo("ME", "Montenegro", "🇲🇪"),
+        PaisCatalogo("MZ", "Mozambique", "🇲🇿"),
+        PaisCatalogo("NA", "Namibia", "🇳🇦"),
+        PaisCatalogo("NR", "Nauru", "🇳🇷"),
+        PaisCatalogo("NP", "Nepal", "🇳🇵"),
+        PaisCatalogo("NE", "Níger", "🇳🇪"),
+        PaisCatalogo("NG", "Nigeria", "🇳🇬"),
+        PaisCatalogo("OM", "Omán", "🇴🇲"),
+        PaisCatalogo("PK", "Pakistán", "🇵🇰"),
+        PaisCatalogo("PW", "Palaos", "🇵🇼"),
+        PaisCatalogo("PS", "Palestina", "🇵🇸"),
+        PaisCatalogo("PG", "Papúa Nueva Guinea", "🇵🇬"),
+        PaisCatalogo("CF", "República Centroafricana", "🇨🇫"),
+        PaisCatalogo("CG", "República del Congo", "🇨🇬"),
+        PaisCatalogo("CD", "República Democrática del Congo", "🇨🇩"),
+        PaisCatalogo("RW", "Ruanda", "🇷🇼"),
+        PaisCatalogo("WS", "Samoa", "🇼🇸"),
+        PaisCatalogo("KN", "San Cristóbal y Nieves", "🇰🇳"),
+        PaisCatalogo("SM", "San Marino", "🇸🇲"),
+        PaisCatalogo("VC", "San Vicente y las Granadinas", "🇻🇨"),
+        PaisCatalogo("LC", "Santa Lucía", "🇱🇨"),
+        PaisCatalogo("ST", "Santo Tomé y Príncipe", "🇸🇹"),
+        PaisCatalogo("SN", "Senegal", "🇸🇳"),
+        PaisCatalogo("RS", "Serbia", "🇷🇸"),
+        PaisCatalogo("SC", "Seychelles", "🇸🇨"),
+        PaisCatalogo("SL", "Sierra Leona", "🇸🇱"),
+        PaisCatalogo("SO", "Somalia", "🇸🇴"),
+        PaisCatalogo("LK", "Sri Lanka", "🇱🇰"),
+        PaisCatalogo("SZ", "Suazilandia (Eswatini)", "🇸🇿"),
+        PaisCatalogo("SD", "Sudán", "🇸🇩"),
+        PaisCatalogo("SS", "Sudán del Sur", "🇸🇸"),
+        PaisCatalogo("SR", "Surinam", "🇸🇷"),
+        PaisCatalogo("TZ", "Tanzania", "🇹🇿"),
+        PaisCatalogo("TJ", "Tayikistán", "🇹🇯"),
+        PaisCatalogo("TL", "Timor Oriental", "🇹🇱"),
+        PaisCatalogo("TG", "Togo", "🇹🇬"),
+        PaisCatalogo("TO", "Tonga", "🇹🇴"),
+        PaisCatalogo("TN", "Túnez", "🇹🇳"),
+        PaisCatalogo("TM", "Turkmenistán", "🇹🇲"),
+        PaisCatalogo("TV", "Tuvalu", "🇹🇻"),
+        PaisCatalogo("UG", "Uganda", "🇺🇬"),
+        PaisCatalogo("UZ", "Uzbekistán", "🇺🇿"),
+        PaisCatalogo("VU", "Vanuatu", "🇻🇺"),
+        PaisCatalogo("YE", "Yemen", "🇾🇪"),
+        PaisCatalogo("DJ", "Yibuti", "🇩🇯"),
+        PaisCatalogo("ZM", "Zambia", "🇿🇲"),
+        PaisCatalogo("ZW", "Zimbabue", "🇿🇼"),
+        PaisCatalogo("OT", "Otro país", "🌐"),
+    )
+
+    val PAISES_CATALOGO: List<String> by lazy {
+        PAISES_MUNDIAL.map { it.nombre }
+    }
 }
