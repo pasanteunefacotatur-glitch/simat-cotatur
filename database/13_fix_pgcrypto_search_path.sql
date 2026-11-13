@@ -9,6 +9,12 @@
 --              `extensions` al search_path de todas las funciones del proyecto.
 -- ==============================================================================
 
+ALTER TABLE public.perfiles_funcionarios
+    ADD COLUMN IF NOT EXISTS sexo VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS avatar_url TEXT,
+    ADD COLUMN IF NOT EXISTS correo_verificado_google BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS auth_user_id UUID;
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
 DO $$
@@ -32,3 +38,5 @@ BEGIN
     END LOOP;
 END
 $$;
+
+NOTIFY pgrst, 'reload schema';
