@@ -63,7 +63,7 @@ BEGIN
         'mensaje', 'Perfil actualizado exitosamente'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 2. FUNCIÓN RPC: ASIGNAR FUNCIONARIO A UN PUNTO DE ENCUESTA DIRECTAMENTE
 CREATE OR REPLACE FUNCTION public.admin_asignar_funcionario_punto(
@@ -93,7 +93,7 @@ BEGIN
         'mensaje', 'Funcionario asignado exitosamente al punto'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 3. FUNCIÓN RPC: OBTENER DETALLE DE UN PUNTO CON SUS FUNCIONARIOS PARTICIPANTES
 CREATE OR REPLACE FUNCTION public.admin_obtener_punto_detalle(
@@ -137,7 +137,7 @@ BEGIN
         'participantes', v_participantes
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 4. CONCEDER PERMISOS DE EJECUCIÓN A ANON Y AUTHENTICATED
 GRANT EXECUTE ON FUNCTION public.auth_actualizar_mi_perfil(UUID, TEXT, TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;

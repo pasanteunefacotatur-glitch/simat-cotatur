@@ -12,24 +12,16 @@
  * ==============================================================================
  */
 
+import { escapeHtml, llamarRpcSegura } from "../utils/sessionSecurity.js";
+
 const CONFIG_CODIGO_MULTI = "SYS_ASIGNACIONES_MULTIPUNTO";
 const LOCAL_MULTI_KEY = "simat_asignaciones_multipunto_v1";
-
-function escapeHtml(str) {
-    if (!str) return "";
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
 
 /**
  * Obtiene el mapa de asignaciones múltiples { [puntoId]: [funcId1, funcId2, ...] }
  * sincronizado en vivo con Supabase.
  */
-export async function obtenerMapaAsignacionesMultiples(supabaseConfig) {
+export async function obtenerMapaAsignacionesMultiples(supabaseConfig, token = "") {
     let mapaLocal = {};
     try {
         mapaLocal = JSON.parse(localStorage.getItem(LOCAL_MULTI_KEY) || "{}");
@@ -37,22 +29,21 @@ export async function obtenerMapaAsignacionesMultiples(supabaseConfig) {
         mapaLocal = {};
     }
 
-    if (!navigator.onLine) return mapaLocal;
+    if (!navigator.onLine || !token) return mapaLocal;
 
     try {
-        const res = await fetch(
-            `${supabaseConfig.SUPABASE_URL}/rest/v1/calendario_asuetos_eventos?select=descripcion&codigo=eq.${CONFIG_CODIGO_MULTI}`,
-            {
-                headers: {
-                    "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
-                }
-            }
-        );
+        const res = await llamarRpcSegura(supabaseConfig, "admin_gestionar_calendario", {
+            p_accion: "LISTAR",
+            p_token: token,
+            p_datos: {}
+        });
         if (res.ok) {
-            const rows = await res.json();
-            if (Array.isArray(rows) && rows.length > 0 && rows[0].descripcion) {
-                const parsed = JSON.parse(rows[0].descripcion);
+            const data = await res.json();
+            const fila = Array.isArray(data?.asuntos)
+                ? data.asuntos.find(r => r.codigo === CONFIG_CODIGO_MULTI)
+                : null;
+            if (fila && fila.descripcion) {
+                const parsed = JSON.parse(fila.descripcion);
                 if (parsed && typeof parsed === "object") {
                     localStorage.setItem(LOCAL_MULTI_KEY, JSON.stringify(parsed));
                     return parsed;
@@ -69,12 +60,12 @@ export async function obtenerMapaAsignacionesMultiples(supabaseConfig) {
  */
 export async function guardarAsignacionesPuntoEnServidor(
     supabaseConfig,
-    credencial,
+    token,
     puntoId,
     funcionariosIds = []
 ) {
     const idsUnicos = Array.from(new Set(funcionariosIds.filter(Boolean)));
-    const mapa = await obtenerMapaAsignacionesMultiples(supabaseConfig);
+    const mapa = await obtenerMapaAsignacionesMultiples(supabaseConfig, token);
     mapa[puntoId] = idsUnicos;
 
     try {
@@ -83,45 +74,29 @@ export async function guardarAsignacionesPuntoEnServidor(
 
     // 1. Persistir mapa JSON multipunto en Supabase vía RPC admin_gestionar_calendario
     try {
-        await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_calendario`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
-                "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
-            },
-            body: JSON.stringify({
-                p_accion: "GUARDAR",
-                p_credencial: credencial || "",
-                p_datos: {
-                    codigo: CONFIG_CODIGO_MULTI,
-                    nombre: "Registro Interno de Asignaciones Multipunto",
-                    tipo_cuestionario: "SISTEMA_CONFIG",
-                    fecha_inicio: "2000-01-01",
-                    fecha_fin: "2000-01-01",
-                    prioridad: 0,
-                    activo: false,
-                    descripcion: JSON.stringify(mapa)
-                }
-            })
+        await llamarRpcSegura(supabaseConfig, "admin_gestionar_calendario", {
+            p_accion: "GUARDAR",
+            p_token: token || "",
+            p_datos: {
+                codigo: CONFIG_CODIGO_MULTI,
+                nombre: "Registro Interno de Asignaciones Multipunto",
+                tipo_cuestionario: "SISTEMA_CONFIG",
+                fecha_inicio: "2000-01-01",
+                fecha_fin: "2000-01-01",
+                prioridad: 0,
+                activo: false,
+                descripcion: JSON.stringify(mapa)
+            }
         });
     } catch (_) {}
 
     // 2. Sincronizar columna punto_asignado_id en perfiles_funcionarios para cada asignado
     for (const fid of idsUnicos) {
         try {
-            await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_asignar_funcionario_punto`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
-                },
-                body: JSON.stringify({
-                    p_credencial: credencial || "",
-                    p_funcionario_id: fid,
-                    p_punto_id: puntoId
-                })
+            await llamarRpcSegura(supabaseConfig, "admin_asignar_funcionario_punto", {
+                p_token: token || "",
+                p_funcionario_id: fid,
+                p_punto_id: puntoId
             });
         } catch (_) {}
     }

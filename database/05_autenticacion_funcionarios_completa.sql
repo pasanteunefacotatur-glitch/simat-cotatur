@@ -24,13 +24,12 @@ ALTER TABLE public.perfiles_funcionarios
     ADD COLUMN IF NOT EXISTS avatar_url TEXT,
     ADD COLUMN IF NOT EXISTS ultimo_ingreso TIMESTAMPTZ;
 
--- Crear supervisores iniciales por defecto (Cédula: 00000000 y 31061007, clave: cotatur2026)
+-- Crear supervisores iniciales por defecto con cambio obligatorio de contraseña en primer ingreso
 INSERT INTO public.perfiles_funcionarios (id, cedula, nombre_completo, cargo, rol, activo, debe_cambiar_clave, password_hash)
 VALUES 
-('00000000-0000-0000-0000-000000000000', '00000000', 'Supervisor General COTATUR', 'Supervisión de Operativo', 'SUPERVISOR', TRUE, FALSE, crypt('cotatur2026', gen_salt('bf'))),
-('14651847-e3c8-4b12-bd0d-1944aacec972', '31061007', 'Britney (Supervisora General SIMAT-COTATUR)', 'Administradora del Sistema SIMAT', 'SUPERVISOR', TRUE, FALSE, crypt('cotatur2026', gen_salt('bf')))
-ON CONFLICT (cedula) DO UPDATE 
-SET rol = 'SUPERVISOR', activo = TRUE, debe_cambiar_clave = FALSE, password_hash = crypt('cotatur2026', gen_salt('bf'));
+('00000000-0000-0000-0000-000000000000', '00000000', 'Supervisor General COTATUR', 'Supervisión de Operativo', 'SUPERVISOR', TRUE, TRUE, crypt('00000000', gen_salt('bf'))),
+('14651847-e3c8-4b12-bd0d-1944aacec972', '31061007', 'Britney (Supervisora General SIMAT-COTATUR)', 'Administradora del Sistema SIMAT', 'SUPERVISOR', TRUE, TRUE, crypt('31061007', gen_salt('bf')))
+ON CONFLICT (cedula) DO NOTHING;
 
 -- 2. TABLA DE CONFIGURACIÓN GLOBAL DEL SISTEMA
 CREATE TABLE IF NOT EXISTS public.configuracion_global (
@@ -59,7 +58,6 @@ DECLARE
     v_func RECORD;
     v_clave_valida BOOLEAN := FALSE;
     v_permitir_punto BOOLEAN := FALSE;
-    v_pin_maestro CONSTANT TEXT := 'cotatur2026';
     v_identificador_limpio TEXT;
 BEGIN
     v_identificador_limpio := UPPER(TRIM(p_identificador));
@@ -68,25 +66,6 @@ BEGIN
     SELECT valor_bool INTO v_permitir_punto 
     FROM public.configuracion_global 
     WHERE clave = 'permitir_seleccion_punto_encuestador';
-
-    -- Caso especial: PIN maestro directo de supervisión
-    IF (v_identificador_limpio = 'ADMIN' OR v_identificador_limpio = 'COTATUR' OR v_identificador_limpio = '00000000') AND p_clave = v_pin_maestro THEN
-        RETURN jsonb_build_object(
-            'status', 'success',
-            'es_supervisor', TRUE,
-            'debe_cambiar_clave', FALSE,
-            'funcionario', jsonb_build_object(
-                'id', '00000000-0000-0000-0000-000000000000',
-                'cedula', '00000000',
-                'nombre_completo', 'Supervisor General COTATUR',
-                'rol', 'SUPERVISOR',
-                'cargo', 'Supervisión de Operativo'
-            ),
-            'configuracion', jsonb_build_object(
-                'permitir_seleccion_punto', COALESCE(v_permitir_punto, FALSE)
-            )
-        );
-    END IF;
 
     -- Buscar funcionario por cédula (con o sin prefijo V-)
     SELECT f.*, p.nombre AS punto_nombre
@@ -97,22 +76,6 @@ BEGIN
        OR UPPER(TRIM(REPLACE(f.cedula, 'V-', ''))) = UPPER(TRIM(REPLACE(v_identificador_limpio, 'V-', '')));
 
     IF NOT FOUND THEN
-        -- Si intentó con el PIN maestro pero puso cualquier cédula válida
-        IF p_clave = v_pin_maestro THEN
-            RETURN jsonb_build_object(
-                'status', 'success',
-                'es_supervisor', TRUE,
-                'debe_cambiar_clave', FALSE,
-                'funcionario', jsonb_build_object(
-                    'id', '00000000-0000-0000-0000-000000000000',
-                    'cedula', v_identificador_limpio,
-                    'nombre_completo', 'Supervisor Autorizado (PIN Maestro)',
-                    'rol', 'SUPERVISOR'
-                ),
-                'configuracion', jsonb_build_object('permitir_seleccion_punto', COALESCE(v_permitir_punto, FALSE))
-            );
-        END IF;
-
         RAISE EXCEPTION 'USUARIO_NO_ENCONTRADO: La cédula % no está registrada en COTATUR.', p_identificador
         USING ERRCODE = '42501';
     END IF;
@@ -124,13 +87,9 @@ BEGIN
     END IF;
 
     -- Validar contraseña:
-    -- A) Clave por defecto inicial (la cédula del usuario en cualquier formato)
-    -- B) Hash guardado en base de datos
-    -- C) PIN maestro institucional de emergencia ('cotatur2026')
-    IF p_clave = v_pin_maestro THEN
-        v_clave_valida := TRUE;
-    ELSIF v_func.password_hash IS NULL OR v_func.debe_cambiar_clave = TRUE THEN
-        -- Durante primer ingreso o reinicio, la clave es su cédula en CUALQUIER formato (con puntos, V-, espacios o números)
+    -- A) Clave por defecto inicial (la cédula del usuario)
+    -- B) Hash bcrypt guardado en base de datos
+    IF v_func.password_hash IS NULL OR v_func.debe_cambiar_clave = TRUE THEN
         v_clave_valida := (
             TRIM(p_clave) = TRIM(v_func.cedula) 
             OR UPPER(TRIM(REPLACE(p_clave, 'V-', ''))) = UPPER(TRIM(REPLACE(v_func.cedula, 'V-', '')))
@@ -168,7 +127,7 @@ BEGIN
         )
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 5. FUNCIÓN RPC: PRIMER INGRESO (ACTUALIZAR CONTRASEÑA Y PERFIL)
 CREATE OR REPLACE FUNCTION public.auth_primer_ingreso(
@@ -206,7 +165,7 @@ BEGIN
         'mensaje', 'Perfil y contraseña actualizados exitosamente'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 6. FUNCIÓN RPC MAESTRA: GESTIÓN DE FUNCIONARIOS V2 POR EL SUPERVISOR
 CREATE OR REPLACE FUNCTION public.admin_gestionar_funcionarios_v2(
@@ -350,7 +309,7 @@ BEGIN
             RAISE EXCEPTION 'Acción administrativa no soportada: %', p_accion;
     END CASE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 7. CONCEDER PERMISOS EXPLÍCITOS A ANON Y AUTHENTICATED
 GRANT EXECUTE ON FUNCTION public.auth_login_funcionario(TEXT, TEXT) TO anon, authenticated;

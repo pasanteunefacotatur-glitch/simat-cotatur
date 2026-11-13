@@ -120,7 +120,7 @@ export function initModalDetallePuntoController(
 
     async function precargarFuncionarios() {
         try {
-            const cred = getAdminCredencialCallback();
+            const token = getAdminCredencialCallback();
             const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
                 method: "POST",
                 headers: {
@@ -128,7 +128,7 @@ export function initModalDetallePuntoController(
                     "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                 },
-                body: JSON.stringify({ p_credencial: cred, p_accion: "LISTAR", p_datos: {} })
+                body: JSON.stringify({ p_token: token, p_accion: "LISTAR", p_datos: {} })
             });
             if (res.ok) {
                 const list = await res.json();
@@ -143,9 +143,10 @@ export function initModalDetallePuntoController(
         if (modalDetalle) modalDetalle.classList.remove("hidden");
 
         try {
+            const token = getAdminCredencialCallback();
             const [todosLosFuncionarios, mapaMulti, resDetalle] = await Promise.all([
                 precargarFuncionarios(),
-                obtenerMapaAsignacionesMultiples(supabaseConfig),
+                obtenerMapaAsignacionesMultiples(supabaseConfig, token),
                 fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_obtener_punto_detalle`, {
                     method: "POST",
                     headers: {
@@ -153,7 +154,7 @@ export function initModalDetallePuntoController(
                         "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                         "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                     },
-                    body: JSON.stringify({ p_punto_id: puntoId })
+                    body: JSON.stringify({ p_token: token, p_punto_id: puntoId })
                 })
             ]);
 
@@ -183,7 +184,7 @@ export function initModalDetallePuntoController(
                 todosLosPuntos: getPuntosListCallback(),
                 onChangeCallback: async (nuevosIdsAsignados) => {
                     if (statusEl) statusEl.textContent = "⏳ Guardando cambios...";
-                    const cred = getAdminCredencialCallback();
+                    const token = getAdminCredencialCallback();
 
                     // Detectar si algún funcionario que tenía este punto como primario fue quitado
                     const quitados = participantesPrimarios.filter(id => !nuevosIdsAsignados.includes(id));
@@ -197,7 +198,7 @@ export function initModalDetallePuntoController(
                                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                                 },
                                 body: JSON.stringify({
-                                    p_credencial: cred,
+                                    p_token: token,
                                     p_funcionario_id: qId,
                                     p_punto_id: null
                                 })
@@ -207,7 +208,7 @@ export function initModalDetallePuntoController(
 
                     await guardarAsignacionesPuntoEnServidor(
                         supabaseConfig,
-                        cred,
+                        token,
                         activePuntoIdModal,
                         nuevosIdsAsignados
                     );

@@ -191,8 +191,8 @@
                             🔒 Solo editable vía Google
                         </span>
                     </div>
-                    <input type="email" id="activar-email" placeholder="usuario@gmail.com"
-                        class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
+                    <input type="email" id="activar-email" readonly placeholder="Se vinculará automáticamente con Google"
+                        class="w-full bg-slate-100 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white outline-none cursor-not-allowed" />
                     <p class="text-[10px] text-slate-400 mt-1">
                         💡 Este correo quedará blindado en el sistema y servirá para recuperar su contraseña mediante Google.
                     </p>
@@ -205,7 +205,7 @@
                             Nueva Contraseña Personal: <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="password" id="activar-nueva-clave" required placeholder="Mínimo 4 caracteres"
+                            <input type="password" id="activar-nueva-clave" required placeholder="Mínimo 8 caracteres"
                                 class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 pr-9 text-slate-900 dark:text-white outline-none focus:border-[#198754] focus:ring-1 focus:ring-[#198754]" />
                             <button type="button" id="btn-toggle-activar-clave1" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs" title="Mostrar u ocultar contraseña">
                                 👁️
@@ -255,8 +255,14 @@
                     <img src="./assets/img/logo_tachira.png" alt="Táchira Turismo" class="h-5 sm:h-7 w-auto object-contain" />
                 </div>
 
-                <!-- Botón con icono de tema en la esquina superior derecha + Salir -->
-                <div class="flex items-center space-x-2 shrink-0 order-2 sm:order-3">
+                <!-- Botón con icono de tema en la esquina superior derecha + APK + Salir -->
+                <div class="flex items-center space-x-2 shrink-0 order-2 sm:order-3 no-print">
+                    <button type="button" id="btn-header-apk-jump"
+                        class="px-2.5 py-1.5 bg-[#198754]/25 hover:bg-[#198754]/40 text-emerald-300 font-bold rounded-lg border border-emerald-500/40 text-xs transition-colors flex items-center gap-1"
+                        title="Descargar o copiar enlace del APK móvil">
+                        <span>📲</span>
+                        <span class="hidden md:inline">APK Móvil</span>
+                    </button>
                     <div id="admin-theme-btn-mount"></div>
                     <button type="button" id="btn-admin-logout"
                         class="px-2.5 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-semibold rounded-lg border border-red-500/30 text-xs transition-colors"
@@ -333,8 +339,9 @@
                 <div id="tab-puntos-mount"></div>
             </section>
 
-            <!-- PESTAÑA 4: PERSONAL ENCUESTADOR Y AJUSTES DE CAMPO -->
+            <!-- PESTAÑA 4: PERSONAL ENCUESTADOR, APK OFICIAL Y AJUSTES DE CAMPO -->
             <section id="tab-personal" class="admin-tab-content hidden space-y-6">
+                <div id="tab-apk-download-mount"></div>
                 <div id="tab-personal-mount"></div>
             </section>
 

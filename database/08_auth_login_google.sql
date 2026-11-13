@@ -80,7 +80,7 @@ BEGIN
         )
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- Conceder permisos explícitos
 GRANT EXECUTE ON FUNCTION public.auth_login_google(TEXT, TEXT) TO anon, authenticated;

@@ -56,7 +56,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-5 space-y-6">
             
             <!-- Barra Superior de Control -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800 no-print">
                 <div class="flex-1">
                     <label for="admin-select-punto-qr" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                         Seleccionar Punto de Control para generar material:
@@ -99,7 +99,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
             </div>
 
             <!-- Panel de Optimización de Densidad y Acortador de Enlaces -->
-            <div class="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-4 space-y-3">
+            <div class="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-4 space-y-3 no-print">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="space-y-0.5">
                         <span class="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
@@ -142,7 +142,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 
                 <!-- Columna Izquierda (1 Col): Solo el QR Puro para Publicidad -->
-                <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 flex flex-col items-center text-center space-y-3">
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 flex flex-col items-center text-center space-y-3 no-print">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                         Código QR Aislado (Alta Calidad)
                     </span>
@@ -174,7 +174,7 @@ export function renderCartelQRAdmin(containerId, puntosList = []) {
 
                 <!-- Columna Derecha (2 Cols): Lámina Completa de Cartel Oficial -->
                 <div class="lg:col-span-2 flex flex-col items-center">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2 no-print">
                         Vista previa del cartel oficial para impresión (Hoja Carta)
                     </span>
 

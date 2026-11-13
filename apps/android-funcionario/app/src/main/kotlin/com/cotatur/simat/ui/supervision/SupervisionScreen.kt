@@ -22,14 +22,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +42,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cotatur.simat.data.local.SessionManager
+import com.cotatur.simat.data.remote.SupabaseRemoteClient
 import com.cotatur.simat.ui.supervision.components.CardKpiEjecutivo
 import com.cotatur.simat.ui.supervision.components.ItemSemaforoPunto
 import com.cotatur.simat.ui.supervision.models.EstadoPeajeAuditoria
@@ -50,6 +55,7 @@ import com.cotatur.simat.ui.theme.BrandAmberDark
 import com.cotatur.simat.ui.theme.BrandGreen
 import com.cotatur.simat.ui.theme.BrandGreenLight
 import com.cotatur.simat.ui.theme.BrandGreenNeon
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -74,59 +80,46 @@ fun SupervisionScreen(
     supervisorNombre: String = "Supervisor General COTATUR"
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var isOnline by remember { mutableStateOf(verificarInternetActivo(context)) }
+    var cargando by remember { mutableStateOf(false) }
+    var errorEstado by remember { mutableStateOf<String?>(null) }
     var ultimaActualizacionHora by remember {
         mutableStateOf(SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date()))
     }
 
-    val kpis = remember { KpiResumenSupervision() }
-    val listaPuntos = remember {
-        listOf(
-            EstadoPeajeAuditoria(
-                codigo = "PEAJE_TARIBA",
-                nombre = "Peaje Vega de Táriba (Troncal 1)",
-                encuestadorNombre = "María Delgado",
-                encuestadorCedula = "V-24.120.304",
-                encuestasHoy = 168,
-                distanciaM = 35,
-                fueraDePunto = false,
-                esSimulado = false,
-                ultimaSincronizacionMin = 4
-            ),
-            EstadoPeajeAuditoria(
-                codigo = "PEAJE_CAMPANA",
-                nombre = "Peaje La Campana (Troncal 5)",
-                encuestadorNombre = "José Gregorio Colmenares",
-                encuestadorCedula = "V-19.845.210",
-                encuestasHoy = 124,
-                distanciaM = 580,
-                fueraDePunto = true, // Alerta Geocerca > 350m
-                esSimulado = false,
-                ultimaSincronizacionMin = 18
-            ),
-            EstadoPeajeAuditoria(
-                codigo = "PUENTE_ATANASIO",
-                nombre = "Puente Atanasio Girardot",
-                encuestadorNombre = "Carlos Ramírez",
-                encuestadorCedula = "V-20.158.994",
-                encuestasHoy = 96,
-                distanciaM = 75,
-                fueraDePunto = false,
-                esSimulado = false,
-                ultimaSincronizacionMin = 8
-            ),
-            EstadoPeajeAuditoria(
-                codigo = "TERMINAL_SC",
-                nombre = "Terminal Central San Cristóbal",
-                encuestadorNombre = "Yulimar Blanco",
-                encuestadorCedula = "V-26.784.112",
-                encuestasHoy = 142,
-                distanciaM = 22,
-                fueraDePunto = false,
-                esSimulado = false,
-                ultimaSincronizacionMin = 2
-            )
-        )
+    var kpis by remember { mutableStateOf(KpiResumenSupervision()) }
+    var listaPuntos by remember { mutableStateOf<List<EstadoPeajeAuditoria>>(emptyList()) }
+
+    suspend fun recargarMetricas(notificarToast: Boolean = false) {
+        isOnline = verificarInternetActivo(context)
+        if (!isOnline) {
+            errorEstado = "Sin conexión a Internet. Conecta a la red para consultar los KPIs reales."
+            return
+        }
+        val token = SessionManager.getInstance(context).obtenerSesion()?.sessionToken.orEmpty()
+        if (token.isBlank()) {
+            errorEstado = "Sesión sin token remoto. Inicia sesión en línea para consultar métricas."
+            return
+        }
+        cargando = true
+        errorEstado = null
+        val snap = SupabaseRemoteClient.obtenerMetricasSupervision(token)
+        cargando = false
+        ultimaActualizacionHora = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date())
+        if (snap.ok) {
+            kpis = snap.kpis
+            listaPuntos = snap.puntos
+            if (notificarToast) {
+                Toast.makeText(context, "Métricas actualizadas ($ultimaActualizacionHora)", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            errorEstado = snap.errorMsg ?: "No se pudieron obtener los indicadores de supervisión."
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        recargarMetricas(notificarToast = false)
     }
 
     Surface(
@@ -279,15 +272,35 @@ fun SupervisionScreen(
 
                             FilledTonalButton(
                                 onClick = {
-                                    isOnline = verificarInternetActivo(context)
-                                    ultimaActualizacionHora = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date())
-                                    Toast.makeText(context, "Métricas actualizadas ($ultimaActualizacionHora)", Toast.LENGTH_SHORT).show()
+                                    scope.launch { recargarMetricas(notificarToast = true) }
                                 },
+                                enabled = !cargando,
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                             ) {
-                                Text("🔄", fontSize = 11.sp)
+                                if (cargando) {
+                                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                                } else {
+                                    Text("🔄", fontSize = 11.sp)
+                                }
                             }
+                        }
+                    }
+
+                    errorEstado?.let { err ->
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFEF4444).copy(alpha = 0.12f))
+                        ) {
+                            Text(
+                                text = err,
+                                modifier = Modifier.padding(10.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFFEF4444),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
 
@@ -335,9 +348,9 @@ fun SupervisionScreen(
                         CardKpiEjecutivo(
                             modifier = Modifier.weight(1f),
                             titulo = "Puntos Activos",
-                            valorPrincipal = "${listaPuntos.count { !it.fueraDePunto }} / ${listaPuntos.size}",
-                            unidad = "en norma",
-                            subtexto = if (listaPuntos.any { it.fueraDePunto }) "1 alerta GPS fuera de sitio" else "100% en sitio",
+                            valorPrincipal = "${listaPuntos.size}",
+                            unidad = "habilitados",
+                            subtexto = if (listaPuntos.isEmpty()) "Sin puntos consultados" else "${listaPuntos.count { !it.fueraDePunto }} puntos operativos",
                             colorAcento = if (listaPuntos.any { it.fueraDePunto }) Color(0xFFEF4444) else BrandGreen,
                             icono = "📡"
                         )

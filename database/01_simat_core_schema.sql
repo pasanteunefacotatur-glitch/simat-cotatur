@@ -167,7 +167,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 DROP TRIGGER IF EXISTS trg_asignar_temporada_encuestas ON public.encuestas_turisticas;
 CREATE TRIGGER trg_asignar_temporada_encuestas
@@ -260,7 +260,7 @@ BEGIN
         'insertadas', v_insertadas
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 5.2 RPC: INGESTA SEGURA PARA CANAL WEB (TURISTA)
 -- Protege la tabla de accesos directos de bots.
@@ -314,7 +314,7 @@ BEGIN
         'mensaje', 'Encuesta turística registrada exitosamente en COTATUR'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- ==============================================================================
 -- 6. POLÍTICAS DE SEGURIDAD A NIVEL DE FILA (RLS)

@@ -153,7 +153,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
 
     let selectedYear = new Date().getFullYear();
     let dbAsuetos = [];
-    const credencial = authUser?.id || authUser?.cedula || "";
+    const sessionToken = authUser?.token || "";
 
     async function cargarDesdeSupabase() {
         try {
@@ -166,7 +166,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                 },
                 body: JSON.stringify({
                     p_accion: "LISTAR",
-                    p_credencial: credencial,
+                    p_token: sessionToken,
                     p_datos: {}
                 })
             });
@@ -390,7 +390,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                             },
                             body: JSON.stringify({
                                 p_accion: "GUARDAR",
-                                p_credencial: credencial,
+                                p_token: sessionToken,
                                 p_datos: {
                                     codigo: item.codigo,
                                     nombre: item.nombre,
@@ -446,7 +446,7 @@ export function renderCalendarioAsuetosAdmin(containerId, authUser) {
                         },
                         body: JSON.stringify({
                             p_accion: "GUARDAR",
-                            p_credencial: credencial,
+                            p_token: sessionToken,
                             p_datos: {
                                 codigo: nuevoCodigo,
                                 nombre,

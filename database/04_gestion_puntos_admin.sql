@@ -105,7 +105,7 @@ BEGIN
             RAISE EXCEPTION 'Acción administrativa no soportada: %', p_accion;
     END CASE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- Permisos de ejecución para anon y authenticated (la seguridad la valida el PIN interno)
 GRANT EXECUTE ON FUNCTION public.admin_gestionar_punto(TEXT, TEXT, JSONB) TO anon, authenticated;

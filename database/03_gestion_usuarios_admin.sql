@@ -29,7 +29,7 @@ ON public.perfiles_funcionarios FOR ALL TO service_role
 USING (TRUE) WITH CHECK (TRUE);
 
 -- 2. FUNCIÓN RPC: GESTIÓN DE USUARIOS POR EL ADMINISTRADOR (WEB Y APK)
--- PIN por defecto institucional: 'cotatur2026' (editable por la gerencia)
+-- Requiere sesión activa verificada de Supervisión.
 CREATE OR REPLACE FUNCTION public.admin_gestionar_funcionario(
     p_pin TEXT,
     p_accion TEXT,
@@ -137,7 +137,7 @@ BEGIN
             RAISE EXCEPTION 'ACCION_NO_VALIDA: Las acciones permitidas son LISTAR, CREAR, TOGGLE_ACTIVO o ELIMINAR.';
     END CASE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 3. DATOS SEMILLA: ENCUESTADORES INSTITUCIONALES DE PRUEBA
 INSERT INTO public.perfiles_funcionarios (cedula, nombre_completo, cargo, telefono, punto_asignado_id, activo)

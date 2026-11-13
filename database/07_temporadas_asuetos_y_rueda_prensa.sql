@@ -102,7 +102,7 @@ CREATE OR REPLACE FUNCTION public.obtener_temporada_activa()
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_hoy DATE := CURRENT_DATE;
@@ -149,7 +149,7 @@ CREATE OR REPLACE FUNCTION public.admin_gestionar_calendario(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_supervisor_ok BOOLEAN;
@@ -238,7 +238,7 @@ CREATE OR REPLACE FUNCTION public.admin_obtener_metricas_gobernador(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_supervisor_ok BOOLEAN;
@@ -387,7 +387,7 @@ CREATE OR REPLACE FUNCTION public.registrar_encuesta_web(p_datos JSONB)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_id UUID;
@@ -404,8 +404,8 @@ BEGIN
         calif_vialidad, calif_seguridad, calif_hospitalidad, calif_servicios_publicos,
         gasto_promedio_diario_usd, captured_at
     ) VALUES (
-        v_id, v_punto_id, 'WEB', p_datos->>'visitor_client_id',
-        COALESCE((p_datos->>'duracion_llenado_seg')::INT, 15),
+        v_id, v_punto_id, 'WEB', NULLIF(p_datos->>'visitor_client_id', '')::UUID,
+        GREATEST(COALESCE((p_datos->>'duracion_llenado_seg')::INT, 15), 10),
         COALESCE(p_datos->>'procedencia_tipo', 'NACIONAL'),
         p_datos->>'estado_origen', COALESCE(p_datos->>'pais_origen', 'Venezuela'),
         p_datos->>'municipio_destino',
@@ -438,7 +438,7 @@ CREATE OR REPLACE FUNCTION public.sincronizar_lote_prestadores_apk(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_funcionario_activo BOOLEAN;

@@ -120,7 +120,7 @@ BEGIN
         )
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 3. FUNCIÓN RPC: VINCULAR O ACTUALIZAR CORREO EXCLUSIVAMENTE CON GOOGLE
 CREATE OR REPLACE FUNCTION public.auth_vincular_correo_google(
@@ -177,7 +177,7 @@ BEGIN
         'email', v_email_limpio
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 4. ACTUALIZAR RPC DE PERFIL: ELIMINAR MODIFICACIÓN ARBITRARIA DE CORREO
 CREATE OR REPLACE FUNCTION public.auth_actualizar_mi_perfil(
@@ -231,7 +231,7 @@ BEGIN
         'mensaje', 'Perfil actualizado exitosamente (Correo preservado bajo protección Google).'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions;
 
 -- 5. PERMISOS
 GRANT EXECUTE ON FUNCTION public.auth_recuperar_clave_con_google(TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;

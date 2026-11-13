@@ -13,11 +13,11 @@ import android.net.NetworkCapabilities
  */
 
 data class KpiResumenSupervision(
-    val totalVisitantesHoy: Int = 1420,
-    val totalGruposHoy: Int = 412,
-    val ocupacionHoteleraPct: Int = 84,
-    val gastoPromedioUsd: Double = 38.5,
-    val pernoctaPromedioDias: Double = 3.2
+    val totalVisitantesHoy: Int = 0,
+    val totalGruposHoy: Int = 0,
+    val ocupacionHoteleraPct: Int = 0,
+    val gastoPromedioUsd: Double = 0.0,
+    val pernoctaPromedioDias: Double = 0.0
 )
 
 data class EstadoPeajeAuditoria(

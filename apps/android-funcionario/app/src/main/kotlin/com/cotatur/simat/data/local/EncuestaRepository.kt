@@ -137,6 +137,18 @@ class EncuestaRepository(context: Context) {
         list
     }
 
+    suspend fun obtenerPendientesPrestadores(limite: Int = 100): List<EncuestaPrestadorLocal> = withContext(Dispatchers.IO) {
+        val db = dbHelper.readableDatabase
+        val list = mutableListOf<EncuestaPrestadorLocal>()
+        val query = "SELECT * FROM encuestas_prestadores_local WHERE sincronizado = 0 ORDER BY created_at ASC LIMIT ?"
+        db.rawQuery(query, arrayOf(limite.toString())).use { cursor ->
+            while (cursor.moveToNext()) {
+                list.add(mapearCursorPrestador(cursor))
+            }
+        }
+        list
+    }
+
     suspend fun marcarTuristasSincronizadas(ids: List<String>) = withContext(Dispatchers.IO) {
         if (ids.isEmpty()) return@withContext
         val db = dbHelper.writableDatabase
@@ -154,6 +166,42 @@ class EncuestaRepository(context: Context) {
             db.endTransaction()
         }
         actualizarContadorPendientesInterno()
+    }
+
+    suspend fun marcarPrestadoresSincronizados(ids: List<String>) = withContext(Dispatchers.IO) {
+        if (ids.isEmpty()) return@withContext
+        val db = dbHelper.writableDatabase
+        val ahora = ahoraIso()
+        db.beginTransaction()
+        try {
+            val stmt = db.compileStatement("UPDATE encuestas_prestadores_local SET sincronizado = 1, sincronizado_at = ? WHERE id = ?")
+            for (id in ids) {
+                stmt.bindString(1, ahora)
+                stmt.bindString(2, id)
+                stmt.executeUpdateDelete()
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+        actualizarContadorPendientesInterno()
+    }
+
+    suspend fun guardarConfigValor(clave: String, valor: String) = withContext(Dispatchers.IO) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("clave", clave)
+            put("valor", valor)
+            put("updated_at", ahoraIso())
+        }
+        db.insertWithOnConflict("configuracion_local", null, values, android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    suspend fun obtenerConfigValor(clave: String): String? = withContext(Dispatchers.IO) {
+        val db = dbHelper.readableDatabase
+        db.rawQuery("SELECT valor FROM configuracion_local WHERE clave = ? LIMIT 1", arrayOf(clave)).use { cursor ->
+            if (cursor.moveToNext()) cursor.getString(0) else null
+        }
     }
 
     suspend fun contarPendientesTotal(): Int = withContext(Dispatchers.IO) {
@@ -220,6 +268,29 @@ class EncuestaRepository(context: Context) {
             califHospitalidad = c.getInt(c.getColumnIndexOrThrow("calif_hospitalidad")),
             califServiciosPublicos = c.getInt(c.getColumnIndexOrThrow("calif_servicios_publicos")),
             respuestasTemporadaJson = c.getString(c.getColumnIndexOrThrow("respuestas_temporada_json")),
+            sincronizado = c.getInt(c.getColumnIndexOrThrow("sincronizado")) == 1,
+            sincronizadoAt = c.getString(c.getColumnIndexOrThrow("sincronizado_at")),
+            createdAt = c.getString(c.getColumnIndexOrThrow("created_at"))
+        )
+    }
+
+    private fun mapearCursorPrestador(c: Cursor): EncuestaPrestadorLocal {
+        return EncuestaPrestadorLocal(
+            id = c.getString(c.getColumnIndexOrThrow("id")),
+            puntoCodigo = c.getString(c.getColumnIndexOrThrow("punto_codigo")),
+            funcionarioCedula = c.getString(c.getColumnIndexOrThrow("funcionario_cedula")),
+            temporadaCodigo = c.getString(c.getColumnIndexOrThrow("temporada_codigo")),
+            nombreEstablecimiento = c.getString(c.getColumnIndexOrThrow("nombre_establecimiento")),
+            tipoPrestador = c.getString(c.getColumnIndexOrThrow("tipo_prestador")),
+            municipio = c.getString(c.getColumnIndexOrThrow("municipio")),
+            habitacionesDisponibles = c.getInt(c.getColumnIndexOrThrow("habitaciones_disponibles")),
+            habitacionesOcupadas = c.getInt(c.getColumnIndexOrThrow("habitaciones_ocupadas")),
+            porcentajeOcupacionRango = c.getString(c.getColumnIndexOrThrow("porcentaje_ocupacion_rango")),
+            tarifaPromedioUsd = c.getDouble(c.getColumnIndexOrThrow("tarifa_promedio_usd")),
+            evaluacionTemporada = c.getString(c.getColumnIndexOrThrow("evaluacion_temporada")),
+            dificultadesOperativas = c.getString(c.getColumnIndexOrThrow("dificultades_operativas")),
+            califSeguridadAcompanamiento = c.getInt(c.getColumnIndexOrThrow("calif_seguridad_acompanamiento")),
+            capturedAt = c.getString(c.getColumnIndexOrThrow("captured_at")),
             sincronizado = c.getInt(c.getColumnIndexOrThrow("sincronizado")) == 1,
             sincronizadoAt = c.getString(c.getColumnIndexOrThrow("sincronizado_at")),
             createdAt = c.getString(c.getColumnIndexOrThrow("created_at"))

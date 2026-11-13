@@ -164,7 +164,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
     // 1. Cargar configuración global del punto
     async function cargarConfiguracionGlobal() {
         try {
-            const cred = getAdminCredencialCallback();
+            const token = getAdminCredencialCallback();
             const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
                 method: "POST",
                 headers: {
@@ -172,7 +172,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                 },
-                body: JSON.stringify({ p_credencial: cred, p_accion: "CONFIG_GET", p_datos: {} })
+                body: JSON.stringify({ p_token: token, p_accion: "CONFIG_GET", p_datos: {} })
             });
             if (res.ok) {
                 const cfg = await res.json();
@@ -188,7 +188,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
         labelSwitch.textContent = permitido ? "🟢 Libre Selección" : "🔒 Asignación Fija";
 
         try {
-            const cred = getAdminCredencialCallback();
+            const token = getAdminCredencialCallback();
             await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
                 method: "POST",
                 headers: {
@@ -197,7 +197,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                 },
                 body: JSON.stringify({
-                    p_credencial: cred,
+                    p_token: token,
                     p_accion: "CONFIG_SET",
                     p_datos: { permitir_seleccion_punto_encuestador: permitido }
                 })
@@ -213,7 +213,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
         if (cardsContainer) cardsContainer.innerHTML = `<div class="p-6 text-center text-slate-400">Cargando personal...</div>`;
 
         try {
-            const cred = getAdminCredencialCallback();
+            const token = getAdminCredencialCallback();
             const [res, mapaMulti] = await Promise.all([
                 fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
                     method: "POST",
@@ -222,9 +222,9 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                         "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                         "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                     },
-                    body: JSON.stringify({ p_credencial: cred, p_accion: "LISTAR", p_datos: {} })
+                    body: JSON.stringify({ p_token: token, p_accion: "LISTAR", p_datos: {} })
                 }),
-                obtenerMapaAsignacionesMultiples(supabaseConfig)
+                obtenerMapaAsignacionesMultiples(supabaseConfig, token)
             ]);
 
             if (!res.ok) throw new Error("No se pudo cargar la nómina.");
@@ -342,7 +342,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                 btn.addEventListener("click", async (e) => {
                     const id = e.currentTarget.getAttribute("data-id");
                     const action = e.currentTarget.getAttribute("data-action");
-                    const cred = getAdminCredencialCallback();
+                    const token = getAdminCredencialCallback();
 
                     if (action === "toggle") {
                         await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
@@ -352,7 +352,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                                 "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                                 "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                             },
-                            body: JSON.stringify({ p_credencial: cred, p_accion: "TOGGLE_ACTIVO", p_datos: { id } })
+                            body: JSON.stringify({ p_token: token, p_accion: "TOGGLE_ACTIVO", p_datos: { id } })
                         });
                         cargarNomina();
                     } else if (action === "reset") {
@@ -365,7 +365,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                                     "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                                 },
-                                body: JSON.stringify({ p_credencial: cred, p_accion: "RESET_PASSWORD", p_datos: { id } })
+                                body: JSON.stringify({ p_token: token, p_accion: "RESET_PASSWORD", p_datos: { id } })
                             });
                             const data = await r.json();
                             alert(data.mensaje || "Contraseña restablecida");
@@ -380,7 +380,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                                     "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                                 },
-                                body: JSON.stringify({ p_credencial: cred, p_accion: "ELIMINAR", p_datos: { id } })
+                                body: JSON.stringify({ p_token: token, p_accion: "ELIMINAR", p_datos: { id } })
                             });
                             cargarNomina();
                         }
@@ -414,7 +414,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
         btn.innerHTML = "Guardando...";
 
         try {
-            const cred = getAdminCredencialCallback();
+            const token = getAdminCredencialCallback();
             const res = await fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
                 method: "POST",
                 headers: {
@@ -423,7 +423,7 @@ export function renderGestionPersonalAdmin(containerId, supabaseConfig, getAdmin
                     "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                 },
                 body: JSON.stringify({
-                    p_credencial: cred,
+                    p_token: token,
                     p_accion: "CREAR",
                     p_datos: { cedula, rol, punto_asignado_id: puntoId }
                 })

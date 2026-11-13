@@ -319,7 +319,8 @@ input, select, textarea {
     nav,
     #admin-auth-modal,
     #btn-admin-logout,
-    .admin-tab-btn {
+    .admin-tab-btn,
+    .admin-tab-content.hidden {
         display: none !important;
     }
 

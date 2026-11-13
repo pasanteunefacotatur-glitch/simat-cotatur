@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.cotatur.simat.data.local.CatalogosGeograficos
 import com.cotatur.simat.data.local.EncuestaPrestadorLocal
 import com.cotatur.simat.data.local.EncuestaRepository
+import com.cotatur.simat.data.remote.SupabaseRemoteClient
 import com.cotatur.simat.ui.theme.BrandAmber
 import com.cotatur.simat.ui.theme.BrandGreen
 import com.cotatur.simat.ui.turista.ChipOpcion
@@ -88,6 +90,16 @@ fun CensoPrestadoresScreen(
     var dificultadOperativa by remember { mutableStateOf("Electricidad y Combustible") }
     var califSeguridad by remember { mutableIntStateOf(5) }
     var mensajeExito by remember { mutableStateOf<String?>(null) }
+    var temporadaCodigoActiva by remember { mutableStateOf("REGULAR") }
+
+    LaunchedEffect(Unit) {
+        repository.obtenerConfigValor("temporada_codigo_activa")?.let { if (it.isNotBlank()) temporadaCodigoActiva = it }
+        SupabaseRemoteClient.fetchTemporadaActiva()?.let { info ->
+            temporadaCodigoActiva = info.temporadaCodigo
+            repository.guardarConfigValor("temporada_codigo_activa", info.temporadaCodigo)
+            repository.guardarConfigValor("temporada_nombre_activa", info.nombre)
+        }
+    }
 
     val tiposPrestador = listOf(
         "HOTEL" to "🏨 Hotel",
@@ -374,7 +386,7 @@ fun CensoPrestadoresScreen(
                         val pst = EncuestaPrestadorLocal(
                             puntoCodigo = puntoCodigo,
                             funcionarioCedula = funcionarioCedula,
-                            temporadaCodigo = "REGULAR",
+                            temporadaCodigo = temporadaCodigoActiva,
                             nombreEstablecimiento = nombreEstablecimiento.ifBlank { "Establecimiento Anónimo" },
                             tipoPrestador = tipoPrestador,
                             municipio = municipio,

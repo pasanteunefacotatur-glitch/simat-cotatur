@@ -333,7 +333,7 @@ async function handleSubmitEncuesta(event) {
     event.preventDefault();
 
     const submitBtn = document.getElementById("btn-submit-encuesta");
-    const originalText = submitBtn ? submitBtn.textContent : "Registrar encuesta y descargar guía";
+    const originalMarkup = submitBtn ? submitBtn.innerHTML : "";
 
     try {
         if (submitBtn) {
@@ -479,7 +479,7 @@ async function handleSubmitEncuesta(event) {
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            if (originalMarkup) submitBtn.innerHTML = originalMarkup;
         }
     }
 }

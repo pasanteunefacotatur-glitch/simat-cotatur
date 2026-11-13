@@ -29,13 +29,12 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
-export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPinCallback, onPuntosUpdatedCallback) {
+export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminTokenCallback, onPuntosUpdatedCallback) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const obtenerPin = () => (typeof getAdminPinCallback === "function" ? getAdminPinCallback() : "cotatur2026");
+    const obtenerToken = () => (typeof getAdminTokenCallback === "function" ? getAdminTokenCallback() : "");
 
-    // Llamada directa y autorizada con PIN institucional para garantizar HTTP 200 sin errores 401 en consola
     async function rpcGestionarPunto(accion, datos = {}) {
         return fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_punto`, {
             method: "POST",
@@ -44,7 +43,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                 "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                 "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
             },
-            body: JSON.stringify({ p_pin: obtenerPin(), p_accion: accion, p_datos: datos })
+            body: JSON.stringify({ p_token: obtenerToken(), p_accion: accion, p_datos: datos })
         });
     }
 
@@ -213,14 +212,14 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
 
     const { abrirDetallePunto } = initModalDetallePuntoController(
         supabaseConfig,
-        getAdminPinCallback,
+        obtenerToken,
         () => cachedPuntosList,
         () => cargarPuntos()
     );
 
     async function inicializarSelectorPersonalCreacion() {
         try {
-            const cred = getAdminPinCallback();
+            const token = obtenerToken();
             const [resFunc, mapaMulti] = await Promise.all([
                 fetch(`${supabaseConfig.SUPABASE_URL}/rest/v1/rpc/admin_gestionar_funcionarios_v2`, {
                     method: "POST",
@@ -229,9 +228,9 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
                         "apikey": supabaseConfig.SUPABASE_PUBLISHABLE_KEY,
                         "Authorization": `Bearer ${supabaseConfig.SUPABASE_PUBLISHABLE_KEY}`
                     },
-                    body: JSON.stringify({ p_credencial: cred, p_accion: "LISTAR", p_datos: {} })
+                    body: JSON.stringify({ p_token: token, p_accion: "LISTAR", p_datos: {} })
                 }),
-                obtenerMapaAsignacionesMultiples(supabaseConfig)
+                obtenerMapaAsignacionesMultiples(supabaseConfig, token)
             ]);
 
             const todosLosFuncionarios = resFunc.ok ? await resFunc.json() : [];
@@ -412,8 +411,7 @@ export function renderGestionPuntosAdmin(containerId, supabaseConfig, getAdminPi
             // Si se seleccionaron funcionarios en la columna izquierda, asignarlos al nuevo punto
             const asignadosIds = selectorCrearController ? selectorCrearController.getSelectedIds() : [];
             if (resp.id && asignadosIds.length > 0) {
-                const cred = getAdminPinCallback();
-                await guardarAsignacionesPuntoEnServidor(supabaseConfig, cred, resp.id, asignadosIds);
+                await guardarAsignacionesPuntoEnServidor(supabaseConfig, obtenerToken(), resp.id, asignadosIds);
             }
 
             alert(`¡Punto "${nombre}" (${municipio}) registrado con éxito con ${asignadosIds.length} funcionario(s) asignado(s)!`);

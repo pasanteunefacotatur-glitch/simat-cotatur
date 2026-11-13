@@ -41,8 +41,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cotatur.simat.data.local.EncuestaPrestadorLocal
 import com.cotatur.simat.data.local.EncuestaRepository
 import com.cotatur.simat.data.local.EncuestaTuristicaLocal
+import com.cotatur.simat.data.local.SessionManager
+import com.cotatur.simat.data.remote.SupabaseRemoteClient
+import com.cotatur.simat.ui.supervision.models.verificarInternetActivo
 import com.cotatur.simat.ui.theme.BrandGreen
 import kotlinx.coroutines.launch
 
@@ -65,11 +69,14 @@ fun OutboxScreen(
 
     val totalPendientes by repository.pendientesCount.collectAsStateWithLifecycle()
     var listaTuristas by remember { mutableStateOf<List<EncuestaTuristicaLocal>>(emptyList()) }
+    var listaPrestadores by remember { mutableStateOf<List<EncuestaPrestadorLocal>>(emptyList()) }
     var sincronizando by remember { mutableStateOf(false) }
+    var syncError by remember { mutableStateOf(false) }
     var mensajeSincronizacion by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(totalPendientes) {
         listaTuristas = repository.obtenerPendientesTuristas(50)
+        listaPrestadores = repository.obtenerPendientesPrestadores(50)
     }
 
     Surface(
@@ -150,21 +157,22 @@ fun OutboxScreen(
             }
 
             mensajeSincronizacion?.let { msg ->
+                val bannerColor = if (syncError) Color(0xFFEF4444) else BrandGreen
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(BrandGreen.copy(alpha = 0.2f))
+                        .background(bannerColor.copy(alpha = 0.2f))
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = msg, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = BrandGreen)
+                    Text(text = msg, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = bannerColor)
                 }
             }
 
             // Lista de elementos en cola
             Text(
-                text = "Detalle de Encuestas en Cola (${listaTuristas.size}):",
+                text = "Detalle en Cola (${listaTuristas.size} turistas • ${listaPrestadores.size} PST):",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -174,7 +182,7 @@ fun OutboxScreen(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (listaTuristas.isEmpty()) {
+                if (listaTuristas.isEmpty() && listaPrestadores.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
@@ -190,8 +198,11 @@ fun OutboxScreen(
                         }
                     }
                 } else {
-                    items(listaTuristas, key = { it.id }) { item ->
+                    items(listaTuristas, key = { "T_${it.id}" }) { item ->
                         ItemOutboxRow(item)
+                    }
+                    items(listaPrestadores, key = { "P_${it.id}" }) { pst ->
+                        ItemOutboxPrestadorRow(pst)
                     }
                 }
             }
@@ -214,11 +225,55 @@ fun OutboxScreen(
                 Button(
                     onClick = {
                         if (totalPendientes > 0 && !sincronizando) {
+                            val token = SessionManager.getInstance(context).obtenerSesion()?.sessionToken.orEmpty()
+                            if (!verificarInternetActivo(context)) {
+                                syncError = true
+                                mensajeSincronizacion = "📡 Sin conexión a internet. Los datos permanecen seguros en SQLite."
+                                return@Button
+                            }
+                            if (token.isBlank()) {
+                                syncError = true
+                                mensajeSincronizacion = "🔒 Sesión sin token en la nube. Cierra sesión e inicia en línea para subir registros."
+                                return@Button
+                            }
                             sincronizando = true
+                            syncError = false
+                            mensajeSincronizacion = null
                             scope.launch {
-                                kotlinx.coroutines.delay(1000) // Simulación o llamada Supabase RPC
+                                val puntosMap = runCatching {
+                                    SupabaseRemoteClient.fetchPuntosCaptura().associate { it.codigo to it.id }
+                                }.getOrElse { emptyMap() }
+
+                                val loteTuristas = repository.obtenerPendientesTuristas(100)
+                                val lotePrestadores = repository.obtenerPendientesPrestadores(100)
+                                var totalSubidas = 0
+                                var errMsg: String? = null
+
+                                if (loteTuristas.isNotEmpty()) {
+                                    val (procT, resT) = SupabaseRemoteClient.sincronizarTuristasBatch(token, loteTuristas, puntosMap)
+                                    if (resT.ok && procT > 0) {
+                                        repository.marcarTuristasSincronizadas(loteTuristas.map { it.id })
+                                        totalSubidas += procT
+                                    } else if (!resT.ok) {
+                                        errMsg = if (resT.sessionExpired) "🔒 Sesión expirada. Inicia sesión nuevamente." else resT.mensaje
+                                    }
+                                }
+
+                                if (errMsg == null && lotePrestadores.isNotEmpty()) {
+                                    val (procP, resP) = SupabaseRemoteClient.sincronizarPrestadoresBatch(token, lotePrestadores, puntosMap)
+                                    if (resP.ok && procP > 0) {
+                                        repository.marcarPrestadoresSincronizados(lotePrestadores.map { it.id })
+                                        totalSubidas += procP
+                                    } else if (!resP.ok) {
+                                        errMsg = if (resP.sessionExpired) "🔒 Sesión expirada. Inicia sesión nuevamente." else resP.mensaje
+                                    }
+                                }
+
+                                listaTuristas = repository.obtenerPendientesTuristas(50)
+                                listaPrestadores = repository.obtenerPendientesPrestadores(50)
                                 sincronizando = false
-                                mensajeSincronizacion = "📡 Intentando sincronizar lote de $totalPendientes registros..."
+                                syncError = errMsg != null
+                                mensajeSincronizacion = errMsg ?: "✅ Sincronizados $totalSubidas registros en Supabase Cloud."
                             }
                         }
                     },
@@ -265,6 +320,56 @@ private fun ItemOutboxRow(item: EncuestaTuristicaLocal) {
                 )
                 Text(
                     text = "Destino: ${item.municipioDestino} • Duración: ${item.duracionLlenadoSeg}s",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFFFFC107).copy(alpha = 0.2f))
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+            ) {
+                Text(
+                    text = "En cola",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD97706)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ItemOutboxPrestadorRow(pst: EncuestaPrestadorLocal) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "🏨 PST: ${pst.nombreEstablecimiento} (${pst.tipoPrestador})",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "${pst.municipio} • Ocupación ${pst.porcentajeOcupacionRango}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

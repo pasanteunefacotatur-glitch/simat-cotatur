@@ -30,126 +30,147 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
     if (!container) return;
 
     let filtroTemporada = "TODAS";
-    let data = getMockOrInitialData();
+    let errorBannerMsg = "";
+    let data = crearEstadoVacio();
 
     async function fetchData() {
+        errorBannerMsg = "";
         container.innerHTML = `
-            <div class="p-12 text-center text-slate-400">
+            <div class="p-12 text-center text-slate-600 dark:text-slate-400">
                 <div class="inline-block animate-spin text-3xl mb-3">⚙️</div>
-                <p class="text-sm font-semibold">Generando indicadores clave de gestión turística...</p>
+                <p class="text-sm font-semibold">Consultando indicadores reales en Supabase...</p>
             </div>
         `;
 
-        if (navigator.onLine && authUser) {
-            try {
-                const credencial = authUser?.id || authUser?.cedula || "";
-                const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_obtener_metricas_gobernador`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                        "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                    },
-                    body: JSON.stringify({ p_credencial: credencial, p_temporada: filtroTemporada })
-                });
+        if (!navigator.onLine) {
+            errorBannerMsg = "Sin conexión a internet. Conéctese a la red para consultar los datos reales.";
+            data = crearEstadoVacio();
+            renderView();
+            return;
+        }
 
-                if (res.ok) {
-                    const resJson = await res.json();
-                    if (resJson && resJson.ok) {
-                        data = resJson;
-                    }
+        if (!authUser || !authUser.token) {
+            errorBannerMsg = "Sesión sin token válido para consultar estadísticas.";
+            data = crearEstadoVacio();
+            renderView();
+            return;
+        }
+
+        try {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/admin_obtener_metricas_gobernador`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
+                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ p_token: authUser.token, p_temporada: filtroTemporada })
+            });
+
+            if (res.ok) {
+                const resJson = await res.json();
+                if (resJson && resJson.ok) {
+                    data = resJson;
+                } else {
+                    errorBannerMsg = resJson?.message || "Respuesta inesperada del servidor de métricas.";
+                    data = crearEstadoVacio();
                 }
-            } catch (err) {
-                console.warn("[SIMAT] Fallback a datos locales:", err);
+            } else {
+                errorBannerMsg = res.status === 401
+                    ? "Sesión expirada. Cierre sesión y vuelva a ingresar."
+                    : `No se pudieron cargar las métricas (HTTP ${res.status}).`;
+                data = crearEstadoVacio();
             }
+        } catch (_) {
+            errorBannerMsg = "No fue posible conectar con Supabase Cloud para leer las métricas.";
+            data = crearEstadoVacio();
         }
         renderView();
     }
 
     function renderView() {
         const r = data.resumen || {};
-        const totalVisitantes = r.total_personas_estimadas || 12840;
-        const totalEncuestas = r.total_encuestas || 3210;
-        const pernoctaPromedio = r.promedio_pernocta_dias || 3.4;
-        const pctInternacional = r.pct_internacionales || 18.5;
-        const sat = data.satisfaccion || { general: 4.6, seguridad: 4.8, hospitalidad: 4.9, vialidad: 4.1, servicios: 4.2 };
+        const totalVisitantes = Number(r.total_personas_estimadas ?? 0);
+        const totalEncuestas = Number(r.total_encuestas ?? 0);
+        const pernoctaPromedio = Number(r.promedio_pernocta_dias ?? 0);
+        const pctInternacional = Number(r.pct_internacionales ?? 0);
+        const sat = data.satisfaccion || {};
+        const satGeneral = Number(sat.promedio_general ?? sat.general ?? 0);
 
-        // 1. Orígenes
-        const origenes = (data.top_origenes && data.top_origenes.length > 0) ? data.top_origenes : [
-            { origen: "Colombia (Norte Santander / Bogotá)", encuestas: 590, pct: 18.5 },
-            { origen: "Zulia", encuestas: 680, pct: 21.2 },
-            { origen: "Barinas", encuestas: 510, pct: 15.9 },
-            { origen: "Mérida", encuestas: 420, pct: 13.1 },
-            { origen: "Distrito Capital / Miranda", encuestas: 390, pct: 12.1 },
-            { origen: "Otros Estados", encuestas: 620, pct: 19.2 }
-        ];
-
-        const origenesHTML = origenes.map(o => {
-            const pct = o.pct || Math.round((o.encuestas / (totalEncuestas || 1)) * 100);
-            return `
-                <div class="space-y-1">
-                    <div class="flex justify-between text-xs font-semibold">
-                        <span class="text-slate-700 dark:text-slate-200">${escapeHtml(o.origen)}</span>
-                        <span class="text-amber-500 font-extrabold">${pct}% <span class="text-[10px] text-slate-400 font-normal">(${o.encuestas || 0} reg.)</span></span>
+        const origenes = Array.isArray(data.top_origenes) ? data.top_origenes : [];
+        const totalVisitasOrigen = origenes.reduce((acc, o) => acc + Number(o.visitas ?? o.encuestas ?? 0), 0);
+        const origenesHTML = origenes.length === 0
+            ? `<p class="text-xs text-slate-600 dark:text-slate-400 py-4 text-center">Sin encuestas registradas para calcular orígenes.</p>`
+            : origenes.map(o => {
+                const count = Number(o.visitas ?? o.encuestas ?? 0);
+                const pct = o.pct != null ? Number(o.pct) : Math.round((count / (totalVisitasOrigen || 1)) * 100);
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-slate-700 dark:text-slate-200">${escapeHtml(o.origen)}</span>
+                            <span class="text-amber-600 dark:text-amber-400 font-extrabold">${pct}% <span class="text-[10px] text-slate-500 dark:text-slate-400 font-normal">(${count} reg.)</span></span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-amber-500 to-amber-400 h-2.5 rounded-full" style="width: ${Math.min(100, Math.max(4, pct))}%"></div>
+                        </div>
                     </div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                        <div class="bg-gradient-to-r from-amber-500 to-amber-400 h-2.5 rounded-full" style="width: ${Math.min(100, Math.max(5, pct))}%"></div>
+                `;
+            }).join("");
+
+        const composicionRaw = Array.isArray(data.tipologia?.composicion) ? data.tipologia.composicion : [];
+        const totalComposicion = composicionRaw.reduce((acc, t) => acc + Number(t.cantidad ?? 0), 0);
+        const tipologiasHTML = composicionRaw.length === 0
+            ? `<p class="text-xs text-slate-600 dark:text-slate-400 py-4 text-center">Sin datos de composición de grupo todavía.</p>`
+            : composicionRaw.map(t => {
+                const pct = Math.round((Number(t.cantidad ?? 0) / (totalComposicion || 1)) * 100);
+                return `
+                    <div class="flex items-center justify-between text-xs py-1 border-b border-slate-100 dark:border-slate-800 last:border-b-0">
+                        <span class="text-slate-700 dark:text-slate-300 font-medium">${escapeHtml(t.tipo || "Sin clasificar")}</span>
+                        <span class="font-extrabold text-slate-900 dark:text-white">${pct}% <span class="text-[10px] text-slate-500 font-normal">(${Number(t.cantidad ?? 0)})</span></span>
                     </div>
-                </div>
-            `;
-        }).join("");
+                `;
+            }).join("");
 
-        // 2. Tipología
-        const tipologias = [
-            { tipo: "👨‍👩‍👧‍👦 Familias con niños / adultos", pct: 62 },
-            { tipo: "👫 Parejas", pct: 23 },
-            { tipo: "👥 Amigos / Compañeros", pct: 9 },
-            { tipo: "🎒 Individual / Mochilero", pct: 4 },
-            { tipo: "🚌 Excursiones organizadas", pct: 2 }
-        ];
-        const tipologiasHTML = tipologias.map(t => `
-            <div class="flex items-center justify-between text-xs py-1 border-b border-slate-100 dark:border-slate-800 last:border-b-0">
-                <span class="text-slate-700 dark:text-slate-300 font-medium">${t.tipo}</span>
-                <span class="font-extrabold text-slate-900 dark:text-white">${t.pct}%</span>
-            </div>
-        `).join("");
+        const ocupacion = Array.isArray(data.ocupacion_hotelera) ? data.ocupacion_hotelera : [];
+        const ocupacionHTML = ocupacion.length === 0
+            ? `<p class="text-xs text-slate-600 dark:text-slate-400 py-4 text-center">Sin censos de prestadores (PST) registrados aún.</p>`
+            : ocupacion.map(oc => {
+                const pctOcup = Number(oc.pct_ocupacion ?? oc.pct ?? 0);
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-slate-700 dark:text-slate-200">${escapeHtml(oc.municipio)}</span>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-extrabold">${pctOcup}% Ocupación</span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                            <div class="bg-emerald-500 h-2.5 rounded-full" style="width: ${Math.min(100, Math.max(0, pctOcup))}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
 
-        // 3. Ocupación Hotelera
-        const ocupacion = (data.ocupacion_hotelera && data.ocupacion_hotelera.length > 0) ? data.ocupacion_hotelera : [
-            { municipio: "San Cristóbal (Capital)", pct: 86 },
-            { municipio: "Cárdenas (Táriba)", pct: 78 },
-            { municipio: "Jáuregui (La Grita)", pct: 92 },
-            { municipio: "Bolívar (San Antonio)", pct: 72 },
-            { municipio: "Junín (Rubio)", pct: 68 }
-        ];
-        const ocupacionHTML = ocupacion.map(oc => `
-            <div class="space-y-1">
-                <div class="flex justify-between text-xs font-semibold">
-                    <span class="text-slate-700 dark:text-slate-200">${escapeHtml(oc.municipio)}</span>
-                    <span class="text-emerald-500 font-extrabold">${oc.pct || oc.pct_ocupacion}% Ocupación</span>
-                </div>
-                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                    <div class="bg-emerald-500 h-2.5 rounded-full" style="width: ${oc.pct || oc.pct_ocupacion}%"></div>
-                </div>
-            </div>
-        `).join("");
-
-        // 4. Satisfacción
         const satHTML = [
-            { label: "Hospitalidad", score: sat.hospitalidad || 4.9, icon: "🤝" },
-            { label: "Seguridad", score: sat.seguridad || 4.8, icon: "🛡️" },
-            { label: "Vialidad", score: sat.vialidad || 4.2, icon: "🛣️" },
-            { label: "Servicios", score: sat.servicios_publicos || sat.servicios || 4.3, icon: "⚡" }
+            { label: "Hospitalidad", score: Number(sat.hospitalidad ?? 0), icon: "🤝" },
+            { label: "Seguridad", score: Number(sat.seguridad ?? 0), icon: "🛡️" },
+            { label: "Vialidad", score: Number(sat.vialidad ?? 0), icon: "🛣️" },
+            { label: "Servicios", score: Number(sat.servicios_publicos ?? sat.servicios ?? 0), icon: "⚡" }
         ].map(s => `
             <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                 <span class="text-lg block">${s.icon}</span>
-                <span class="text-[10px] text-slate-400 block">${s.label}</span>
-                <span class="text-base font-black text-amber-500">${s.score} <span class="text-[10px] text-slate-400">/ 5★</span></span>
+                <span class="text-[10px] text-slate-600 dark:text-slate-400 block">${s.label}</span>
+                <span class="text-base font-black text-amber-600 dark:text-amber-400">${s.score.toFixed(1)} <span class="text-[10px] text-slate-500 dark:text-slate-400">/ 5★</span></span>
             </div>
         `).join("");
 
+        const statusNotice = errorBannerMsg
+            ? `<div class="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-semibold text-red-700 dark:text-red-300 no-print">${escapeHtml(errorBannerMsg)}</div>`
+            : (totalEncuestas === 0
+                ? `<div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs font-semibold text-amber-800 dark:text-amber-300 no-print">ℹ️ Sin encuestas registradas en este filtro todavía. Los contadores reflejan datos reales en tiempo real.</div>`
+                : "");
+
         container.innerHTML = `
             <div class="space-y-6" id="reporte-rueda-prensa-print">
+                ${statusNotice}
                 <!-- Barra Superior -->
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
                     <div>
@@ -208,21 +229,21 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                     </div>
 
                     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm">
-                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Pernocta Promedio</span>
+                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 block truncate">Pernocta Promedio</span>
                         <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1 leading-none truncate">${pernoctaPromedio} <span class="text-xs font-medium">días</span></div>
-                        <span class="text-[8px] sm:text-[9px] text-emerald-500 font-semibold mt-1 block truncate">Permanencia alta</span>
+                        <span class="text-[8px] sm:text-[9px] text-emerald-700 dark:text-emerald-400 font-semibold mt-1 block truncate">${totalEncuestas > 0 ? "Media de estadía registrada" : "Sin registros"}</span>
                     </div>
 
                     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm">
-                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Flujo Internacional</span>
+                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 block truncate">Flujo Internacional</span>
                         <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1 leading-none truncate">${pctInternacional}%</div>
-                        <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold mt-1 block truncate">Colombia principal</span>
+                        <span class="text-[8px] sm:text-[9px] text-slate-600 dark:text-slate-400 font-semibold mt-1 block truncate">Visitantes del exterior</span>
                     </div>
 
                     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm">
-                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Satisfacción Global</span>
-                        <div class="text-xl sm:text-2xl font-black text-amber-500 mt-1 leading-none truncate">${sat.general || "4.7"} <span class="text-xs text-slate-400">/ 5★</span></div>
-                        <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold mt-1 block truncate">Destino hospitalario</span>
+                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 block truncate">Satisfacción Global</span>
+                        <div class="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 leading-none truncate">${satGeneral.toFixed(1)} <span class="text-xs text-slate-500 dark:text-slate-400">/ 5★</span></div>
+                        <span class="text-[8px] sm:text-[9px] text-slate-600 dark:text-slate-400 font-semibold mt-1 block truncate">Índice promedio real</span>
                     </div>
                 </div>
 
@@ -242,8 +263,8 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                             <span class="text-[11px] font-bold text-blue-500">Composición</span>
                         </div>
                         <div class="space-y-2">${tipologiasHTML}</div>
-                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
-                            Familias y parejas representan más del 85% de la afluencia.
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-600 dark:text-slate-400">
+                            Distribución porcentual calculada en base a los registros reales del período.
                         </div>
                     </div>
 
@@ -302,7 +323,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                             </div>
                             <div class="text-right font-mono text-[10px] sm:text-xs text-slate-400 shrink-0">
                                 <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1 animate-pulse"></span>
-                                SIMAT-COTATUR • v0.7.6
+                                SIMAT-COTATUR • v0.8.0
                             </div>
                         </div>
 
@@ -325,7 +346,7 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
                             </div>
                             <div class="bg-white/5 border border-white/10 p-2.5 sm:p-3 rounded-xl min-w-0">
                                 <span class="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider block truncate">Satisfacción Global</span>
-                                <div class="text-xl sm:text-3xl font-black text-amber-500 leading-none mt-1 truncate">${sat.general || "4.7"} <span class="text-xs sm:text-sm font-normal text-slate-400">/ 5★</span></div>
+                                <div class="text-xl sm:text-3xl font-black text-amber-500 leading-none mt-1 truncate">${satGeneral.toFixed(1)} <span class="text-xs sm:text-sm font-normal text-slate-400">/ 5★</span></div>
                                 <span class="text-[8px] sm:text-[9px] text-slate-400 block mt-1 truncate">Valoración de servicios</span>
                             </div>
                         </div>
@@ -398,23 +419,25 @@ export function renderRuedaPrensaAdmin(containerId, authUser) {
         }
     }
 
-    function getMockOrInitialData() {
+    function crearEstadoVacio() {
         return {
             resumen: {
-                total_encuestas: 3210,
-                total_personas_estimadas: 12840,
-                promedio_pernocta_dias: 3.4,
-                pct_internacionales: 18.5
+                total_encuestas: 0,
+                total_personas_estimadas: 0,
+                promedio_pernocta_dias: 0,
+                pct_internacionales: 0,
+                gasto_promedio_usd: 0
             },
-            top_origenes: [
-                { origen: "Colombia: Norte de Santander y Bogotá", encuestas: 590, pct: 18.5 },
-                { origen: "Zulia", encuestas: 680, pct: 21.2 },
-                { origen: "Barinas", encuestas: 510, pct: 15.9 },
-                { origen: "Mérida", encuestas: 420, pct: 13.1 },
-                { origen: "Distrito Capital / Miranda", encuestas: 390, pct: 12.1 },
-                { origen: "Otros Estados", encuestas: 620, pct: 19.2 }
-            ],
-            satisfaccion: { general: 4.7, hospitalidad: 4.9, seguridad: 4.8, vialidad: 4.2, servicios: 4.3 }
+            top_origenes: [],
+            tipologia: { composicion: [], edades: [] },
+            ocupacion_hotelera: [],
+            satisfaccion: {
+                promedio_general: 0,
+                hospitalidad: 0,
+                seguridad: 0,
+                vialidad: 0,
+                servicios_publicos: 0
+            }
         };
     }
 

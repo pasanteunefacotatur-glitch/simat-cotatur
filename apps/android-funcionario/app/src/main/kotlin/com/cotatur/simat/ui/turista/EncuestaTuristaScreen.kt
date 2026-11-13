@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cotatur.simat.data.local.EncuestaRepository
 import com.cotatur.simat.data.local.EncuestaTuristicaLocal
+import com.cotatur.simat.data.local.GpsTrackerHelper
 import com.cotatur.simat.data.local.LocationCache
+import com.cotatur.simat.data.remote.SupabaseRemoteClient
 import com.cotatur.simat.ui.theme.BrandGreen
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -80,6 +83,20 @@ fun EncuestaTuristaScreen(
     var startTimerMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
     var mensajeExito by remember { mutableStateOf<String?>(null) }
     var encuestasGuardadasSesion by remember { mutableIntStateOf(0) }
+    var temporadaCodigoActiva by remember { mutableStateOf("REGULAR") }
+    var temporadaNombreActiva by remember { mutableStateOf("Temporada Regular de Turismo") }
+
+    LaunchedEffect(Unit) {
+        repository.obtenerConfigValor("temporada_codigo_activa")?.let { if (it.isNotBlank()) temporadaCodigoActiva = it }
+        repository.obtenerConfigValor("temporada_nombre_activa")?.let { if (it.isNotBlank()) temporadaNombreActiva = it }
+        SupabaseRemoteClient.fetchTemporadaActiva()?.let { info ->
+            temporadaCodigoActiva = info.temporadaCodigo
+            temporadaNombreActiva = info.nombre
+            repository.guardarConfigValor("temporada_codigo_activa", info.temporadaCodigo)
+            repository.guardarConfigValor("temporada_nombre_activa", info.nombre)
+        }
+        GpsTrackerHelper.actualizarDesdeUltimaUbicacion(context, puntoCodigo)
+    }
 
     // Estado del Formulario
     var procedenciaTipo by remember { mutableStateOf("NACIONAL") }
@@ -200,7 +217,10 @@ fun EncuestaTuristaScreen(
                             onGrupoChanged = { grupoTamano = it },
                             onDiasChanged = { diasEstadia = it }
                         )
-                        3 -> Paso3TemporadaView()
+                        3 -> Paso3TemporadaView(
+                            temporadaCodigo = temporadaCodigoActiva,
+                            temporadaNombre = temporadaNombreActiva
+                        )
                         4 -> Step4CalificacionView(
                             califVialidad = califVialidad,
                             califSeguridad = califSeguridad,
@@ -237,11 +257,12 @@ fun EncuestaTuristaScreen(
                         }
                         val ahoraIso = sdf.format(Date())
 
+                        val gpsEstado = GpsTrackerHelper.actualizarDesdeUltimaUbicacion(context, puntoCodigo)
                         val fix = LocationCache.obtenerFixValido()
 
                         val encuesta = EncuestaTuristicaLocal(
                             puntoCodigo = puntoCodigo,
-                            temporadaCodigo = "REGULAR",
+                            temporadaCodigo = temporadaCodigoActiva,
                             funcionarioCedula = funcionarioCedula,
                             capturedAt = ahoraIso,
                             duracionLlenadoSeg = duracionSeg,
@@ -251,6 +272,8 @@ fun EncuestaTuristaScreen(
                             gpsEsSimulado = fix?.esSimulado ?: false,
                             gpsEsCache = fix != null,
                             gpsFixId = fix?.fixId,
+                            gpsFueraDePunto = gpsEstado.fueraDePunto,
+                            distanciaPuntoM = gpsEstado.distanciaMetros,
                             procedenciaTipo = procedenciaTipo,
                             estadoOrigen = if (procedenciaTipo == "NACIONAL") estadoOrigen else null,
                             paisOrigen = if (procedenciaTipo == "INTERNACIONAL") paisOrigen else "Venezuela",
@@ -330,7 +353,11 @@ private fun BarraProgresoPills(
 }
 
 @Composable
-private fun Paso3TemporadaView() {
+private fun Paso3TemporadaView(
+    temporadaCodigo: String,
+    temporadaNombre: String
+) {
+    val esEspecial = temporadaCodigo != "REGULAR"
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -347,8 +374,14 @@ private fun Paso3TemporadaView() {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "Temporada Regular activa. No se requieren preguntas especiales hoy.",
+                text = "Temporada asignada: $temporadaNombre ($temporadaCodigo).",
                 style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = if (esEspecial) BrandGreen else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Sincronizado automáticamente con el Calendario Oficial COTATUR.",
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

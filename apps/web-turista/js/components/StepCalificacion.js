@@ -17,7 +17,7 @@ export function renderStepCalificacion(containerId) {
         <div class="py-3 border-b border-gray-100 dark:border-slate-800 last:border-b-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div>
                 <span class="text-xs sm:text-sm font-bold text-gray-800 dark:text-slate-200">${c.label}</span>
-                <span class="text-[10px] text-gray-400 dark:text-slate-500 block">Escala: 1 (Deficiente) a 5 (Excelente)</span>
+                <span class="text-[10px] text-slate-600 dark:text-slate-400 block">Escala: 1 (Deficiente) a 5 (Excelente)</span>
             </div>
             <div class="flex items-center justify-between w-full sm:w-auto gap-1 sm:gap-1.5" data-rating-group="${c.id}" data-current="${c.default}">
                 ${[1, 2, 3, 4, 5].map(num => `

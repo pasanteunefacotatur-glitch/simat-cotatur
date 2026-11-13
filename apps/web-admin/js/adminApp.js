@@ -3,7 +3,7 @@
  * PROYECTO: SIMAT-COTATUR (Sistema Integrado de Medición y Analítica Turística)
  * ARCHIVO: apps/web-admin/js/adminApp.js
  * DESCRIPCIÓN: Controlador principal del Portal de Administración y Supervisión.
- *              Flujo optimizado de pestañas: Puntos y Equipos -> QR -> Personal -> Mi Perfil.
+ *              Valida sesión criptográfica contra el servidor al iniciar.
  *              Cumple con la regla de modularidad (< 500 líneas).
  * ==============================================================================
  */
@@ -16,58 +16,65 @@ import { renderGestionPersonalAdmin } from "./components/GestionPersonalAdmin.js
 import { renderMiPerfilAdmin } from "./components/MiPerfilAdmin.js";
 import { renderRuedaPrensaAdmin } from "./components/RuedaPrensaAdmin.js";
 import { renderCalendarioAsuetosAdmin } from "./components/CalendarioAsuetosAdmin.js";
+import { renderApkDownloadCardAdmin } from "./components/ApkDownloadCardAdmin.js";
 import { mostrarModalPrimerIngreso } from "./components/ModalPrimerIngreso.js";
+import { isSessionPayloadUsable, llamarRpcSegura } from "./utils/sessionSecurity.js";
 
 const SESSION_KEY = "simat_supervisor_session";
 let activeSession = null;
 let cachedPuntos = [];
 
-function initAdminApp() {
-    // 1. Inicializar tema (Detecta ajuste del dispositivo por defecto)
+async function initAdminApp() {
     initTheme();
+    montarBotonesTema();
 
-    // 2. Si la URL solicita reiniciar o limpiar sesión (?login o ?reset o ?logout)
     if (window.location.search.includes("login") || window.location.search.includes("reset") || window.location.search.includes("logout")) {
         sessionStorage.removeItem(SESSION_KEY);
     }
 
-    // 3. Comprobar sesión activa de supervisor
     const saved = sessionStorage.getItem(SESSION_KEY);
-    if (saved) {
-        try {
-            activeSession = JSON.parse(saved);
-            if (activeSession && activeSession.funcionario && activeSession.funcionario.id) {
-                if (activeSession.funcionario.debe_cambiar_clave) {
-                    mostrarModalPrimerIngreso({
-                        funcionario: activeSession.funcionario,
-                        config: CONFIG,
-                        onSuccess: (datosAct) => {
-                            activeSession.clave = datosAct.nuevaClave;
-                            activeSession.funcionario.nombre_completo = datosAct.nombre;
-                            activeSession.funcionario.email = datosAct.email;
-                            if (datosAct.sexo) activeSession.funcionario.sexo = datosAct.sexo;
-                            if (datosAct.avatar_url) activeSession.funcionario.avatar_url = datosAct.avatar_url;
-                            activeSession.funcionario.debe_cambiar_clave = false;
-                            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
-                            iniciarDashboard();
-                        }
-                    });
-                } else {
-                    iniciarDashboard();
-                }
-            } else {
-                sessionStorage.removeItem(SESSION_KEY);
-                mostrarModalLogin();
-            }
-        } catch (_) {
-            sessionStorage.removeItem(SESSION_KEY);
-            mostrarModalLogin();
-        }
-    } else {
+    if (!saved) {
         mostrarModalLogin();
+        return;
     }
 
-    // 3. Montar botón con icono de tema en la esquina superior derecha del dashboard y del login
+    try {
+        const parsed = JSON.parse(saved);
+        if (!isSessionPayloadUsable(parsed)) {
+            sessionStorage.removeItem(SESSION_KEY);
+            mostrarModalLogin();
+            return;
+        }
+
+        const res = await llamarRpcSegura(CONFIG, "auth_validar_sesion", { p_token: parsed.token });
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !isSessionPayloadUsable(data) || !data.es_supervisor) {
+            sessionStorage.removeItem(SESSION_KEY);
+            mostrarModalLogin();
+            return;
+        }
+
+        activeSession = {
+            token: data.token,
+            es_supervisor: data.es_supervisor,
+            funcionario: data.funcionario,
+            configuracion: data.configuracion
+        };
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+
+        if (data.debe_cambiar_clave) {
+            abrirFlujoPrimerIngreso();
+        } else {
+            iniciarDashboard();
+        }
+    } catch (_) {
+        sessionStorage.removeItem(SESSION_KEY);
+        mostrarModalLogin();
+    }
+}
+
+function montarBotonesTema() {
     const mountTheme = document.getElementById("admin-theme-btn-mount");
     if (mountTheme) {
         mountTheme.innerHTML = renderThemeButtonHtml();
@@ -85,16 +92,29 @@ function initAdminApp() {
     }
 }
 
-// Inicialización universal segura (ejecuta de inmediato si el DOM ya está listo)
+function abrirFlujoPrimerIngreso() {
+    mostrarModalPrimerIngreso({
+        funcionario: activeSession.funcionario,
+        sessionToken: activeSession.token,
+        config: CONFIG,
+        onSuccess: (datosAct) => {
+            activeSession.funcionario.nombre_completo = datosAct.nombre;
+            if (datosAct.email) activeSession.funcionario.email = datosAct.email;
+            if (datosAct.sexo) activeSession.funcionario.sexo = datosAct.sexo;
+            if (datosAct.avatar_url) activeSession.funcionario.avatar_url = datosAct.avatar_url;
+            activeSession.funcionario.debe_cambiar_clave = false;
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+            iniciarDashboard();
+        }
+    });
+}
+
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initAdminApp);
 } else {
     initAdminApp();
 }
 
-/**
- * Modal de inicio de sesión por Cédula y Contraseña.
- */
 function mostrarModalLogin() {
     sessionStorage.removeItem(SESSION_KEY);
     activeSession = null;
@@ -106,7 +126,6 @@ function mostrarModalLogin() {
     const inputClave = document.getElementById("input-admin-clave");
     const errorMsg = document.getElementById("admin-auth-error");
 
-    // Toggle para visualizar/ocultar contraseña
     const btnToggleClave = document.getElementById("btn-toggle-show-clave");
     if (btnToggleClave && inputClave) {
         btnToggleClave.onclick = () => {
@@ -116,7 +135,6 @@ function mostrarModalLogin() {
         };
     }
 
-    // Forzar estrictamente solo números en el campo de cédula (sin letras, sin V-, sin puntos)
     if (inputId) {
         inputId.addEventListener("input", (e) => {
             e.target.value = e.target.value.replace(/[^0-9]/g, "");
@@ -125,12 +143,9 @@ function mostrarModalLogin() {
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        // Cédula estrictamente numérica
         const identificador = inputId.value.trim().replace(/[^0-9]/g, "");
-
         const rawClave = inputClave.value.trim();
         const numClave = rawClave.replace(/[^0-9]/g, "");
-        // Si la clave tipeada coincide numéricamente con la cédula (primer ingreso o reinicio de clave)
         const clave = (numClave && numClave === identificador) ? identificador : rawClave;
 
         errorMsg.classList.add("hidden");
@@ -140,7 +155,6 @@ function mostrarModalLogin() {
             errorMsg.classList.remove("hidden");
             return;
         }
-
         if (!clave) {
             errorMsg.textContent = "Por favor ingrese su contraseña.";
             errorMsg.classList.remove("hidden");
@@ -152,63 +166,41 @@ function mostrarModalLogin() {
         btnSubmit.textContent = "Verificando...";
 
         try {
-            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/auth_login_funcionario`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": CONFIG.SUPABASE_PUBLISHABLE_KEY,
-                    "Authorization": `Bearer ${CONFIG.SUPABASE_PUBLISHABLE_KEY}`
-                },
-                body: JSON.stringify({ p_identificador: identificador, p_clave: clave })
+            const res = await llamarRpcSegura(CONFIG, "auth_login_funcionario", {
+                p_identificador: identificador,
+                p_clave: clave,
+                p_canal: "WEB"
             });
-
             const data = await res.json();
 
-            if (!res.ok || data.status !== "success") {
+            if (!res.ok || data.status !== "success" || !isSessionPayloadUsable(data)) {
                 errorMsg.textContent = data.message || "Credenciales incorrectas. Verifique e intente de nuevo.";
                 errorMsg.classList.remove("hidden");
                 return;
             }
 
-            // REGLA INSTITUCIONAL: Solo supervisores tienen acceso por plataforma web
             if (!data.es_supervisor) {
-                errorMsg.textContent = "Acceso denegado: El acceso por página web está reservado exclusivamente para personal de Supervisión. Los encuestadores de campo deben ingresar únicamente desde la aplicación móvil Android (.APK).";
+                errorMsg.textContent = "Acceso denegado: El acceso web es exclusivo para Supervisores.";
                 errorMsg.classList.remove("hidden");
                 return;
             }
 
             activeSession = {
-                identificador,
-                clave,
+                token: data.token,
+                es_supervisor: data.es_supervisor,
                 funcionario: data.funcionario,
                 configuracion: data.configuracion
             };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
+            modal.classList.add("hidden");
 
-            // Primer ingreso: requiere cambio obligatorio de contraseña y completar perfil
             if (data.debe_cambiar_clave) {
-                modal.classList.add("hidden");
-                mostrarModalPrimerIngreso({
-                    funcionario: data.funcionario,
-                    config: CONFIG,
-                    onSuccess: (datosAct) => {
-                        activeSession.clave = datosAct.nuevaClave;
-                        activeSession.funcionario.nombre_completo = datosAct.nombre;
-                        activeSession.funcionario.email = datosAct.email;
-                        if (datosAct.sexo) activeSession.funcionario.sexo = datosAct.sexo;
-                        if (datosAct.avatar_url) activeSession.funcionario.avatar_url = datosAct.avatar_url;
-                        activeSession.funcionario.debe_cambiar_clave = false;
-                        sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
-                        iniciarDashboard();
-                    }
-                });
+                abrirFlujoPrimerIngreso();
                 return;
             }
 
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(activeSession));
-            modal.classList.add("hidden");
             iniciarDashboard();
-
-        } catch (err) {
+        } catch (_) {
             errorMsg.textContent = "Error de conexión con la base de datos de COTATUR.";
             errorMsg.classList.remove("hidden");
         } finally {
@@ -218,43 +210,47 @@ function mostrarModalLogin() {
     };
 }
 
-/**
- * Inicializa el Panel Principal de Supervisión.
- */
 function iniciarDashboard() {
+    const authModal = document.getElementById("admin-auth-modal");
+    if (authModal) authModal.classList.add("hidden");
+
     const dashboard = document.getElementById("admin-dashboard-root");
     if (dashboard) dashboard.classList.remove("hidden");
 
     actualizarBadgeUsuario();
     configurarTabs();
 
-    const credencialSupervisor = () => (activeSession?.funcionario?.id || "cotatur2026");
+    const obtenerTokenSesion = () => (activeSession?.token || "");
+    const authContext = { ...(activeSession?.funcionario || {}), token: obtenerTokenSesion() };
 
-    // 1. Rueda de Prensa del Gobernador (Pestaña Principal Ejecutiva)
-    renderRuedaPrensaAdmin("tab-prensa-mount", activeSession?.funcionario);
+    renderRuedaPrensaAdmin("tab-prensa-mount", authContext);
+    renderCalendarioAsuetosAdmin("tab-calendario-mount", authContext);
 
-    // 2. Calendario de Asuetos y Programación de Fiestas Turísticas
-    renderCalendarioAsuetosAdmin("tab-calendario-mount", activeSession?.funcionario);
-
-    // 3. Puntos de Control y Equipos Asignados
     renderGestionPuntosAdmin(
         "tab-puntos-mount",
         CONFIG,
-        credencialSupervisor,
+        obtenerTokenSesion,
         (puntos) => {
             cachedPuntos = puntos;
             renderCartelQRAdmin("tab-qr-mount", cachedPuntos);
-            renderGestionPersonalAdmin("tab-personal-mount", CONFIG, credencialSupervisor, cachedPuntos);
+            renderGestionPersonalAdmin("tab-personal-mount", CONFIG, obtenerTokenSesion, cachedPuntos);
         }
     );
 
-    // 4. Generador de Códigos QR y Afiches
     renderCartelQRAdmin("tab-qr-mount", cachedPuntos);
+    renderApkDownloadCardAdmin("tab-apk-download-mount");
+    renderGestionPersonalAdmin("tab-personal-mount", CONFIG, obtenerTokenSesion, cachedPuntos);
 
-    // 5. Nómina de Personal y Ajuste Global de Punto
-    renderGestionPersonalAdmin("tab-personal-mount", CONFIG, credencialSupervisor, cachedPuntos);
+    const btnApkJump = document.getElementById("btn-header-apk-jump");
+    if (btnApkJump) {
+        btnApkJump.addEventListener("click", () => {
+            const tabPersonalBtn = document.querySelector(".admin-tab-btn[data-target='tab-personal']");
+            if (tabPersonalBtn) tabPersonalBtn.click();
+            const mount = document.getElementById("tab-apk-download-mount");
+            if (mount) mount.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    }
 
-    // 6. Mi Perfil
     renderMiPerfilAdmin(
         "tab-perfil-mount",
         CONFIG,
@@ -266,10 +262,14 @@ function iniciarDashboard() {
         }
     );
 
-    // Botón Salir
     const btnLogout = document.getElementById("btn-admin-logout");
     if (btnLogout) {
-        btnLogout.addEventListener("click", () => {
+        btnLogout.addEventListener("click", async () => {
+            try {
+                if (activeSession?.token) {
+                    await llamarRpcSegura(CONFIG, "auth_cerrar_sesion", { p_token: activeSession.token });
+                }
+            } catch (_) {}
             sessionStorage.removeItem(SESSION_KEY);
             window.location.href = window.location.pathname + "?login=1";
         });
@@ -290,20 +290,15 @@ function configurarTabs() {
     tabButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             const targetId = btn.getAttribute("data-target");
-
             tabButtons.forEach(b => {
                 b.classList.remove("border-[#198754]", "text-[#198754]", "dark:text-emerald-400", "font-extrabold");
                 b.classList.add("border-transparent", "text-slate-400");
             });
-
             btn.classList.add("border-[#198754]", "text-[#198754]", "dark:text-emerald-400", "font-extrabold");
             btn.classList.remove("border-transparent", "text-slate-400");
-
-            // Asegurar que la pestaña activa quede visible y centrada en móviles
             try {
                 btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
             } catch (_) {}
-
             tabContents.forEach(c => c.classList.add("hidden"));
             const targetContent = document.getElementById(targetId);
             if (targetContent) targetContent.classList.remove("hidden");

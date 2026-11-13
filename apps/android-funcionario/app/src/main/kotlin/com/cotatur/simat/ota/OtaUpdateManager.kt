@@ -7,6 +7,7 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import com.cotatur.simat.data.remote.OtaIntegrityPolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,12 +60,14 @@ object OtaUpdateManager {
     val estadoDescarga: StateFlow<OtaProgressState> = _estadoDescarga.asStateFlow()
 
     suspend fun verificarActualizacion(context: Context): VersionInfo? = withContext(Dispatchers.IO) {
+        var conn: HttpURLConnection? = null
         try {
             val url = URL(MANIFEST_URL)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.connectTimeout = 8000
-            conn.readTimeout = 8000
-            conn.requestMethod = "GET"
+            conn = (url.openConnection() as HttpURLConnection).apply {
+                connectTimeout = 8000
+                readTimeout = 8000
+                requestMethod = "GET"
+            }
 
             if (conn.responseCode == HttpURLConnection.HTTP_OK) {
                 val jsonStr = conn.inputStream.bufferedReader().use { it.readText() }
@@ -89,7 +92,7 @@ object OtaUpdateManager {
                 }
 
                 if (remoteCode > currentCode) {
-                    return@withContext VersionInfo(
+                    val info = VersionInfo(
                         versionCode = remoteCode,
                         versionName = obj.optString("versionName", ""),
                         apkUrl = obj.optString("apkUrl", obj.optString("latestApkUrl", "")),
@@ -97,9 +100,15 @@ object OtaUpdateManager {
                         changelog = obj.optString("changelog", ""),
                         mandatory = obj.optBoolean("mandatory", false)
                     )
+                    if (info.apkUrl.isNotBlank() && info.sha256.isNotBlank()) {
+                        return@withContext info
+                    }
                 }
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        } finally {
+            conn?.disconnect()
+        }
         null
     }
 
@@ -138,17 +147,24 @@ object OtaUpdateManager {
             }
         }
 
-        // 3. Descarga en segundo plano con corrutinas y monitoreo de progreso
+        // 3. Validar firma SHA-256 presente antes de descargar y garantizar cleanup de red
+        if (info.sha256.isBlank()) {
+            _estadoDescarga.value = OtaProgressState.Error("El manifiesto remoto no incluye firma SHA-256 verificable.")
+            return
+        }
+
         scope.launch {
             withContext(Dispatchers.IO) {
+                var conn: HttpURLConnection? = null
                 try {
                     _estadoDescarga.value = OtaProgressState.Descargando(0f, 0f, 0f)
 
                     val url = URL(info.apkUrl)
-                    val conn = url.openConnection() as HttpURLConnection
-                    conn.connectTimeout = 15000
-                    conn.readTimeout = 30000
-                    conn.instanceFollowRedirects = true
+                    conn = (url.openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 15000
+                        readTimeout = 30000
+                        instanceFollowRedirects = true
+                    }
                     conn.connect()
 
                     if (conn.responseCode != HttpURLConnection.HTTP_OK) {
@@ -179,9 +195,9 @@ object OtaUpdateManager {
                     _estadoDescarga.value = OtaProgressState.VerificandoIntegridad
                     val hashValido = verificarSha256(destinoApk, info.sha256)
 
-                    if (!hashValido && info.sha256.isNotBlank()) {
+                    if (!hashValido) {
                         destinoApk.delete()
-                        throw Exception("Fallo de integridad SHA-256. El archivo puede estar corrupto.")
+                        throw Exception("Fallo de integridad SHA-256. El archivo fue descartado.")
                     }
 
                     _estadoDescarga.value = OtaProgressState.ListoParaInstalar
@@ -195,6 +211,8 @@ object OtaUpdateManager {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "Error OTA: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                     }
+                } finally {
+                    conn?.disconnect()
                 }
             }
         }
@@ -261,7 +279,7 @@ object OtaUpdateManager {
     }
 
     private fun verificarSha256(file: File, expectedHash: String): Boolean {
-        if (!file.exists() || expectedHash.isBlank()) return false
+        if (!file.exists()) return false
         val digest = MessageDigest.getInstance("SHA-256")
         FileInputStream(file).use { fis ->
             val buffer = ByteArray(8192)
@@ -271,6 +289,6 @@ object OtaUpdateManager {
             }
         }
         val calculatedHash = digest.digest().joinToString("") { "%02x".format(it) }
-        return calculatedHash.equals(expectedHash.trim(), ignoreCase = true)
+        return OtaIntegrityPolicy.validarIntegridad(expectedHash, calculatedHash)
     }
 }

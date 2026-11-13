@@ -11,13 +11,14 @@ android {
     applicationId = "com.cotatur.simat"
     minSdk = 26
     targetSdk = 35
-    versionCode = 10
-    versionName = "0.7.9-beta"
+    versionCode = 11
+    versionName = "0.8.0"
   }
 
   buildTypes {
     release {
-      isMinifyEnabled = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
   }
@@ -81,4 +82,9 @@ dependencies {
   implementation(libs.androidx.navigation3.ui)
   implementation(libs.androidx.navigation3.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+  // Autenticación oficial Google Credential Manager (ID Token verificable)
+  implementation(libs.androidx.credentials)
+  implementation(libs.androidx.credentials.play.services)
+  implementation(libs.googleid)
 }

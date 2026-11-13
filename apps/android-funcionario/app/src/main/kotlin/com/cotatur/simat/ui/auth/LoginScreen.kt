@@ -1,9 +1,5 @@
 package com.cotatur.simat.ui.auth
 
-import android.accounts.AccountManager
-import android.content.Context
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -99,21 +95,7 @@ fun LoginScreen(
     var cargando by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf<String?>(null) }
     var avisoOffline by remember { mutableStateOf<String?>(null) }
-    var mostrarDialogoGoogleManual by remember { mutableStateOf(false) }
     var mostrarDialogoRecuperar by remember { mutableStateOf(false) }
-
-    // Selector nativo de cuentas Google de Android
-    val accountPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val accountName = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
-        if (!accountName.isNullOrBlank()) {
-            ejecutarLoginGoogle(accountName, sessionManager, scope, context, { cargando = it }, { mensajeError = it }, { avisoOffline = it }, onLoginExitoso)
-        } else {
-            // Ofrecer diálogo manual si canceló o no tiene cuenta configurada en el OS
-            mostrarDialogoGoogleManual = true
-        }
-    }
 
     fun ejecutarLoginCedula() {
         val cedulaLimpia = cedula.trim().replace(".", "").replace("-", "")
@@ -148,28 +130,18 @@ fun LoginScreen(
         }
     }
 
-    if (mostrarDialogoGoogleManual) {
-        DialogoCuentaGoogleManual(
-            onDismiss = { mostrarDialogoGoogleManual = false },
-            onConfirmar = { email ->
-                mostrarDialogoGoogleManual = false
-                ejecutarLoginGoogle(email, sessionManager, scope, context, { cargando = it }, { mensajeError = it }, { avisoOffline = it }, onLoginExitoso)
-            }
-        )
-    }
-
     if (mostrarDialogoRecuperar) {
         DialogoRecuperarContrasenaGoogle(
             cedulaInicial = cedula,
             onDismiss = { mostrarDialogoRecuperar = false },
-            onRestablecer = { ced, gEmail, nClave ->
+            onRestablecer = { ced, gIdToken, nClave ->
                 mostrarDialogoRecuperar = false
                 cargando = true
                 mensajeError = null
                 avisoOffline = null
                 scope.launch {
                     val res = withContext(Dispatchers.IO) {
-                        recuperarClaveConGoogle(sessionManager, ced, gEmail, null, nClave)
+                        recuperarClaveConGoogle(sessionManager, ced, gIdToken, nClave)
                     }
                     cargando = false
                     when (res) {
@@ -418,17 +390,29 @@ fun LoginScreen(
                             HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                         }
 
-                        // Botón Secundario: Iniciar Sesión con Google
+                        // Botón Secundario: Iniciar Sesión con Google (Credential Manager)
                         BotonGoogleLogin(
                             habilitado = !cargando,
                             onClick = {
-                                try {
-                                    val intent = AccountManager.newChooseAccountIntent(
-                                        null, null, arrayOf("com.google"), false, null, null, null, null
-                                    )
-                                    accountPickerLauncher.launch(intent)
-                                } catch (_: Exception) {
-                                    mostrarDialogoGoogleManual = true
+                                mensajeError = null
+                                avisoOffline = null
+                                scope.launch {
+                                    try {
+                                        cargando = true
+                                        val idToken = solicitarGoogleIdTokenNativo(context)
+                                        ejecutarLoginGoogle(
+                                            googleIdToken = idToken,
+                                            sessionManager = sessionManager,
+                                            scope = scope,
+                                            setCargando = { cargando = it },
+                                            setError = { mensajeError = it },
+                                            setAviso = { avisoOffline = it },
+                                            onSuccess = onLoginExitoso
+                                        )
+                                    } catch (e: Exception) {
+                                        cargando = false
+                                        mensajeError = "No se completó el inicio con Google: ${e.localizedMessage ?: "Cancelado"}"
+                                    }
                                 }
                             }
                         )
