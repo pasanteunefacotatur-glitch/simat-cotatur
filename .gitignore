@@ -22,3 +22,10 @@ build/
 *.log
 .DS_Store
 Thumbs.db
+
+# Documentos institucionales, académicos y PDFs (no publicar en GitHub)
+*.pdf
+docs/*.md
+!docs/README.md
+propuesta_ejecutiva_cotatur_turismo.md
+documentos_privados/
